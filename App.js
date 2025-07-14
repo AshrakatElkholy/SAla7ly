@@ -7,7 +7,6 @@ import UserCategoryScreen from './screens/user_category_screen';
 import WelcomeScreen from './screens/welcom_screen';
 import SignupScreen from './screens/user_screens/signup';
 import LoginScreen from './screens/user_screens/login';
-import LocationScreen from './screens/user_screens/location';
 
 const Stack = createStackNavigator();
 
@@ -62,10 +61,7 @@ function App() {
           name="ClientLoginScreen"
           component={LoginScreen}
         />
-        <Stack.Screen 
-          name="Location"
-          component={LocationScreen}
-        />
+       
         {/* Add other screens here */}
       </Stack.Navigator>
     </NavigationContainer>

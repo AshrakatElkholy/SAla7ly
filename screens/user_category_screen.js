@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { View, Image, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import CustomButton from '../Components/CustomButton';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+
 
 function user_category_screen({ navigation }) {
   const [selectedImage, setSelectedImage] = useState(null);
@@ -22,10 +21,9 @@ function user_category_screen({ navigation }) {
       alert('يرجى اختيار نوع الحساب أولاً');
       return;
     }
-    if (selectedImage === 'client') {
-      navigation.navigate('Location');
-    }
-    // You can add navigation for 'sanay3y' here if needed
+    // Instead of navigation, just log or alert the selected choice
+    alert(`تم اختيار: ${selectedImage === 'client' ? 'عميل' : 'صنايعي'}`);
+    console.log('Selected category:', selectedImage);
   };
 
   return (
