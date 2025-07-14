@@ -21,7 +21,6 @@ function welcom_screen({ navigation, route }) {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" backgroundColor="#fff" />
-  >
 
       {/* Main Image */}
       <View style={styles.imageContainer}>

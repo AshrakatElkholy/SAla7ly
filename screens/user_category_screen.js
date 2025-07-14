@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { View, Image, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import CustomButton from '../Components/CustomButton';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
 function user_category_screen({ navigation }) {
   const [selectedImage, setSelectedImage] = useState(null);
@@ -20,8 +22,10 @@ function user_category_screen({ navigation }) {
       alert('يرجى اختيار نوع الحساب أولاً');
       return;
     }
-    // Navigation removed: just save the info in state and wait for new screens
-    // You can use selectedImage state elsewhere as needed
+    if (selectedImage === 'client') {
+      navigation.navigate('Location');
+    }
+    // You can add navigation for 'sanay3y' here if needed
   };
 
   return (
