@@ -1,33 +1,43 @@
-import React from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import React from "react";
+import { TouchableOpacity, Text, StyleSheet } from "react-native";
 
 const CustomButton = ({
   title,
   onPress,
-  type = 'filled', 
-  color = '#004AAD',
+  type = "filled",
+  color = "#004AAD",
+  //* ibrahim customization button edits *//
+  disabled = false,
+  style,
+  textStyle,
+  //* end ibrahim customization button edits *//
 }) => {
-  const isFilled = type === 'filled';
+  const isFilled = type === "filled";
 
   return (
     <TouchableOpacity
       style={[
         styles.button,
         {
-          backgroundColor: isFilled ? color : 'transparent',
+          backgroundColor: isFilled ? color : "transparent",
           borderColor: color,
           borderWidth: isFilled ? 0 : 2,
+          //* ibrahim customization button edits *//
+          opacity: disabled ? 0.6 : 1, //* ibrahim customization button edits *//
         },
+        style, //* ibrahim customization button edits *//
       ]}
       onPress={onPress}
+      disabled={disabled} //* ibrahim customization button edits *//
     >
       <Text
-        style={{
-          color: isFilled ? '#fff' : color,
-          fontWeight: 'bold',
-          fontSize: 16,
-         
-        }}
+        style={[
+          {
+            color: isFilled ? "#fff" : color,
+            fontSize: 16,
+          },
+          textStyle, //* ibrahim customization button edits *//
+        ]}
       >
         {title}
       </Text>
@@ -42,8 +52,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 25,
     borderRadius: 16,
-    alignItems: 'center',
+    alignItems: "center",
     marginVertical: 10,
-     width: "100%"
+    width: "100%",
   },
 });

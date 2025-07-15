@@ -1,67 +1,73 @@
-import React, { useState } from 'react';
-import { View, Image, StyleSheet, TouchableOpacity, Text } from 'react-native';
-import CustomButton from '../Components/CustomButton';
-
+import React, { useState } from "react";
+import { View, Image, StyleSheet, TouchableOpacity, Text } from "react-native";
+import CustomButton from "../Components/CustomButton";
 
 function user_category_screen({ navigation }) {
   const [selectedImage, setSelectedImage] = useState(null);
 
   const handleSanay3yPress = () => {
-    console.log('Sanay3y image pressed');
-    setSelectedImage('sanay3y');
+    console.log("Sanay3y image pressed");
+    setSelectedImage("sanay3y");
   };
 
   const handleSnay3y1Press = () => {
-    console.log('Snay3y1 image pressed');
-    setSelectedImage('client');
+    console.log("Snay3y1 image pressed");
+    setSelectedImage("client");
   };
 
   const handleContinuePress = () => {
     if (!selectedImage) {
-      alert('يرجى اختيار نوع الحساب أولاً');
+      alert("يرجى اختيار نوع الحساب أولاً");
       return;
     }
     // Instead of navigation, just log or alert the selected choice
-    alert(`تم اختيار: ${selectedImage === 'client' ? 'عميل' : 'صنايعي'}`);
-    console.log('Selected category:', selectedImage);
+    if (selectedImage === "client") {
+      navigation.navigate("IndustrialLocationScreen"); // للعميل → شاشة اللوكيشن
+    } else {
+      navigation.navigate("IndustrialSpecialtyScreen"); // للصنايعي → شاشة التخصصات
+    }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>من انت؟</Text>
-     
+
       {/* Small Space */}
       <View style={styles.spaceSection} />
 
       {/* Images Section - Middle */}
       <View style={styles.imagesSection}>
         <View style={styles.imageRow}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[
               styles.touchableImage,
-              selectedImage === 'sanay3y' ? styles.selectedImage : styles.unselectedImage
+              selectedImage === "sanay3y"
+                ? styles.selectedImage
+                : styles.unselectedImage,
             ]}
             onPress={handleSanay3yPress}
             activeOpacity={0.7}
           >
-            <Image 
-              source={require('../assets/snnay3ycat.png')} 
+            <Image
+              source={require("../assets/snnay3ycat.png")}
               style={styles.brandImage}
               resizeMode="contain"
             />
             <Text style={styles.imageLabel}>صنايعي</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={[
               styles.touchableImage,
-              selectedImage === 'client' ? styles.selectedImage : styles.unselectedImage
+              selectedImage === "client"
+                ? styles.selectedImage
+                : styles.unselectedImage,
             ]}
             onPress={handleSnay3y1Press}
             activeOpacity={0.7}
           >
-            <Image 
-              source={require('../assets/user.png')} 
+            <Image
+              source={require("../assets/user.png")}
               style={styles.brandImage}
               resizeMode="contain"
             />
@@ -72,9 +78,9 @@ function user_category_screen({ navigation }) {
 
       {/* Button Section - Bottom */}
       <View style={styles.buttonSection}>
-        <CustomButton 
-          title={"تابع"} 
-          onPress={handleContinuePress} 
+        <CustomButton
+          title={"تابع"}
+          onPress={handleContinuePress}
           type="filled"
         />
       </View>
@@ -85,43 +91,43 @@ function user_category_screen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
     paddingTop: 50,
   },
   title: {
     fontSize: 28,
-    fontWeight: '700',
-    color: '#000000',
-    textAlign: 'center',
+    fontWeight: "700",
+    color: "#000000",
+    textAlign: "center",
     marginTop: 20,
     // marginBottom: 80,
   },
-//   spaceSection: {
-//     height: 40,
-//   },
+  //   spaceSection: {
+  //     height: 40,
+  //   },
   imagesSection: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   imageRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     gap: 20,
   },
   touchableImage: {
-    alignItems: 'center',
+    alignItems: "center",
     // padding: 15,
     borderRadius: 15,
     borderWidth: 2,
   },
   selectedImage: {
-    backgroundColor: '#B0C7E6',
-    borderColor: '#B0C7E6',
+    backgroundColor: "#B0C7E6",
+    borderColor: "#B0C7E6",
   },
   unselectedImage: {
-    backgroundColor: '#00000033',
-    borderColor: '#00000033',
+    backgroundColor: "#00000033",
+    borderColor: "#00000033",
   },
   brandImage: {
     width: 160,
@@ -130,14 +136,14 @@ const styles = StyleSheet.create({
   },
   imageLabel: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000000',
-    textAlign: 'center',
+    fontWeight: "bold",
+    color: "#000000",
+    textAlign: "center",
   },
   buttonSection: {
-     paddingHorizontal: 10,
-    alignItems: 'center',
-    paddingBottom:20
+    paddingHorizontal: 10,
+    alignItems: "center",
+    paddingBottom: 20,
   },
 });
 

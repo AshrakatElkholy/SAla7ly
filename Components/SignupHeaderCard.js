@@ -1,9 +1,36 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import React from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+////* Importing Fonts from constants */
+import { Fonts } from "../constants";
 
-const SignupHeaderCard = ({ onBack, title = 'انشاء حساب', subtitle = 'قم بإنشاء حساب للوصول لجميع مستخدمين صلحى', style, children }) => (
-  <View style={[styles.card, style]}>
+const SignupHeaderCard = ({
+  onBack,
+  title = "انشاء حساب",
+  subtitle = "قم بإنشاء حساب للوصول لجميع مستخدمين صلحى",
+  style,
+  children,
+  ///* Ibrahim Component Props Edit */
+  bgColor = "#F0F4F8",
+  curveRadiusL = 40,
+  curveRadiusR = 0,
+  height = 180,
+  //* End of Ibrahim Component Props Edit */
+}) => (
+  <View
+    style={[
+      styles.card,
+      //* Ibrahim Component  Edit */
+      {
+        backgroundColor: bgColor,
+        borderBottomLeftRadius: curveRadiusL,
+        borderBottomRightRadius: curveRadiusR,
+        minHeight: height,
+      },
+      //* End of Ibrahim Component Edit */
+      style,
+    ]}
+  >
     <View style={styles.arrowRow}>
       <TouchableOpacity style={styles.arrowButton} onPress={onBack}>
         <Ionicons name="arrow-forward" size={20} color="#fff" />
@@ -20,46 +47,47 @@ const SignupHeaderCard = ({ onBack, title = 'انشاء حساب', subtitle = '�
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#EAF2FB',
+    backgroundColor: "#EAF2FB",
     borderBottomLeftRadius: 40,
     minHeight: 180,
     padding: 24,
-    justifyContent: 'center',
+    justifyContent: "center",
     marginBottom: 24,
   },
   arrowRow: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
     marginBottom: 12,
   },
   arrowButton: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#1566C1',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#1566C1",
+    alignItems: "center",
+    justifyContent: "center",
     marginLeft: 12,
     marginTop: 8,
   },
   textContainer: {
     flex: 1,
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
   },
   title: {
     fontSize: 22,
-    fontWeight: 'bold',
-    color: '#222',
-    textAlign: 'right',
+    fontWeight: "bold",
+    color: "#222",
+    textAlign: "right",
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 14,
-    color: '#444',
+    fontFamily: Fonts?.REGULAR ?? undefined,
+    color: "#444",
     marginTop: 4,
-    textAlign: 'right',
+    textAlign: "right",
   },
 });
 
-export default SignupHeaderCard; 
+export default SignupHeaderCard;

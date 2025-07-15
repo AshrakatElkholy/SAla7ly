@@ -35,6 +35,9 @@
     },
     "web": {
       "favicon": "./assets/logo_icon.png"
-    }
+    },
+    "plugins": [
+      "expo-font"
+    ]
   }
 }
