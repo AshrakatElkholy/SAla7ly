@@ -1,6 +1,4 @@
-/**
- * IndustrialIdentityScreen — ONBOARDING
- */
+// * IndustrialIdentityScreen — ONBOARDING
 
 import React, { useState, useMemo } from "react";
 import {

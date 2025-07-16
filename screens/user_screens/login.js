@@ -6,15 +6,33 @@ import SignupHeaderCard from '../../Components/SignupHeaderCard';
 function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   // Dummy API endpoint (replace with your real one later)
   const API_URL = 'https://jsonplaceholder.typicode.com/posts';
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('خطأ', 'يرجى إدخال البريد الإلكتروني وكلمة المرور');
-      return;
+    let hasError = false;
+    if (!email) {
+      setEmailError('يرجى إدخال البريد الإلكتروني');
+      hasError = true;
+    } else if (!email.includes('@')) {
+      setEmailError('البريد الإلكتروني غير صحيح');
+      hasError = true;
+    } else {
+      setEmailError('');
     }
+    if (!password) {
+      setPasswordError('يرجى إدخال كلمة المرور');
+      hasError = true;
+    } else if (password.length < 6) {
+      setPasswordError('كلمة المرور قصيرة جداً');
+      hasError = true;
+    } else {
+      setPasswordError('');
+    }
+    if (hasError) return;
     try {
       const response = await fetch(API_URL, {
         method: 'POST',
@@ -47,6 +65,8 @@ function LoginScreen({ navigation }) {
             onChangeText={setEmail}
             placeholder="example@email.com"
             keyboardType="email-address"
+            error={emailError}
+            deferError
           />
           <CustomInput
             label="كلمة المرور"
@@ -54,6 +74,8 @@ function LoginScreen({ navigation }) {
             onChangeText={setPassword}
             placeholder="أدخل كلمة المرور"
             secureTextEntry
+            error={passwordError}
+            deferError
           />
           <TouchableOpacity
             onPress={() => navigation.navigate('ForgotPasswordScreen')}

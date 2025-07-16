@@ -209,6 +209,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: Fonts.BOLD,
     marginRight: 8,
+    fontFamily: Fonts.REGULAR,
   },
 
   /* search */
@@ -219,8 +220,9 @@ const styles = StyleSheet.create({
   },
   icHit: {
     position: "absolute",
-    right: 30,
+    right: 10, // moved further from the input (was 30)
     top: 18,
+    paddingLeft: 16, // add extra space if needed
   },
 
   mapBox: {
@@ -233,4 +235,13 @@ const styles = StyleSheet.create({
   map: { flex: 1 },
 
   loader: { flex: 1, justifyContent: "center", alignItems: "center" },
+  section: {
+    alignSelf: "flex-end",
+    fontSize: 16,
+    fontFamily: Fonts.BOLD,
+    color: "#333",
+    marginTop: 24,
+    marginBottom: 8,
+    fontFamily: Fonts.REGULAR,
+  },
 });

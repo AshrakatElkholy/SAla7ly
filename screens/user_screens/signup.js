@@ -19,20 +19,34 @@ function SignupScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [bio, setBio] = useState("");
+  const [bioHeight, setBioHeight] = useState(100);
+
+  // Error states
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   // Dummy API endpoint (replace with your real one later)
   const API_URL = "https://jsonplaceholder.typicode.com/posts";
 
   const handleSignup = async () => {
     // Simple validation
+    let hasError = false;
     if (!name || !phone || !email || !password || !confirmPassword) {
       Alert.alert("خطأ", "يرجى ملء جميع الحقول");
-      return;
+      hasError = true;
     }
+    if (!email) setEmailError("يرجى إدخال البريد الإلكتروني");
+    else if (!email.includes("@")) setEmailError("البريد الإلكتروني غير صحيح");
+    else setEmailError("");
+    if (!password) setPasswordError("يرجى إدخال كلمة المرور");
+    else if (password.length < 6) setPasswordError("كلمة المرور قصيرة جداً");
+    else setPasswordError("");
     if (password !== confirmPassword) {
       Alert.alert("خطأ", "كلمتا المرور غير متطابقتين");
-      return;
+      hasError = true;
     }
+    if (hasError || emailError || passwordError) return;
 
     // Prepare data
     const data = {
@@ -40,6 +54,7 @@ function SignupScreen({ navigation }) {
       phone,
       email,
       password,
+      bio,
     };
 
     try {
@@ -76,6 +91,7 @@ function SignupScreen({ navigation }) {
             value={name}
             onChangeText={setName}
             placeholder="أدخل اسمك"
+            inputStyle={{ fontFamily: 'Fonts.REGULAR' }}
           />
           <CustomInput
             label="رقم الهاتف"
@@ -83,6 +99,7 @@ function SignupScreen({ navigation }) {
             onChangeText={setPhone}
             placeholder="أدخل رقم هاتفك"
             keyboardType="phone-pad"
+            inputStyle={{ fontFamily: 'Fonts.REGULAR' }}
           />
           <CustomInput
             label="حساب شخصي"
@@ -90,6 +107,9 @@ function SignupScreen({ navigation }) {
             onChangeText={setEmail}
             placeholder="example@email.com"
             keyboardType="email-address"
+            error={emailError}
+            deferError
+            inputStyle={{ fontFamily: 'Fonts.REGULAR' }}
           />
           <CustomInput
             label="كلمة المرور"
@@ -97,6 +117,9 @@ function SignupScreen({ navigation }) {
             onChangeText={setPassword}
             placeholder="أدخل كلمة المرور"
             secureTextEntry
+            error={passwordError}
+            deferError
+            inputStyle={{ fontFamily: 'Fonts.REGULAR' }}
           />
           <CustomInput
             label="تأكيد كلمة المرور"
@@ -104,6 +127,19 @@ function SignupScreen({ navigation }) {
             onChangeText={setConfirmPassword}
             placeholder="أعد إدخال كلمة المرور"
             secureTextEntry
+            inputStyle={{ fontFamily: 'Fonts.REGULAR' }}
+          />
+          <CustomInput
+            label="نبذة عنك"
+            value={bio}
+            onChangeText={setBio}
+            placeholder="اكتب نبذة قصيرة"
+            multiline
+            numberOfLines={4}
+            scrollEnabled
+            onContentSizeChange={e => setBioHeight(e.nativeEvent.contentSize.height)}
+            style={{ minHeight: bioHeight }}
+            inputStyle={{ fontFamily: 'Fonts.REGULAR' }}
           />
           <View
             style={{
@@ -117,12 +153,12 @@ function SignupScreen({ navigation }) {
               onPress={() => navigation.navigate("ClientLoginScreen")}
             >
               <Text
-                style={{ color: "#1566C1", fontSize: 14, fontWeight: "bold" }}
+                style={{ color: "#1566C1", fontSize: 14, fontWeight: "bold", fontFamily: 'Fonts.REGULAR' }}
               >
                 تسجيل الدخول
               </Text>
             </TouchableOpacity>
-            <Text style={{ fontSize: 14, color: "#444" }}>
+            <Text style={{ fontSize: 14, color: "#444", fontFamily: 'Fonts.REGULAR' }}>
               {" "}
               قم بتسجيل دخول ؟
             </Text>
@@ -132,7 +168,7 @@ function SignupScreen({ navigation }) {
             title="تابع"
             onPress={handleSignup}
             type="filled"
-            style={{ paddingTop: 10, marginBottom: 50 }}
+            style={{ marginBottom: 16 }}
           />
         </View>
       </ScrollView>
