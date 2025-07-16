@@ -17,9 +17,11 @@ import LoginScreen from "./screens/user_screens/login";
 import IndustrialSpecialtyScreen from "./screens/industrial_screens/onboarding/IndustrialSpecialtyScreen";
 import IndustrialIdentityScreen from "./screens/industrial_screens/onboarding/IndustrialIdentityScreen";
 import IndustrialLocationScreen from "./screens/industrial_screens/onboarding/IndustrialLocationScreen";
-
+import Done from "./screens/acception-regection_screens/Done";
+import Pending from "./screens/acception-regection_screens/pending";
+import Refused from "./screens/acception-regection_screens/refused";
 // Fonts
-import { Fonts } from "./constants";
+// import { Fonts } from './constants';
 import {
   useFonts,
   Cairo_400Regular,
@@ -96,6 +98,9 @@ function App() {
           name="IndustrialLocationScreen"
           component={IndustrialLocationScreen}
         />
+        <Stack.Screen name="PendingScreen" component={Pending} />
+        <Stack.Screen name="DoneScreen" component={Done} />
+        <Stack.Screen name="RefusedScreen" component={Refused} />
       </Stack.Navigator>
     </NavigationContainer>
   );

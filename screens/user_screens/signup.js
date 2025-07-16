@@ -12,6 +12,7 @@ import SignupHeaderCard from "../../Components/SignupHeaderCard";
 import CustomInput from "../../Components/CustomInput";
 import CustomButton from "../../Components/CustomButton";
 import { TouchableOpacity } from "react-native";
+import { Fonts } from '../../constants';
 function SignupScreen({ navigation }) {
   // State for each input
   const [name, setName] = useState("");
@@ -91,7 +92,7 @@ function SignupScreen({ navigation }) {
             value={name}
             onChangeText={setName}
             placeholder="أدخل اسمك"
-            inputStyle={{ fontFamily: 'Fonts.REGULAR' }}
+            inputStyle={{ fontFamily: Fonts.REGULAR }}
           />
           <CustomInput
             label="رقم الهاتف"
@@ -99,7 +100,7 @@ function SignupScreen({ navigation }) {
             onChangeText={setPhone}
             placeholder="أدخل رقم هاتفك"
             keyboardType="phone-pad"
-            inputStyle={{ fontFamily: 'Fonts.REGULAR' }}
+            inputStyle={{ fontFamily: Fonts.REGULAR }}
           />
           <CustomInput
             label="حساب شخصي"
@@ -109,7 +110,7 @@ function SignupScreen({ navigation }) {
             keyboardType="email-address"
             error={emailError}
             deferError
-            inputStyle={{ fontFamily: 'Fonts.REGULAR' }}
+            inputStyle={{ fontFamily: Fonts.REGULAR }}
           />
           <CustomInput
             label="كلمة المرور"
@@ -119,7 +120,7 @@ function SignupScreen({ navigation }) {
             secureTextEntry
             error={passwordError}
             deferError
-            inputStyle={{ fontFamily: 'Fonts.REGULAR' }}
+            inputStyle={{ fontFamily: Fonts.REGULAR }}
           />
           <CustomInput
             label="تأكيد كلمة المرور"
@@ -127,7 +128,7 @@ function SignupScreen({ navigation }) {
             onChangeText={setConfirmPassword}
             placeholder="أعد إدخال كلمة المرور"
             secureTextEntry
-            inputStyle={{ fontFamily: 'Fonts.REGULAR' }}
+            inputStyle={{ fontFamily: Fonts.REGULAR }}
           />
           <CustomInput
             label="نبذة عنك"
@@ -139,7 +140,7 @@ function SignupScreen({ navigation }) {
             scrollEnabled
             onContentSizeChange={e => setBioHeight(e.nativeEvent.contentSize.height)}
             style={{ minHeight: bioHeight }}
-            inputStyle={{ fontFamily: 'Fonts.REGULAR' }}
+            inputStyle={{ fontFamily: Fonts.REGULAR }}
           />
           <View
             style={{

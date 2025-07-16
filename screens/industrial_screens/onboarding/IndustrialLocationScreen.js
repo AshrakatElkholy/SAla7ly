@@ -11,6 +11,7 @@ import {
   useWindowDimensions,
   KeyboardAvoidingView,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import * as Location from "expo-location";
 import MapView, { Marker } from "react-native-maps";
@@ -22,9 +23,11 @@ import TabsHeader from "../../../Components/TabsHeader";
 import CustomButton from "../../../Components/CustomButton";
 import CustomInput from "../../../Components/CustomInput";
 
-export default function IndustrialLocationScreen() {
-  const navigation = useNavigation();
+export default function IndustrialLocationScreen({ route, navigation }) {
   const { width } = useWindowDimensions();
+
+  // Get role from navigation params (default to 'provider' for now)
+  const role = route?.params?.role || 'provider'; // TODO: update when user roles are implemented
 
   /* ------------ state ------------ */
   const [region, setRegion] = useState(null);
@@ -113,7 +116,14 @@ export default function IndustrialLocationScreen() {
 
   /* ------------ الحفظ / التالى ------------ */
   const isReady = !!marker;
-  const handleSave = () => isReady && navigation.navigate("ClientLoginScreen");
+  const handleSave = () => {
+    if (!isReady) return;
+    if (role === 'provider') {
+      navigation.navigate("PendingScreen");
+    } else {
+      Alert.alert('تم اختيار الموقع', 'سيتم تحويلك للصفحة الرئيسية قريباً.');
+    }
+  };
 
   /* ------------ render ------------ */
   return (

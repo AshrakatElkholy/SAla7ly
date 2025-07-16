@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Image, StyleSheet, SafeAreaView, TouchableOpacity, Dimensions } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import CustomButton from '../Components/CustomButton';
+import { Fonts } from '../constants';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
