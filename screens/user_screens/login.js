@@ -40,7 +40,9 @@ function LoginScreen({ navigation }) {
         body: JSON.stringify({ email, password }),
       });
       const result = await response.json();
-      Alert.alert('تم تسجيل الدخول!', 'تم إرسال البيانات بنجاح.');
+      // Alert.alert('تم تسجيل الدخول!', 'تم إرسال البيانات بنجاح.');
+      // مؤقتا لغاية مما صفحة الهوم تتعمل
+      navigation.navigate("ServiceDetailsScreen");
       // navigation.navigate('SomeUserHomeScreen'); // Uncomment and set your home screen
     } catch (error) {
       Alert.alert('خطأ', 'حدث خطأ أثناء تسجيل الدخول');

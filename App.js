@@ -27,6 +27,7 @@ import {
   Cairo_400Regular,
   Cairo_700Bold,
 } from "@expo-google-fonts/cairo";
+import ServiceDetailsScreen from "./screens/ServiceDetailsScreen";
 
 const Stack = createStackNavigator();
 
@@ -83,7 +84,10 @@ function App() {
         />
 
         <Stack.Screen name="ClientLoginScreen" component={LoginScreen} />
-
+        <Stack.Screen
+          name="ServiceDetailsScreen"
+          component={ServiceDetailsScreen}
+        />
         {/* Add other screens here */}
         <Stack.Screen
           name="IndustrialSpecialtyScreen"
