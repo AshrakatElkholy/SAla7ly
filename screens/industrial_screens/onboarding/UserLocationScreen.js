@@ -1,4 +1,5 @@
 // screens/industrial_screens/onboarding/IndustrialLocationScreen.js
+
 import React, { useEffect, useState, useMemo } from "react";
 import {
   SafeAreaView,
@@ -15,6 +16,8 @@ import {
 import * as Location from "expo-location";
 import MapView, { Marker } from "react-native-maps";
 import Icon from "react-native-vector-icons/Feather";
+import { Ionicons } from "@expo/vector-icons";
+
 import { useNavigation } from "@react-navigation/native";
 
 import { Fonts } from "../../../constants";
@@ -26,31 +29,37 @@ export default function IndustrialLocationScreen() {
   const navigation = useNavigation();
   const { width } = useWindowDimensions();
 
-  /* ------------ state ------------ */
   const [region, setRegion] = useState(null);
   const [marker, setMarker] = useState(null);
-  const [centerRegion, setCenterRegion] = useState(null);
-
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [searchLoading, setSearchLoading] = useState(false);
 
-  /* ------------ الحصول على إحداثيّات المستخدم ------------ */
+  const locateMe = async () => {
+    try {
+      const {
+        coords: { latitude, longitude },
+      } = await Location.getCurrentPositionAsync({});
+      const newRegion = {
+        latitude,
+        longitude,
+        latitudeDelta: 0.015,
+        longitudeDelta: 0.015,
+      };
+      setRegion(newRegion);
+      setMarker({ latitude, longitude });
+    } catch {
+      alert("تعذر تحديد موقعك الحالي");
+    }
+  };
+
   useEffect(() => {
     (async () => {
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") throw new Error("permission denied");
 
-        const {
-          coords: { latitude, longitude },
-        } = await Location.getCurrentPositionAsync({});
-        setRegion({
-          latitude,
-          longitude,
-          latitudeDelta: 0.015,
-          longitudeDelta: 0.015,
-        });
+        await locateMe();
       } catch {
         // fallback: Cairo
         setRegion({
@@ -65,7 +74,6 @@ export default function IndustrialLocationScreen() {
     })();
   }, []);
 
-  /* ------------ البحث بالنص ------------ */
   const handleCitySearch = async () => {
     if (!search.trim()) return;
     try {
@@ -91,50 +99,25 @@ export default function IndustrialLocationScreen() {
     }
   };
 
-  /* ------------ أبعاد الهيدر (responsive) ------------ */
-  const dyn = useMemo(() => {
-    const topPad =
-      Platform.OS === "android" ? StatusBar.currentHeight || 24 : 44;
-    const h = width * 0.3;
-    return StyleSheet.create({
-      headerBg: {
-        height: h + 50,
-        backgroundColor: "#F0F4F8",
-        borderBottomLeftRadius: width * 0.25,
-        borderBottomRightRadius: width * 0.05,
-        paddingTop: topPad,
-        paddingHorizontal: 20,
-      },
-      headerRow: {
-        marginTop: 18,
-        flexDirection: "row-reverse",
-        alignItems: "center",
-      },
-    });
-  }, [width]);
-
-  /* ------------ الحفظ / التالى ------------ */
   const isReady = !!marker;
   const handleSave = () => isReady && navigation.navigate("ClientLoginScreen");
 
-  /* ------------ render ------------ */
   return (
     <SafeAreaView style={styles.safe}>
-      {/* ===== Header ===== */}
       <CustomHeader
         title="حدد موقعك"
         onBack={() => navigation.goBack()}
-        activeIndex={2}
+        showTabs={false}
+        showCurve={false}
+        bgColor="#FFFFFF"
       />
 
-      {/* ===== Body ===== */}
       {loading || !region ? (
         <View style={styles.loader}>
           <ActivityIndicator size="large" color="#004AAD" />
         </View>
       ) : (
         <>
-          {/* ===== حقل البحث ===== */}
           <View style={styles.searchWrap}>
             <CustomInput
               placeholder="بحث"
@@ -142,7 +125,9 @@ export default function IndustrialLocationScreen() {
               onChangeText={setSearch}
               onSubmitEditing={handleCitySearch}
               deferError
-              inputStyle={{ paddingRight: 52 }}
+              inputStyle={{
+                paddingRight: 52,
+              }}
             />
             <TouchableOpacity onPress={handleCitySearch} style={styles.icHit}>
               {searchLoading ? (
@@ -153,17 +138,12 @@ export default function IndustrialLocationScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* ===== Map ===== */}
           <View style={styles.mapBox}>
             <MapView
               style={styles.map}
-              initialRegion={region}
               region={region}
-              onRegionChangeComplete={(reg) => {
-                setRegion(reg);
-                setCenterRegion(reg);
-              }}
               onLongPress={(e) => setMarker(e.nativeEvent.coordinate)}
+              onRegionChangeComplete={setRegion}
             >
               {marker && (
                 <Marker
@@ -173,35 +153,12 @@ export default function IndustrialLocationScreen() {
                 />
               )}
             </MapView>
-            {/* ===== Crosshair Button ===== */}
-            <TouchableOpacity
-              style={styles.crosshairButton}
-              onPress={async () => {
-                try {
-                  setLoading(true);
-                  const {
-                    coords: { latitude, longitude },
-                  } = await Location.getCurrentPositionAsync({});
-                  const newRegion = {
-                    latitude,
-                    longitude,
-                    latitudeDelta: 0.015,
-                    longitudeDelta: 0.015,
-                  };
-                  setRegion(newRegion);
-                  setMarker({ latitude, longitude });
-                } catch (error) {
-                  alert("فشل في تحديد الموقع");
-                } finally {
-                  setLoading(false);
-                }
-              }}
-            >
+
+            <TouchableOpacity style={styles.locateBtn} onPress={locateMe}>
               <Icon name="crosshair" size={22} color="#004AAD" />
             </TouchableOpacity>
           </View>
 
-          {/* ===== Save Button ===== */}
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
           >
@@ -211,7 +168,7 @@ export default function IndustrialLocationScreen() {
                 onPress={handleSave}
                 disabled={!isReady}
                 type={isReady ? "filled" : "outline"}
-                textStyle={{ fontFamily: Fonts.BOLD }}
+                textStyle={{ fontFamily: Fonts.BOLD, fontSize: 18 }}
               />
             </View>
           </KeyboardAvoidingView>
@@ -221,20 +178,37 @@ export default function IndustrialLocationScreen() {
   );
 }
 
-/* -------- Styles -------- */
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: "#fff",
   },
-
-  headerTitle: {
-    fontSize: 18,
-    fontFamily: Fonts.BOLD,
-    marginRight: 8,
+  headerContainer: {
+    backgroundColor: "#fff",
+    paddingTop: Platform.OS === "android" ? 60 : 70,
+    paddingBottom: 12,
   },
-
-  /* search */
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    paddingHorizontal: 16,
+  },
+  title: {
+    fontSize: 20,
+    color: "#000",
+    marginLeft: 10,
+    marginRight: 10,
+    fontFamily: Fonts.BOLD,
+  },
+  backCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#004AAD",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   searchWrap: {
     marginTop: 16,
     marginHorizontal: 20,
@@ -242,33 +216,35 @@ const styles = StyleSheet.create({
   },
   icHit: {
     position: "absolute",
-    right: 30,
-    top: 12,
+    right: 15,
+    top: 14,
   },
-
   mapBox: {
     marginHorizontal: 20,
-    marginTop: 8,
+    marginTop: 12,
     borderRadius: 16,
     overflow: "hidden",
-    aspectRatio: 0.7,
-    position: "relative",
+    aspectRatio: 0.6,
   },
-  crosshairButton: {
+  map: {
+    flex: 1,
+  },
+  locateBtn: {
     position: "absolute",
     bottom: 20,
     right: 30,
     backgroundColor: "#fff",
-    padding: 12,
+    padding: 10,
     borderRadius: 30,
-    elevation: 5,
+    elevation: 4,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 1, height: 1 },
+    shadowRadius: 3,
   },
-
-  map: { flex: 1 },
-
-  loader: { flex: 1, justifyContent: "center", alignItems: "center" },
+  loader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 });

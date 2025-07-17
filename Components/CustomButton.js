@@ -1,5 +1,6 @@
 import React from "react";
 import { TouchableOpacity, Text, StyleSheet } from "react-native";
+import { Fonts } from "../constants";
 
 const CustomButton = ({
   title,
@@ -34,7 +35,8 @@ const CustomButton = ({
         style={[
           {
             color: isFilled ? "#fff" : color,
-            fontSize: 16,
+            fontSize: 18,
+            fontFamily: Fonts.BOLD,
           },
           textStyle, //* ibrahim customization button edits *//
         ]}

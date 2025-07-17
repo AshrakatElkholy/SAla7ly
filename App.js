@@ -17,34 +17,38 @@ import LoginScreen from "./screens/user_screens/login";
 import IndustrialSpecialtyScreen from "./screens/industrial_screens/onboarding/IndustrialSpecialtyScreen";
 import IndustrialIdentityScreen from "./screens/industrial_screens/onboarding/IndustrialIdentityScreen";
 import IndustrialLocationScreen from "./screens/industrial_screens/onboarding/IndustrialLocationScreen";
+import UserLocationScreen from "./screens/industrial_screens/onboarding/UserLocationScreen";
 
 // Fonts
 import { Fonts } from "./constants";
-import {
-  useFonts,
-  Cairo_400Regular,
-  Cairo_700Bold,
-} from "@expo-google-fonts/cairo";
+import * as Font from "expo-font";
 
 const Stack = createStackNavigator();
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [splashVisible, setSplashVisible] = useState(true);
-
-  const [fontsLoaded] = useFonts({
-    Cairo_400Regular,
-    Cairo_700Bold,
-  });
+  //
+  const [fontsLoaded, setFontsLoaded] = useState(false);
 
   useEffect(() => {
-    // Simulate splash screen delay
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-      setSplashVisible(false);
-    }, 2000);
+    const loadFontsAndSplash = async () => {
+      await Font.loadAsync({
+        "Almarai-Light": require("./assets/fonts/Almarai/Almarai-Light.ttf"),
+        "Almarai-Regular": require("./assets/fonts/Almarai/Almarai-Regular.ttf"),
+        "Almarai-Bold": require("./assets/fonts/Almarai/Almarai-Bold.ttf"),
+        "Almarai-ExtraBold": require("./assets/fonts/Almarai/Almarai-ExtraBold.ttf"),
+      });
 
-    return () => clearTimeout(timer);
+      setFontsLoaded(true);
+      // Simulate splash screen delay
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+        setSplashVisible(false);
+      }, 2000);
+      return () => clearTimeout(timer);
+    };
+    loadFontsAndSplash();
   }, []);
 
   if (!fontsLoaded || splashVisible) {
@@ -62,7 +66,7 @@ function App() {
 
   Text.defaultProps ||= {};
   Text.defaultProps.style ||= {};
-  Text.defaultProps.style.fontFamily = "Cairo_400Regular";
+  Text.defaultProps.style.fontFamily = "Almarai-Regular";
 
   return (
     <NavigationContainer>
@@ -96,6 +100,7 @@ function App() {
           name="IndustrialLocationScreen"
           component={IndustrialLocationScreen}
         />
+        <Stack.Screen name="UserLocation" component={UserLocationScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

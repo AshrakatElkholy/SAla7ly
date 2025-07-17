@@ -1,6 +1,7 @@
 // import React from "react";
 import React, { useState } from "react";
 import { View, Text, TextInput, StyleSheet } from "react-native";
+import { Fonts } from "../constants";
 
 const CustomInput = ({
   ///// ** ibrahim CustomInput Component edit** /////
@@ -69,7 +70,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: Fonts.REGULAR,
     color: "#333",
     marginBottom: 8,
     textAlign: "right",
@@ -80,6 +81,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
+    fontFamily: "Almarai-Regular",
     fontSize: 16,
     color: "#333",
     // backgroundColor: '#fff',

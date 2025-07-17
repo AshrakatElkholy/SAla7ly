@@ -22,8 +22,8 @@ import { useNavigation } from "@react-navigation/native";
 
 /* ⬇️ Fonts + TabsHeader component */
 import { Fonts } from "../../../constants";
-import TabsHeader from "../../../Components/TabsHeader";
 import CustomButton from "../../../Components/CustomButton";
+import CustomHeader from "../../../Components/CustomHeader";
 
 /* ---------- Re‑usable upload card ---------- */
 const UploadCard = ({ label, imageUri, onAdd, onRemove }) => (
@@ -38,7 +38,7 @@ const UploadCard = ({ label, imageUri, onAdd, onRemove }) => (
     ) : (
       <>
         <View style={styles.iconCircle}>
-          <Icon name="image" size={28} color="#004AAD" />
+          <Icon name="image" size={24} color="#004AAD" />
         </View>
         <Text style={styles.cardLabel}>{label}</Text>
         <TouchableOpacity style={styles.addBtn} onPress={onAdd}>
@@ -105,21 +105,15 @@ const IndustrialIdentityScreen = () => {
   return (
     <SafeAreaView style={styles.safe}>
       {/* ===== Header ===== */}
-      <View style={dyn.headerBg}>
-        <View style={dyn.headerRow}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Icon name="arrow-right" size={24} color="#000" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>تفاصيل صنايعي</Text>
-        </View>
-
-        {/* ✅ TabsHeader: index 1 = الشاشة الحالية */}
-        <TabsHeader activeIndex={1} />
-      </View>
+      <CustomHeader
+        title="تفاصيل صنايعى"
+        onBack={() => navigation.goBack()}
+        activeIndex={1}
+      />
 
       {/* ===== Body ===== */}
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        style={{ flex: 2 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
       >
@@ -154,7 +148,7 @@ const IndustrialIdentityScreen = () => {
             onPress={handleNext}
             disabled={!isReady}
             type={isReady ? "filled" : "outline"}
-            textStyle={{ fontFamily: Fonts.BOLD }}
+            textStyle={{ fontFamily: Fonts.BOLD, fontSize: 18 }}
           />
         </ScrollView>
       </KeyboardAvoidingView>
@@ -172,12 +166,24 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.BOLD,
     marginRight: 8,
   },
+  backCircle: {
+    padding: 6,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
 
   /* section headings */
   section: {
     alignSelf: "flex-end",
-    fontSize: 16,
-    fontFamily: Fonts.BOLD,
+    fontSize: 18,
+    fontFamily: Fonts.REGULAR,
     color: "#333",
     marginTop: 24,
     marginBottom: 8,
@@ -195,8 +201,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   iconCircle: {
-    width: 64,
-    height: 64,
+    width: 45,
+    height: 45,
     borderRadius: 32,
     backgroundColor: "#E6EEF8",
     justifyContent: "center",
