@@ -20,6 +20,8 @@ import IndustrialLocationScreen from "./screens/industrial_screens/onboarding/In
 import Done from "./screens/acception-regection_screens/Done";
 import Pending from "./screens/acception-regection_screens/pending";
 import Refused from "./screens/acception-regection_screens/refused";
+import UserLocationScreen from "./screens/industrial_screens/onboarding/UserLocationScreen";
+
 // Fonts
 // import { Fonts } from './constants';
 import {
@@ -27,26 +29,35 @@ import {
   Cairo_400Regular,
   Cairo_700Bold,
 } from "@expo-google-fonts/cairo";
+import { Fonts } from "./constants";
+import * as Font from "expo-font";
 
 const Stack = createStackNavigator();
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [splashVisible, setSplashVisible] = useState(true);
-
-  const [fontsLoaded] = useFonts({
-    Cairo_400Regular,
-    Cairo_700Bold,
-  });
+  //
+  const [fontsLoaded, setFontsLoaded] = useState(false);
 
   useEffect(() => {
-    // Simulate splash screen delay
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-      setSplashVisible(false);
-    }, 2000);
+    const loadFontsAndSplash = async () => {
+      await Font.loadAsync({
+        "Almarai-Light": require("./assets/fonts/Almarai/Almarai-Light.ttf"),
+        "Almarai-Regular": require("./assets/fonts/Almarai/Almarai-Regular.ttf"),
+        "Almarai-Bold": require("./assets/fonts/Almarai/Almarai-Bold.ttf"),
+        "Almarai-ExtraBold": require("./assets/fonts/Almarai/Almarai-ExtraBold.ttf"),
+      });
 
-    return () => clearTimeout(timer);
+      setFontsLoaded(true);
+      // Simulate splash screen delay
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+        setSplashVisible(false);
+      }, 2000);
+      return () => clearTimeout(timer);
+    };
+    loadFontsAndSplash();
   }, []);
 
   if (!fontsLoaded || splashVisible) {
@@ -64,7 +75,7 @@ function App() {
 
   Text.defaultProps ||= {};
   Text.defaultProps.style ||= {};
-  Text.defaultProps.style.fontFamily = "Cairo_400Regular";
+  Text.defaultProps.style.fontFamily = "Almarai-Regular";
 
   return (
     <NavigationContainer>
@@ -101,6 +112,7 @@ function App() {
         <Stack.Screen name="PendingScreen" component={Pending} />
         <Stack.Screen name="DoneScreen" component={Done} />
         <Stack.Screen name="RefusedScreen" component={Refused} />
+        <Stack.Screen name="UserLocation" component={UserLocationScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

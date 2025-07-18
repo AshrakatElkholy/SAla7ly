@@ -15,11 +15,13 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import Icon from "react-native-vector-icons/Feather";
 import { useNavigation } from "@react-navigation/native";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 import { Fonts } from "../../../constants";
 import TabsHeader from "../../../Components/TabsHeader";
 import CustomInput from "../../../Components/CustomInput";
 import CustomButton from "../../../Components/CustomButton";
+import CustomHeader from "../../../Components/CustomHeader";
 
 /* ---------- Upload card ---------- */
 const UploadCard = ({ imageUri, onAdd, onRemove }) => (
@@ -34,7 +36,7 @@ const UploadCard = ({ imageUri, onAdd, onRemove }) => (
     ) : (
       <>
         <View style={styles.iconCircle}>
-          <Icon name="image" size={28} color="#004AAD" />
+          <Icon name="image" size={24} color="#004AAD" />
         </View>
         <Text style={styles.cardLabel}>اضغط لاضافه صوره من اعمالك</Text>
         <TouchableOpacity style={styles.addBtn} onPress={onAdd}>
@@ -97,19 +99,11 @@ export default function IndustrialSpecialtyScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       {/* ===== Header ===== */}
-      <View style={dyn.headerBg}>
-        <View style={dyn.headerRow}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Icon name="arrow-right" size={24} color="#000" />
-          </TouchableOpacity>
-          <Text
-            style={{ fontSize: 18, fontFamily: Fonts.BOLD, marginRight: 8 }}
-          >
-            تفاصيل صنايعي
-          </Text>
-        </View>
-        <TabsHeader activeIndex={0} />
-      </View>
+      <CustomHeader
+        title="تفاصيل صنايعى"
+        onBack={() => navigation.goBack()}
+        activeIndex={0}
+      />
 
       {/* ===== Body ===== */}
       <KeyboardAvoidingView
@@ -128,8 +122,9 @@ export default function IndustrialSpecialtyScreen() {
             onChangeText={setSpecialty}
             error={!specialty.trim() && "يرجى إدخال التخصص"}
             deferError
-            labelStyle={{ fontFamily: Fonts.BOLD }}
-            inputStyle={{ fontFamily: Fonts.REGULAR }}
+            labelStyle={{ fontFamily: Fonts.REGULAR, fontSize: 18 }}
+
+            // inputStyle={{ fontFamily: Fonts.REGULAR }}
           />
 
           {/* أعمالك */}
@@ -182,8 +177,8 @@ export default function IndustrialSpecialtyScreen() {
             style={{ marginTop: 2 }}
             error={!bio.trim() && "يرجى إدخال النبذة"}
             deferError
-            labelStyle={{ fontFamily: Fonts.BOLD }}
-            inputStyle={{ fontFamily: Fonts.REGULAR }}
+            labelStyle={{ fontFamily: Fonts.REGULAR, fontSize: 18 }}
+            // inputStyle={{ fontFamily: Fonts.REGULAR }}
           />
 
           {/* التالى */}
@@ -204,12 +199,33 @@ export default function IndustrialSpecialtyScreen() {
 const styles = StyleSheet.create({
   section: {
     alignSelf: "flex-end",
-    fontSize: 16,
-    fontFamily: Fonts.BOLD,
+    fontSize: 18,
+    fontFamily: Fonts.REGULAR,
     color: "#333",
     marginTop: 24,
     marginBottom: 8,
   },
+  //////header
+  headerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  backButton: {
+    width: 22,
+    height: 22,
+    borderRadius: 18,
+    backgroundColor: "#004aad",
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+
   /* card + thumbnails ... fontFamily */
   card: {
     borderWidth: 1.5,
@@ -222,8 +238,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   iconCircle: {
-    width: 64,
-    height: 64,
+    width: 45,
+    height: 45,
     borderRadius: 32,
     backgroundColor: "#E6EEF8",
     justifyContent: "center",
@@ -269,5 +285,5 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 20,
   },
-  addMoreText: { color: "#004AAD", fontFamily: Fonts.REGULAR },
+  addMoreText: { color: "#004AAD", fontFamily: Fonts.BOLD, fontSize: 14 },
 });

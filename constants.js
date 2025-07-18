@@ -1,5 +1,7 @@
 // constants.js
 export const Fonts = {
-  REGULAR: "Cairo_400Regular",
-  BOLD: "Cairo_700Bold",
+  LIGHT: "Almarai-Light", //300
+  REGULAR: "Almarai-Regular", //400
+  BOLD: "Almarai-Bold", //700
+  EXTRABOLD: "Almarai-ExtraBold", //800
 };

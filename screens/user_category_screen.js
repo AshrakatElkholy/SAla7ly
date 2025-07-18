@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Image, StyleSheet, TouchableOpacity, Text } from "react-native";
 import CustomButton from "../Components/CustomButton";
+import { Fonts } from "../constants";
 
 function user_category_screen({ navigation }) {
   const [selectedImage, setSelectedImage] = useState(null);
@@ -22,7 +23,7 @@ function user_category_screen({ navigation }) {
     }
     // Instead of navigation, just log or alert the selected choice
     if (selectedImage === "client") {
-      navigation.navigate("IndustrialLocationScreen"); // للعميل → شاشة اللوكيشن
+      navigation.navigate("UserLocation"); // للعميل → شاشة اللوكيشن
     } else {
       navigation.navigate("IndustrialSpecialtyScreen"); // للصنايعي → شاشة التخصصات
     }
@@ -71,7 +72,7 @@ function user_category_screen({ navigation }) {
               style={styles.brandImage}
               resizeMode="contain"
             />
-            <Text style={styles.imageLabel}>عميل</Text>
+            <Text style={styles.imageLabel}>مستخدم</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -96,7 +97,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: "700",
+    fontFamily: Fonts.BOLD,
     color: "#000000",
     textAlign: "center",
     marginTop: 20,
@@ -136,7 +137,7 @@ const styles = StyleSheet.create({
   },
   imageLabel: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontFamily: Fonts.BOLD,
     color: "#000000",
     textAlign: "center",
   },

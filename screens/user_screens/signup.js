@@ -11,8 +11,9 @@ import {
 import SignupHeaderCard from "../../Components/SignupHeaderCard";
 import CustomInput from "../../Components/CustomInput";
 import CustomButton from "../../Components/CustomButton";
+import { Fonts } from "../../constants";
+
 import { TouchableOpacity } from "react-native";
-import { Fonts } from '../../constants';
 function SignupScreen({ navigation }) {
   // State for each input
   const [name, setName] = useState("");
@@ -83,7 +84,7 @@ function SignupScreen({ navigation }) {
       >
         <SignupHeaderCard
           onBack={() => navigation.goBack()}
-          title="تسجيل جديد"
+          title="انشاء حساب "
           subtitle="أدخل بياناتك لإنشاء حساب جديد في صلحى"
         />
         <View style={styles.formContainer}>
@@ -154,12 +155,22 @@ function SignupScreen({ navigation }) {
               onPress={() => navigation.navigate("ClientLoginScreen")}
             >
               <Text
-                style={{ color: "#1566C1", fontSize: 14, fontWeight: "bold", fontFamily: 'Fonts.REGULAR' }}
+                style={{
+                  color: "#1566C1",
+                  fontSize: 16,
+                  fontFamily: Fonts.REGULAR,
+                }}
               >
                 تسجيل الدخول
               </Text>
             </TouchableOpacity>
-            <Text style={{ fontSize: 14, color: "#444", fontFamily: 'Fonts.REGULAR' }}>
+            <Text
+              style={{
+                color: "#444",
+                fontSize: 16,
+                fontFamily: Fonts.REGULAR,
+              }}
+            >
               {" "}
               قم بتسجيل دخول ؟
             </Text>
@@ -169,7 +180,12 @@ function SignupScreen({ navigation }) {
             title="تابع"
             onPress={handleSignup}
             type="filled"
-            style={{ marginBottom: 16 }}
+            style={{
+              paddingTop: 10,
+              marginBottom: 50,
+
+              fontSize: 18,
+            }}
           />
         </View>
       </ScrollView>
@@ -184,7 +200,7 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     flex: 1,
-    padding: 16,
+    padding: 18,
     backgroundColor: "#fff",
   },
 });

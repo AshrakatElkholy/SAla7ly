@@ -52,12 +52,12 @@ function LoginScreen({ navigation }) {
       style={{ flex: 1, backgroundColor: '#fff' }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <SignupHeaderCard
-        onBack={() => navigation.goBack()}
-        title=" تسجيل دخول "
-        subtitle="قم بتسجيل دخول للحصول على خدمه كامله"
-      />
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+        <SignupHeaderCard
+          onBack={() => navigation.goBack()}
+          title=" تسجيل دخول "
+          subtitle="قم بتسجيل دخول للحصول على خدمه كامله"
+        />
         <View style={{ flex: 1, padding: 16 }}>
           <CustomInput
             label="البريد الإلكتروني"
