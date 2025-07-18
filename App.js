@@ -20,6 +20,8 @@ import IndustrialLocationScreen from "./screens/industrial_screens/onboarding/In
 import Done from "./screens/acception-regection_screens/Done";
 import Pending from "./screens/acception-regection_screens/pending";
 import Refused from "./screens/acception-regection_screens/refused";
+import HomeScreen from "./screens/HomeScreen";
+
 // Fonts
 // import { Fonts } from './constants';
 import {
@@ -85,6 +87,10 @@ function App() {
         <Stack.Screen name="ClientLoginScreen" component={LoginScreen} />
 
         {/* Add other screens here */}
+        <Stack.Screen
+          name="HomeScreen"
+          component={HomeScreen}
+        />
         <Stack.Screen
           name="IndustrialSpecialtyScreen"
           component={IndustrialSpecialtyScreen}
