@@ -10,6 +10,7 @@ import {
   SafeAreaView,
 } from "react-native";
 import { Entypo, FontAwesome, Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
 export default function ServiceDetailsScreen() {
   const services = [
@@ -32,6 +33,8 @@ export default function ServiceDetailsScreen() {
       image: require("../assets/providerBG.png"),
     },
   ];
+
+  const navigation = useNavigation();
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView style={styles.container}>
@@ -100,17 +103,6 @@ export default function ServiceDetailsScreen() {
 
           {/* خدمات أخرى */}
           <Text style={styles.sectionTitle}>خدمات أخرى</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {/* <View style={styles.otherServiceCard}>
-              <Image
-                source={require("../assets/providerBG.png")}
-                style={styles.otherServiceImage}
-              />
-              <Text style={styles.otherRating}>⭐ 4.5 (51)</Text>
-            </View> */}
-
-            {/* Best Services */}
-          </ScrollView>
         </View>
         <View style={styles.sectionContainer}>
           <ScrollView
@@ -164,7 +156,13 @@ export default function ServiceDetailsScreen() {
         {/* الحجز والسعر */}
         <View style={styles.footer}>
           <TouchableOpacity style={styles.bookButtonFooter}>
-            <Text style={styles.bookButtonTextFooter}>احجز الآن</Text>
+            {/* onPress hena to show MessagesScreen for testing and show chats screen bs we should remove it  */}
+            <Text
+              style={styles.bookButtonTextFooter}
+              onPress={() => navigation.navigate("MessagesScreen")}
+            >
+              احجز الآن
+            </Text>
           </TouchableOpacity>
           <Text style={styles.priceRange}>(500-600)م.ج</Text>
         </View>

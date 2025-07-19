@@ -28,6 +28,12 @@ import {
   Cairo_700Bold,
 } from "@expo-google-fonts/cairo";
 import ServiceDetailsScreen from "./screens/ServiceDetailsScreen";
+import MessagesScreen from "./screens/Chats/message-empty";
+import MessagesListScreen from "./screens/Chats/chats";
+import ChatScreen from "./screens/Chats/ChatScreen";
+// import MessagesScreen from "./screens/Chats/message-empty";
+// import MessagesListScreen from "./screens/Chats/chats";
+// import ChatScreen from "./screens/Chats/ChatScreen";
 
 const Stack = createStackNavigator();
 
@@ -105,6 +111,13 @@ function App() {
         <Stack.Screen name="PendingScreen" component={Pending} />
         <Stack.Screen name="DoneScreen" component={Done} />
         <Stack.Screen name="RefusedScreen" component={Refused} />
+
+        <Stack.Screen name="MessagesScreen" component={MessagesScreen} />
+        <Stack.Screen
+          name="MessagesListScreen"
+          component={MessagesListScreen}
+        />
+        <Stack.Screen name="ChatScreen" component={ChatScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
