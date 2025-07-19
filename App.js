@@ -20,36 +20,41 @@ import IndustrialLocationScreen from "./screens/industrial_screens/onboarding/In
 import Done from "./screens/acception-regection_screens/Done";
 import Pending from "./screens/acception-regection_screens/pending";
 import Refused from "./screens/acception-regection_screens/refused";
+import HomeScreen from "./screens/HomeScreen";
+import favoriteProviderScreen from "./screens/favoriteScreens/favoriteProviderScreen.js";
+import favoriteServiceScreen from "./screens/favoriteScreens/favoriteServiceScreen.js";
 import UserLocationScreen from "./screens/industrial_screens/onboarding/UserLocationScreen";
 
 // Fonts
-// import { Fonts } from './constants';
+import * as Font from 'expo-font';
 import {
   useFonts,
   Cairo_400Regular,
   Cairo_700Bold,
 } from "@expo-google-fonts/cairo";
-import { Fonts } from "./constants";
-import * as Font from "expo-font";
 
 const Stack = createStackNavigator();
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [splashVisible, setSplashVisible] = useState(true);
-  //
   const [fontsLoaded, setFontsLoaded] = useState(false);
 
   useEffect(() => {
     const loadFontsAndSplash = async () => {
-      await Font.loadAsync({
-        "Almarai-Light": require("./assets/fonts/Almarai/Almarai-Light.ttf"),
-        "Almarai-Regular": require("./assets/fonts/Almarai/Almarai-Regular.ttf"),
-        "Almarai-Bold": require("./assets/fonts/Almarai/Almarai-Bold.ttf"),
-        "Almarai-ExtraBold": require("./assets/fonts/Almarai/Almarai-ExtraBold.ttf"),
-      });
-
-      setFontsLoaded(true);
+      try {
+        await Font.loadAsync({
+          "Almarai-Light": require("./assets/fonts/Almarai/Almarai-Light.ttf"),
+          "Almarai-Regular": require("./assets/fonts/Almarai/Almarai-Regular.ttf"),
+          "Almarai-Bold": require("./assets/fonts/Almarai/Almarai-Bold.ttf"),
+          "Almarai-ExtraBold": require("./assets/fonts/Almarai/Almarai-ExtraBold.ttf"),
+        });
+        setFontsLoaded(true);
+      } catch (error) {
+        console.log('Font loading error:', error);
+        setFontsLoaded(true); // Continue without fonts
+      }
+      
       // Simulate splash screen delay
       const timer = setTimeout(() => {
         setIsLoading(false);
@@ -73,10 +78,6 @@ function App() {
     );
   }
 
-  Text.defaultProps ||= {};
-  Text.defaultProps.style ||= {};
-  Text.defaultProps.style.fontFamily = "Almarai-Regular";
-
   return (
     <NavigationContainer>
       <StatusBar style="light" backgroundColor="#004AAD" />
@@ -92,10 +93,26 @@ function App() {
           name="UserCategoryScreen"
           component={UserCategoryScreen}
         />
-
         <Stack.Screen name="ClientLoginScreen" component={LoginScreen} />
-
-        {/* Add other screens here */}
+        <Stack.Screen
+          name="HomeScreen"
+          component={HomeScreen}
+        />
+        <Stack.Screen
+          name="favoriteServiceScreen"
+          component={favoriteServiceScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="favoriteProviderScreen"
+          component={favoriteProviderScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="categoryScreen"
+          component={UserCategoryScreen}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen
           name="IndustrialSpecialtyScreen"
           component={IndustrialSpecialtyScreen}

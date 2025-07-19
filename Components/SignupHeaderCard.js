@@ -9,7 +9,6 @@ import {
   StatusBar,
   useWindowDimensions,
 } from "react-native";
-import Svg, { Line } from "react-native-svg";
 
 ////* Importing Fonts from constants */
 import { Fonts } from "../constants";
@@ -32,8 +31,6 @@ const SignupHeaderCard = ({
   const targetLineIndex = 3;
   const tabsTopPosition = targetLineIndex * gridSize;
   const headerHeight = Math.max(tabsTopPosition + 60, width * 0.42);
-  const numVLines = Math.ceil(width / gridSize) + 1;
-  const numHLines = Math.ceil(headerHeight / gridSize) + 1;
 
   const topPadding =
     Platform.OS === "android" ? StatusBar.currentHeight || 24 : 44;
@@ -54,45 +51,6 @@ const SignupHeaderCard = ({
         style,
       ]}
     >
-      {/* Horizontal lines */}
-      <Svg
-        height={headerHeight + 100}
-        width={width}
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: headerHeight + 100,
-        }}
-      >
-        {/* Vertical lines */}
-        {Array.from({ length: numVLines }).map((_, i) => (
-          <Line
-            key={`v-${i}`}
-            x1={i * gridSize}
-            y1="0"
-            x2={i * gridSize}
-            y2={headerHeight + 100}
-            stroke="#dbe3f1"
-            strokeWidth="1"
-          />
-        ))}
-
-        {/* Horizontal lines */}
-        {Array.from({ length: numHLines }).map((_, i) => (
-          <Line
-            key={`h-${i}`}
-            x1="0"
-            y1={i * gridSize}
-            x2={width}
-            y2={i * gridSize}
-            stroke="#dbe3f1"
-            strokeWidth="1"
-          />
-        ))}
-      </Svg>
-
       <View style={styles.arrowRow}>
         <TouchableOpacity style={styles.arrowButton} onPress={onBack}>
           <Ionicons name="arrow-forward" size={20} color="#fff" />

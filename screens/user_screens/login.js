@@ -3,6 +3,7 @@ import { View, Alert, ScrollView, Text, TouchableOpacity, StyleSheet, KeyboardAv
 import CustomInput from '../../Components/CustomInput';
 import CustomButton from '../../Components/CustomButton';
 import SignupHeaderCard from '../../Components/SignupHeaderCard';
+import HomeScreen from '../HomeScreen';
 function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -41,7 +42,7 @@ function LoginScreen({ navigation }) {
       });
       const result = await response.json();
       Alert.alert('تم تسجيل الدخول!', 'تم إرسال البيانات بنجاح.');
-      // navigation.navigate('SomeUserHomeScreen'); // Uncomment and set your home screen
+      navigation.navigate('HomeScreen');
     } catch (error) {
       Alert.alert('خطأ', 'حدث خطأ أثناء تسجيل الدخول');
     }
