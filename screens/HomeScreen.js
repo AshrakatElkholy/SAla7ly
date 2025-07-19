@@ -136,7 +136,7 @@ const HomeScreen = () => {
                         {serviceCategories.map((category) => (
                             <TouchableOpacity key={category.id} style={styles.categoryItem}>
                                 <View style={styles.categoryIcon}>
-                                    <FontAwesome5 name={category.icon} size={24} color="#0072E6" />
+                                    <FontAwesome5 name={category.icon} size={24} color="#004AAD" />
                                 </View>
                                 <Text style={styles.categoryText}>{category.name}</Text>
                             </TouchableOpacity>
