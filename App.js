@@ -21,6 +21,8 @@ import Done from "./screens/acception-regection_screens/Done";
 import Pending from "./screens/acception-regection_screens/pending";
 import Refused from "./screens/acception-regection_screens/refused";
 import HomeScreen from "./screens/HomeScreen";
+import favoriteProviderScreen from "./screens/favoriteScreens/favoriteProviderScreen.js";
+
 
 // Fonts
 // import { Fonts } from './constants';
@@ -29,6 +31,10 @@ import {
   Cairo_400Regular,
   Cairo_700Bold,
 } from "@expo-google-fonts/cairo";
+// import favoriteServiceScreen from "./screens/favoriteServiceScreen";
+import serviceProviderScreen from "./screens/serviceProviderScreen";
+import categoryScreen from "./screens/categoryScreen.js";
+import favoriteServiceScreen from "./screens/favoriteScreens/favoriteServiceScreen.js";
 
 const Stack = createStackNavigator();
 
@@ -91,6 +97,25 @@ function App() {
           name="HomeScreen"
           component={HomeScreen}
         />
+        <Stack.Screen
+          name="favoriteServiceScreen"
+          component={favoriteServiceScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="favoriteProviderScreen"
+          component={favoriteProviderScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="serviceProviderScreen"
+          component={serviceProviderScreen}
+        />
+        <Stack.Screen
+          name="categoryScreen"
+          component={categoryScreen}
+        />
+
         <Stack.Screen
           name="IndustrialSpecialtyScreen"
           component={IndustrialSpecialtyScreen}
