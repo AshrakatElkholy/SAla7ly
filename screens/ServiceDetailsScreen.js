@@ -11,6 +11,7 @@ import {
   Alert,
 } from "react-native";
 import { Entypo, FontAwesome, Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
 export default function ServiceDetailsScreen({ navigation }) {
   const services = [
@@ -144,17 +145,6 @@ export default function ServiceDetailsScreen({ navigation }) {
 
           {/* خدمات أخرى */}
           <Text style={styles.sectionTitle}>خدمات أخرى</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {/* <View style={styles.otherServiceCard}>
-              <Image
-                source={require("../assets/providerBG.png")}
-                style={styles.otherServiceImage}
-              />
-              <Text style={styles.otherRating}>⭐ 4.5 (51)</Text>
-            </View> */}
-
-            {/* Best Services */}
-          </ScrollView>
         </View>
         <View style={styles.sectionContainer}>
           <ScrollView

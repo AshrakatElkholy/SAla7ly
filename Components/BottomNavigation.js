@@ -25,14 +25,21 @@ const BottomNavigation = ({ navigation, activeTab, favoriteServices = [] }) => {
                 <Text style={[styles.navText, activeTab === 'favorites' && styles.activeNavText]}>المفضلة</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.navItem}>
-                <Icon name="message" size={24} color="#999" />
-                <Text style={styles.navText}>الرسائل</Text>
+            <TouchableOpacity 
+                style={[styles.navItem, activeTab === 'messages' && styles.activeNavItem]}
+                onPress={() => navigation.navigate('MessagesListScreen')}
+            >
+                <Icon 
+                    name="message" 
+                    size={24} 
+                    color={activeTab === 'messages' ? "#0A71CD" : "#999"} 
+                />
+                <Text style={[styles.navText, activeTab === 'messages' && styles.activeNavText]}>الرسائل</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
                 style={styles.navItem}
-                onPress={() => navigation.navigate('categoryScreen')}
+                onPress={() => navigation.navigate('ServicesCategoryScreen')}
             >
                 <FontAwesome5
                     name="th-large"

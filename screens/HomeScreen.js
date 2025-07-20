@@ -125,7 +125,7 @@ const HomeScreen = () => {
                     <View style={styles.sectionHeader}>
                         <TouchableOpacity
                             style={styles.moreButton}
-                            onPress={() => navigation.navigate('categoryScreen')}
+                            onPress={() => navigation.navigate('ServicesCategoryScreen')}
                         >
                             <Text style={styles.moreButtonText}>المزيد</Text>
                         </TouchableOpacity>
@@ -134,7 +134,14 @@ const HomeScreen = () => {
 
                     <View style={styles.categoriesContainer}>
                         {serviceCategories.map((category) => (
-                            <TouchableOpacity key={category.id} style={styles.categoryItem}>
+                            <TouchableOpacity 
+                                key={category.id} 
+                                style={styles.categoryItem}
+                                onPress={() => navigation.navigate('serviceProviderScreen', {
+                                    categoryName: category.name,
+                                    categoryIcon: category.icon
+                                })}
+                            >
                                 <View style={styles.categoryIcon}>
                                     <FontAwesome5 name={category.icon} size={24} color="#004AAD" />
                                 </View>
