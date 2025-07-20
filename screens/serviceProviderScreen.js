@@ -181,6 +181,7 @@ const serviceProviderScreen = () => {
                             onToggleFavorite={toggleFavorite}
                             isFavorite={isFavorite(service)}
                             cardStyle="vertical"
+                            navigation={navigation}
                         />
                     ))}
 

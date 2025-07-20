@@ -60,6 +60,7 @@ const FavoriteServiceScreen = ({ navigation }) => {
                             onToggleFavorite={() => toggleFavorite(service)}
                             cardStyle="vertical"
                             showBookButton={true}
+                            navigation={navigation}
                         />
                     ))
                 )}

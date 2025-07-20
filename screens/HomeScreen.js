@@ -161,6 +161,7 @@ const HomeScreen = () => {
                                     onToggleFavorite={toggleFavorite}
                                     isFavorite={isFavorite(service)}
                                     cardStyle="horizontal"
+                                    navigation={navigation}
                                 />
                             ))}
                         </View>

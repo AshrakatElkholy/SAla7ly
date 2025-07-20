@@ -8,9 +8,16 @@ const ServiceCard = ({
     onToggleFavorite,
     isFavorite,
     cardStyle = 'horizontal',
-    showBookButton = true
+    showBookButton = true,
+    navigation
 }) => {
     const isHorizontal = cardStyle === 'horizontal';
+
+    const handleBookNow = () => {
+        if (navigation) {
+            navigation.navigate('ServiceDetailsScreen');
+        }
+    };
 
     return (
         <TouchableOpacity activeOpacity={0.9}>
@@ -53,7 +60,7 @@ const ServiceCard = ({
                     </View>
 
                     {showBookButton && (
-                        <TouchableOpacity style={styles.bookButton}>
+                        <TouchableOpacity style={styles.bookButton} onPress={handleBookNow}>
                             <Text style={styles.bookButtonText}>احجز الان</Text>
                         </TouchableOpacity>
                     )}
