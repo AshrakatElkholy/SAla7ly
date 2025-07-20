@@ -8,34 +8,39 @@ import {
     TouchableOpacity,
     TextInput,
     ScrollView,
-    I18nManager,
     Image,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { useNavigation } from '@react-navigation/native';
 import BottomNavigation from '../Components/BottomNavigation';
-
-
 
 const CategoryScreen = () => {
     const navigation = useNavigation();
     const [searchQuery, setSearchQuery] = useState('');
 
     const serviceCategories = [
-        { id: 1, name: 'نقاشة', icon: 'paint-brush' },
-        { id: 2, name: 'تجارة', icon: 'shopping-cart' },
-        { id: 3, name: 'سباكة', icon: 'wrench' },
-        { id: 4, name: 'كهرباء', icon: 'bolt' },
-        { id: 5, name: 'ميكانيكي', icon: 'tools' },
-        { id: 6, name: 'فني الأجهزة الكهربائية', icon: 'tv' },
-        { id: 7, name: 'كهربائي', icon: 'bolt' },
-        { id: 8, name: 'نقاشة', icon: 'paint-brush' },
+        { id: 1, name: 'نقاشة', icon: 'brush' },
+        { id: 2, name: 'حفر', icon: 'shovel' },
+        { id: 3, name: 'سباكة', icon: 'pipe-wrench' },
+        { id: 4, name: 'كهرباء', icon: 'flashlight' },
+        { id: 5, name: 'ميكانيكي', icon: 'tool-box' },
+        { id: 6, name: 'فني الأجهزة الكهربائية', icon: 'soldering' },
+        { id: 7, name: 'كهرباء', icon: 'flashlight' },
+        { id: 8, name: 'نقاشة', icon: 'brush' },
     ];
+
+    const iconImages = {
+        'brush': require('../assets/categoryIcons/brush.png'),
+        'shovel': require('../assets/categoryIcons/shovel.png'),
+        'pipe-wrench': require('../assets/categoryIcons/pipe-wrench.png'),
+        'flashlight': require('../assets/categoryIcons/flashlight.png'),
+        'tool-box': require('../assets/categoryIcons/tool-box.png'),
+        'soldering': require('../assets/categoryIcons/soldering.png'),
+    };
+
 
     const [favoriteServices, setFavoriteServices] = useState([]);
 
-    // Filter categories based on search query
     const filteredCategories = serviceCategories.filter(category =>
         category.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -92,21 +97,17 @@ const CategoryScreen = () => {
                                     onPress={() => handleCategoryPress(category)}
                                 >
                                     <View style={styles.categoryIcon}>
-                                        <FontAwesome5
-                                            name={category.icon}
-                                            size={30}
-                                            color="#0A71CD"
+                                        <Image
+                                            source={iconImages[category.icon]}
+                                            style={styles.iconImage}
                                         />
                                     </View>
                                 </TouchableOpacity>
                                 <Text style={styles.categoryText}>{category.name}</Text>
                             </View>
                         ))}
-
-
                     </View>
 
-                    {/* Show message if no categories found */}
                     {filteredCategories.length === 0 && (
                         <View style={styles.noResultsContainer}>
                             <Text style={styles.noResultsText}>لا توجد خدمات مطابقة لبحثك</Text>
@@ -142,13 +143,11 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
         alignItems: 'center',
     },
-
     headerTitle: {
         fontSize: 32,
         fontWeight: 'bold',
         color: '#333',
         textAlign: 'right',
-
     },
     searchContainer: {
         paddingHorizontal: 20,
@@ -213,10 +212,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#E6EDF7',
         elevation: 2,
         shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 1,
-        },
+        shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.22,
         shadowRadius: 2.22,
     },
@@ -224,26 +220,27 @@ const styles = StyleSheet.create({
         width: 60,
         height: 60,
         borderRadius: 8,
-        // backgroundColor: '#f0f8ff',
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 2,
+    },
+    iconImage: {
+        width: 60,
+        height: 50,
+        resizeMode: 'contain',
     },
     categoryWrapper: {
         width: '50%',
         alignItems: 'center',
         marginBottom: 20,
-        gap : 2
+        gap: 2,
     },
     categoryText: {
         fontSize: 22,
-        fontWeight :'bold',
+        fontWeight: '500',
         color: '#000',
         textAlign: 'center',
-        fontWeight: '500',
-        // marginTop: 2,
     },
-
     noResultsContainer: {
         alignItems: 'center',
         paddingVertical: 40,

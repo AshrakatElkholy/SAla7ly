@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -10,19 +10,58 @@ import {
 } from 'react-native';
 import ServiceCard from '../../Components/ServiceCard';
 import BottomNavigation from '../../Components/BottomNavigation';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const FavoriteServiceScreen = ({ navigation }) => {
     const route = useRoute();
-    const [favorites, setFavorites] = useState(route.params?.favorites || []);
+    const [favorites, setFavorites] = useState([]);
 
-    const toggleFavorite = (service) => {
-        const exists = favorites.some((fav) => fav.id === service.id);
-        if (exists) {
-            setFavorites((prev) => prev.filter((item) => item.id !== service.id));
-        } else {
-            setFavorites((prev) => [...prev, service]);
+    // Load favorites from AsyncStorage when component mounts or screen is focused
+    const loadFavorites = async () => {
+        try {
+            const storedFavorites = await AsyncStorage.getItem('favoriteServices');
+            if (storedFavorites) {
+                setFavorites(JSON.parse(storedFavorites));
+            }
+        } catch (error) {
+            console.error('Error loading favorites:', error);
         }
+    };
+
+    // Save favorites to AsyncStorage
+    const saveFavorites = async (favoritesToSave) => {
+        try {
+            await AsyncStorage.setItem('favoriteServices', JSON.stringify(favoritesToSave));
+        } catch (error) {
+            console.error('Error saving favorites:', error);
+        }
+    };
+
+    // Load favorites when component mounts
+    useEffect(() => {
+        loadFavorites();
+    }, []);
+
+    // Reload favorites every time the screen comes into focus
+    useFocusEffect(
+        React.useCallback(() => {
+            loadFavorites();
+        }, [])
+    );
+
+    const toggleFavorite = async (service) => {
+        const exists = favorites.some((fav) => fav.id === service.id);
+        let updatedFavorites;
+        
+        if (exists) {
+            updatedFavorites = favorites.filter((item) => item.id !== service.id);
+        } else {
+            updatedFavorites = [...favorites, service];
+        }
+        
+        setFavorites(updatedFavorites);
+        await saveFavorites(updatedFavorites);
     };
 
     return (
@@ -31,7 +70,6 @@ const FavoriteServiceScreen = ({ navigation }) => {
             <View style={styles.header}>
                 <Text style={styles.headerTitle}>المفضلة</Text>
             </View>
-
             {/* Tabs */}
             <View style={styles.tabContainer}>
                 <TouchableOpacity
@@ -40,12 +78,10 @@ const FavoriteServiceScreen = ({ navigation }) => {
                 >
                     <Text style={styles.tabText}>صنايعي</Text>
                 </TouchableOpacity>
-
                 <TouchableOpacity style={[styles.tab, styles.activeTab]}>
                     <Text style={[styles.tabText, styles.activeTabText]}>خدمات</Text>
                 </TouchableOpacity>
             </View>
-
             <ScrollView contentContainerStyle={styles.container}>
                 {favorites.length === 0 ? (
                     <View style={styles.emptyState}>
@@ -65,13 +101,11 @@ const FavoriteServiceScreen = ({ navigation }) => {
                     ))
                 )}
             </ScrollView>
-
             <BottomNavigation
                 navigation={navigation}
                 activeTab="favorites"
                 favoriteServices={favorites}
             />
-
         </SafeAreaView>
     );
 };

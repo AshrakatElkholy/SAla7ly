@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import { Image } from 'react-native';
 
 
 const BottomNavigation = ({ navigation, activeTab, favoriteServices = [] }) => {
@@ -17,22 +17,27 @@ const BottomNavigation = ({ navigation, activeTab, favoriteServices = [] }) => {
                 style={styles.navItem}
                 onPress={() => navigation.navigate('favoriteServiceScreen', { favorites: favoriteServices })}
             >
-                <FontAwesome
-                    name="bookmark"
-                    size={24}
-                    color={activeTab === 'favorites' ? "#0A71CD" : (favoriteServices.length > 0 ? "#0A71CD" : "#999")}
+                <Image
+                    source={
+                        activeTab === 'favorites' || favoriteServices.length > 0
+                            ? require('../assets/favorite-filled.png')
+                            : require('../assets/favorite-outline.png')
+                    }
+                    style={{ width: 24, height: 24, tintColor: activeTab === 'favorites' ? '#0A71CD' : '#999' }}
                 />
-                <Text style={[styles.navText, activeTab === 'favorites' && styles.activeNavText]}>المفضلة</Text>
+                <Text style={[styles.navText, activeTab === 'favorites' && styles.activeNavText]}>
+                    المفضلة
+                </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
+            <TouchableOpacity
                 style={[styles.navItem, activeTab === 'messages' && styles.activeNavItem]}
                 onPress={() => navigation.navigate('MessagesListScreen')}
             >
-                <Icon 
-                    name="message" 
-                    size={24} 
-                    color={activeTab === 'messages' ? "#0A71CD" : "#999"} 
+                <Icon
+                    name="message"
+                    size={24}
+                    color={activeTab === 'messages' ? "#0A71CD" : "#999"}
                 />
                 <Text style={[styles.navText, activeTab === 'messages' && styles.activeNavText]}>الرسائل</Text>
             </TouchableOpacity>

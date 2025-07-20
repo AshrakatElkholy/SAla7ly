@@ -1,6 +1,6 @@
 import React from 'react';
+import { Image } from 'react-native';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 const HorizontalCategoryList = ({ categories, onPressCategory }) => {
   return (
@@ -17,7 +17,7 @@ const HorizontalCategoryList = ({ categories, onPressCategory }) => {
             onPress={() => onPressCategory(category)}
           >
             <View style={styles.iconContainer}>
-              <FontAwesome5 name={category.icon} size={26} color="#004AAD" />
+              <Image source={category.icon} style={{ width:60,height: 45, resizeMode: 'contain' }} />
             </View>
           </TouchableOpacity>
           <Text style={styles.categoryText}>{category.name}</Text>

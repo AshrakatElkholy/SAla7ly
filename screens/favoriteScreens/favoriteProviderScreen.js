@@ -17,13 +17,13 @@ const initialProviders = [
         id: '1',
         name: 'أحمد محمد',
         address: 'محطه الرمل ,اسكندريه',
-        image: require('../../assets/service1.png'), // Make sure this image exists
+        image: require('../../assets/service1.jpg'), // Make sure this image exists
     },
     {
         id: '2',
         name: 'سعيد عبد الله',
         address: 'محطه الرمل ,اسكندريه',
-        image: require('../../assets/service1.png'), // Make sure this image exists
+        image: require('../../assets/service1.jpg'), // Make sure this image exists
     },
 ];
 

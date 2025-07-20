@@ -21,11 +21,19 @@ import ServiceCard from '../Components/ServiceCard';
 
 const HomeScreen = () => {
     const serviceCategories = [
-        { id: 1, name: 'نقاشة', icon: 'paint-brush' },
-        { id: 2, name: 'تجارة', icon: 'shopping-cart' },
-        { id: 3, name: 'سباكة', icon: 'wrench' },
-        { id: 4, name: 'كهرباء', icon: 'bolt' },
+        { id: 1, name: 'نقاشة', icon: 'brush' },
+        { id: 2, name: 'حفر', icon: 'shovel' },
+        { id: 3, name: 'سباكة', icon: 'pipe-wrench' },
+        { id: 4, name: 'كهرباء', icon: 'flashlight' },
+
     ];
+    const categoryIcons = {
+        'brush': require('../assets/categoryIcons/brush.png'),
+        'shovel': require('../assets/categoryIcons/shovel.png'),
+        'pipe-wrench': require('../assets/categoryIcons/pipe-wrench.png'),
+        'flashlight': require('../assets/categoryIcons/flashlight.png'),
+    };
+
 
     const services = [
         {
@@ -35,8 +43,8 @@ const HomeScreen = () => {
             price: '250ج.م',
             rating: '4.5',
             reviews: '(51)',
-            image: require('../assets/service1.png'),
-            avatar: require('../assets/service1.png'),
+            image: require('../assets/service1.jpg'),
+            avatar: require('../assets/service1.jpg'),
         },
         {
             id: 2,
@@ -45,13 +53,14 @@ const HomeScreen = () => {
             price: '250ج.م',
             rating: '4.5',
             reviews: '(51)',
-            image: require('../assets/service1.png'),
-            avatar: require('../assets/service1.png'),
+            image: require('../assets/service1.jpg'),
+            avatar: require('../assets/service1.jpg'),
 
         },
     ];
 
     const [favoriteServices, setFavoriteServices] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
     const navigation = useNavigation();
 
     const toggleFavorite = (service) => {
@@ -104,7 +113,10 @@ const HomeScreen = () => {
                                 placeholder="بحث"
                                 placeholderTextColor="#999"
                                 textAlign="right"
+                                value={searchQuery}
+                                onChangeText={setSearchQuery}
                             />
+
                             <Icon name="search" size={20} color="#999" style={styles.searchIcon} />
                         </View>
                     </View>
@@ -114,10 +126,15 @@ const HomeScreen = () => {
                 <View style={styles.bannerContainer}>
                     <View style={styles.banner}>
                         <Image
-                            source={require('../assets/banner.png')}
+                            source={require('../assets/banner.jpg')}
                             style={styles.bannerImage}
                         />
+                        <View style={styles.bannerTextContainer}>
+                            <Text style={styles.bannerTextLine1}>خدمة صيانة الأجهزة</Text>
+                            <Text style={styles.bannerTextLine2}>دلوقتي تقدر تطلب فني للغسالة، التلاجة أو البوتاجاز.</Text>
+                        </View>
                     </View>
+
                 </View>
 
                 {/* Services Categories */}
@@ -133,22 +150,31 @@ const HomeScreen = () => {
                     </View>
 
                     <View style={styles.categoriesContainer}>
-                        {serviceCategories.map((category) => (
-                            <TouchableOpacity 
-                                key={category.id} 
-                                style={styles.categoryItem}
-                                onPress={() => navigation.navigate('serviceProviderScreen', {
-                                    categoryName: category.name,
-                                    categoryIcon: category.icon
-                                })}
-                            >
-                                <View style={styles.categoryIcon}>
-                                    <FontAwesome5 name={category.icon} size={24} color="#004AAD" />
-                                </View>
-                                <Text style={styles.categoryText}>{category.name}</Text>
-                            </TouchableOpacity>
-                        ))}
+                        {serviceCategories
+                            .filter((category) =>
+                                category.name.toLowerCase().includes(searchQuery.toLowerCase())
+                            )
+                            .map((category) => (
+                                <TouchableOpacity
+                                    key={category.id}
+                                    style={styles.categoryItem}
+                                    onPress={() => navigation.navigate('serviceProviderScreen', {
+                                        categoryName: category.name,
+                                        categoryIcon: categoryIcons[category.icon]
+                                    })}
+
+                                >
+                                    <View style={styles.categoryIcon}>
+                                        <Image
+                                            source={categoryIcons[category.icon]}
+                                            style={styles.iconImage}
+                                        />
+                                    </View>
+                                    <Text style={styles.categoryText}>{category.name}</Text>
+                                </TouchableOpacity>
+                            ))}
                     </View>
+
                 </View>
 
                 {/* Best Services */}
@@ -159,20 +185,24 @@ const HomeScreen = () => {
                         </TouchableOpacity>
                         <Text style={styles.sectionTitle}>أفضل خدمات</Text>
                     </View>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.servicesScrollView}>
-                        <View style={styles.servicesContainer}>
-                            {services.map((service) => (
-                                <ServiceCard
-                                    key={service.id}
-                                    service={service}
-                                    onToggleFavorite={toggleFavorite}
-                                    isFavorite={isFavorite(service)}
-                                    cardStyle="horizontal"
-                                    navigation={navigation}
-                                />
-                            ))}
-                        </View>
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        style={styles.servicesScrollView}
+                        contentContainerStyle={styles.servicesContainer}
+                    >
+                        {services.map((service) => (
+                            <ServiceCard
+                                key={service.id}
+                                service={service}
+                                onToggleFavorite={toggleFavorite}
+                                isFavorite={isFavorite(service)}
+                                cardStyle="horizontal"
+                                navigation={navigation}
+                            />
+                        ))}
                     </ScrollView>
+
                 </View>
             </ScrollView>
 
@@ -282,6 +312,28 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         position: 'relative',
     },
+    bannerTextContainer: {
+        position: 'absolute',
+        bottom: 20,
+        left: 20,
+        right: 20,
+        alignItems: 'flex-end',
+    },
+
+    bannerTextLine1: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 5,
+        textAlign: 'right',
+    },
+
+    bannerTextLine2: {
+        color: '#fff',
+        fontSize: 16,
+        textAlign: 'left',
+    },
+
     bannerImage: {
         width: '100%',
         height: '100%',
@@ -316,19 +368,23 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         // paddingVertical: ,
-        gap: 10, 
+        gap: 10,
     },
-
+    iconImage: {
+        width: 60,
+        height: 50,
+        resizeMode: 'contain',
+    },
     categoryItem: {
         alignItems: 'center',
         flex: 1,
         padding: 8,
-        maxWidth: 100, 
+        maxWidth: 100,
     },
 
     categoryIcon: {
         width: 80,
-        height: 80, 
+        height: 80,
         borderRadius: 12,
         backgroundColor: '#f0f8ff',
         justifyContent: 'center',
@@ -337,7 +393,7 @@ const styles = StyleSheet.create({
     },
 
     categoryText: {
-        fontSize: 16, 
+        fontSize: 16,
         color: '#333',
         textAlign: 'center',
         fontWeight: '500',
@@ -348,7 +404,9 @@ const styles = StyleSheet.create({
     },
     servicesContainer: {
         flexDirection: 'row',
+        paddingRight : 0,
     },
+
 });
 
 export default HomeScreen;

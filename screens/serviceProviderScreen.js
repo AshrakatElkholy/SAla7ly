@@ -29,13 +29,16 @@ const serviceProviderScreen = () => {
     const [favoriteServices, setFavoriteServices] = useState([]);
 
     const allCategories = [
-        { id: 1, name: 'نقاشة', icon: 'paint-brush' },
-        { id: 2, name: 'تجارة', icon: 'shopping-cart' },
-        { id: 3, name: 'سباكة', icon: 'wrench' },
-        { id: 4, name: 'كهرباء', icon: 'bolt' },
-        { id: 5, name: 'ميكانيكي', icon: 'tools' },
-        { id: 6, name: 'فني الأجهزة الكهربائية', icon: 'tv' },
+        { id: 1, name: 'نقاشة', icon: require('../assets/categoryIcons/brush.png') },
+        { id: 2, name: 'حفر', icon: require('../assets/categoryIcons/shovel.png') },
+        { id: 3, name: 'سباكة', icon: require('../assets/categoryIcons/pipe-wrench.png') },
+        { id: 4, name: 'كهرباء', icon: require('../assets/categoryIcons/flashlight.png') },
+        { id: 5, name: 'ميكانيكي', icon: require('../assets/categoryIcons/tool-box.png') },
+        { id: 6, name: 'فني الأجهزة الكهربائية', icon: require('../assets/categoryIcons/soldering.png') },
+        { id: 7, name: 'كهرباء', icon: require('../assets/categoryIcons/flashlight.png') },
+        { id: 8, name: 'نقاشة', icon: require('../assets/categoryIcons/brush.png') },
     ];
+
 
     const services = [
         {
@@ -45,8 +48,8 @@ const serviceProviderScreen = () => {
             price: '250ج.م',
             rating: '4.5',
             reviews: '(51)',
-            image: require('../assets/service1.png'),
-            avatar: require('../assets/service1.png'),
+            image: require('../assets/service1.jpg'),
+            avatar: require('../assets/service1.jpg'),
             category: categoryName,
         },
         {
@@ -56,8 +59,8 @@ const serviceProviderScreen = () => {
             price: '250ج.م',
             rating: '4.5',
             reviews: '(51)',
-            image: require('../assets/service1.png'),
-            avatar: require('../assets/service1.png'),
+            image: require('../assets/service1.jpg'),
+            avatar: require('../assets/service1.jpg'),
             category: categoryName,
         },
         {
@@ -67,8 +70,8 @@ const serviceProviderScreen = () => {
             price: '250ج.م',
             rating: '4.5',
             reviews: '(51)',
-            image: require('../assets/service1.png'),
-            avatar: require('../assets/service1.png'),
+            image: require('../assets/service1.jpg'),
+            avatar: require('../assets/service1.jpg'),
             category: categoryName,
         },
         {
@@ -78,8 +81,8 @@ const serviceProviderScreen = () => {
             price: '400ج.م',
             rating: '4.8',
             reviews: '(32)',
-            image: require('../assets/service1.png'),
-            avatar: require('../assets/service1.png'),
+            image: require('../assets/service1.jpg'),
+            avatar: require('../assets/service1.jpg'),
             category: categoryName,
         },
         {
@@ -89,8 +92,8 @@ const serviceProviderScreen = () => {
             price: '150ج.م',
             rating: '4.3',
             reviews: '(28)',
-            image: require('../assets/service1.png'),
-            avatar: require('../assets/service1.png'),
+            image: require('../assets/service1.jpg'),
+            avatar: require('../assets/service1.jpg'),
             category: categoryName,
         },
     ];

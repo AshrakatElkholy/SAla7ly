@@ -1,17 +1,72 @@
 // components/ServiceCard.js
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ServiceCard = ({
     service,
     onToggleFavorite,
-    isFavorite,
+    isFavorite: propIsFavorite,
     cardStyle = 'horizontal',
     showBookButton = true,
     navigation
 }) => {
+    const [isFavorite, setIsFavorite] = useState(propIsFavorite || false);
     const isHorizontal = cardStyle === 'horizontal';
+
+    // Check if service is in favorites when component mounts
+    useEffect(() => {
+        checkFavoriteStatus();
+    }, []);
+
+    // Update local state when prop changes (for FavoriteServiceScreen)
+    useEffect(() => {
+        if (propIsFavorite !== undefined) {
+            setIsFavorite(propIsFavorite);
+        }
+    }, [propIsFavorite]);
+
+    const checkFavoriteStatus = async () => {
+        try {
+            const storedFavorites = await AsyncStorage.getItem('favoriteServices');
+            if (storedFavorites) {
+                const favorites = JSON.parse(storedFavorites);
+                const isServiceFavorite = favorites.some((fav) => fav.id === service.id);
+                setIsFavorite(isServiceFavorite);
+            }
+        } catch (error) {
+            console.error('Error checking favorite status:', error);
+        }
+    };
+
+    const toggleFavoriteStatus = async () => {
+        try {
+            const storedFavorites = await AsyncStorage.getItem('favoriteServices');
+            let favorites = storedFavorites ? JSON.parse(storedFavorites) : [];
+            
+            const exists = favorites.some((fav) => fav.id === service.id);
+            
+            if (exists) {
+                // Remove from favorites
+                favorites = favorites.filter((item) => item.id !== service.id);
+                setIsFavorite(false);
+            } else {
+                // Add to favorites
+                favorites = [...favorites, service];
+                setIsFavorite(true);
+            }
+            
+            await AsyncStorage.setItem('favoriteServices', JSON.stringify(favorites));
+            
+            // Call the prop function if provided (for FavoriteServiceScreen)
+            if (onToggleFavorite) {
+                onToggleFavorite(service);
+            }
+        } catch (error) {
+            console.error('Error toggling favorite:', error);
+        }
+    };
 
     const handleBookNow = () => {
         if (navigation) {
@@ -27,19 +82,20 @@ const ServiceCard = ({
 
                     <TouchableOpacity
                         style={styles.favoriteBadge}
-                        onPress={() => {
-                            onToggleFavorite && onToggleFavorite(service);
-                        }}
+                        onPress={toggleFavoriteStatus}
                     >
-                        <FontAwesome
-                            name="bookmark"
-                            size={14}
-                            color={isFavorite ? "#2196F3" : "white"}
+                        <Image
+                            source={
+                                isFavorite
+                                    ? require('../assets/bookmark-filled.png') 
+                                    : require('../assets/bookmark-outline.png') 
+                            }
+                            style={styles.bookmarkIcon}
                         />
                     </TouchableOpacity>
 
                     <View style={styles.ratingBadge}>
-                        <FontAwesome name="star" size={12} color="#FFD700" />
+                        <FontAwesome name="star" size={12} color="#FFC107" />
                         <Text style={styles.ratingText}>{service.rating}</Text>
                         <Text style={styles.reviewsText}>{service.reviews}</Text>
                     </View>
@@ -65,8 +121,6 @@ const ServiceCard = ({
                         </TouchableOpacity>
                     )}
                 </View>
-
-
             </View>
         </TouchableOpacity>
     );
@@ -84,7 +138,7 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         marginBottom: 15,
     },
-    horizontalCard: { width: 300, marginRight: 10 },
+    horizontalCard: { width: 290, marginEnd: 10 },
     verticalCard: { width: '100%' },
     serviceImageContainer: {
         position: 'relative',
@@ -101,13 +155,13 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 10,
         right: 10,
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        backgroundColor: 'rgba(255, 255, 255, 0.5)',
         borderRadius: 15,
         paddingHorizontal: 8,
         paddingVertical: 4,
         flexDirection: 'row',
         alignItems: 'center',
-        opacity: 0.6, // 👈 add this line
+        opacity: 0.6,
     },
 
     favoriteBadge: {
@@ -118,18 +172,20 @@ const styles = StyleSheet.create({
         padding: 6,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-        opacity: 0.6, // 👈 semi-transparent
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        opacity: 0.6,
     },
 
     ratingText: {
         fontSize: 12,
-        color: '#333',
+        color: '#000',
         marginHorizontal: 3,
+        fontWeight: 600
     },
     reviewsText: {
         fontSize: 10,
-        color: '#666',
+        color: '#000',
+        fontWeight: 600
     },
     serviceInfo: { padding: 12 },
     serviceTitleRow: {
@@ -154,7 +210,6 @@ const styles = StyleSheet.create({
     serviceInfoText: {
         flex: 1,
     },
-
 
     serviceTitle: {
         fontSize: 14,
@@ -188,6 +243,9 @@ const styles = StyleSheet.create({
         color: '#004AAD',
         fontSize: 14,
         fontWeight: 'bold',
+    },
+    bookmarkIcon: {
+        // Add any specific styling for the bookmark icon if needed
     },
 });
 
