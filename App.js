@@ -37,6 +37,7 @@ import MessagesScreen from "./screens/Chats/message-empty";
 import MessagesListScreen from "./screens/Chats/chats";
 import ChatScreen from "./screens/Chats/ChatScreen";
 import CategoryScreen from "./screens/categoryScreen";
+import serviceProviderScreen from "./screens/serviceProviderScreen";
 
 const Stack = createStackNavigator();
 
@@ -120,6 +121,11 @@ function App() {
         <Stack.Screen
           name="ServicesCategoryScreen"
           component={CategoryScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="serviceProviderScreen"
+          component={serviceProviderScreen}
           options={{ headerShown: false }}
         />
         <Stack.Screen
