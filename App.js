@@ -31,6 +31,7 @@ import ServiceDetailsScreen from "./screens/ServiceDetailsScreen";
 import MessagesScreen from "./screens/Chats/message-empty";
 import MessagesListScreen from "./screens/Chats/chats";
 import ChatScreen from "./screens/Chats/ChatScreen";
+import AgreementDetailsScreen from "./screens/Chats/AgreementDetailsScreen";
 // import MessagesScreen from "./screens/Chats/message-empty";
 // import MessagesListScreen from "./screens/Chats/chats";
 // import ChatScreen from "./screens/Chats/ChatScreen";
@@ -118,6 +119,10 @@ function App() {
           component={MessagesListScreen}
         />
         <Stack.Screen name="ChatScreen" component={ChatScreen} />
+        <Stack.Screen
+          name="AgreementDetailsScreen"
+          component={AgreementDetailsScreen}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
