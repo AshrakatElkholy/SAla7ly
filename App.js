@@ -24,6 +24,7 @@ import HomeScreen from "./screens/HomeScreen";
 import favoriteProviderScreen from "./screens/favoriteScreens/favoriteProviderScreen.js";
 import favoriteServiceScreen from "./screens/favoriteScreens/favoriteServiceScreen.js";
 import UserLocationScreen from "./screens/industrial_screens/onboarding/UserLocationScreen";
+import ProviderProfileScreen from "./screens/ProviderProfileScreen";
 
 // Fonts
 import * as Font from 'expo-font';
@@ -146,7 +147,7 @@ function App() {
         <Stack.Screen name="RefusedScreen" component={Refused} />
 
         <Stack.Screen name="UserLocation" component={UserLocationScreen} />
-
+        <Stack.Screen name="ProviderProfileScreen" component={ProviderProfileScreen} />
 
         <Stack.Screen name="MessagesScreen" component={MessagesScreen} />
         <Stack.Screen

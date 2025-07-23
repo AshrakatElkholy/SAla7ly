@@ -137,7 +137,7 @@ export default function ServiceDetailsScreen({ navigation }) {
                 <Text style={styles.categoryText}>كهربائي</Text>
               </View>
             </View>
-            <TouchableOpacity style={styles.detailButton}>
+            <TouchableOpacity style={styles.detailButton} onPress={() => navigation.navigate('ProviderProfileScreen')}>
               <Text style={styles.detailButtonText}>تفاصيل</Text>
             </TouchableOpacity>
           </View>
