@@ -12,10 +12,10 @@ import SignupHeaderCard from "../../Components/SignupHeaderCard";
 import CustomInput from "../../Components/CustomInput";
 import CustomButton from "../../Components/CustomButton";
 import { Fonts } from "../../constants";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { TouchableOpacity } from "react-native";
+
 function SignupScreen({ navigation }) {
-  // State for each input
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -24,15 +24,12 @@ function SignupScreen({ navigation }) {
   const [bio, setBio] = useState("");
   const [bioHeight, setBioHeight] = useState(100);
 
-  // Error states
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
 
-  // Dummy API endpoint (replace with your real one later)
   const API_URL = "https://jsonplaceholder.typicode.com/posts";
 
   const handleSignup = async () => {
-    // Simple validation
     let hasError = false;
     if (!name || !phone || !email || !password || !confirmPassword) {
       Alert.alert("خطأ", "يرجى ملء جميع الحقول");
@@ -41,16 +38,18 @@ function SignupScreen({ navigation }) {
     if (!email) setEmailError("يرجى إدخال البريد الإلكتروني");
     else if (!email.includes("@")) setEmailError("البريد الإلكتروني غير صحيح");
     else setEmailError("");
+
     if (!password) setPasswordError("يرجى إدخال كلمة المرور");
     else if (password.length < 6) setPasswordError("كلمة المرور قصيرة جداً");
     else setPasswordError("");
+
     if (password !== confirmPassword) {
       Alert.alert("خطأ", "كلمتا المرور غير متطابقتين");
       hasError = true;
     }
+
     if (hasError || emailError || passwordError) return;
 
-    // Prepare data
     const data = {
       name,
       phone,
@@ -65,9 +64,14 @@ function SignupScreen({ navigation }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
+
       const result = await response.json();
-      // Navigate to category screen after successful signup
-      navigation.navigate("UserCategoryScreen");
+
+      // ✅ Save user locally
+      await AsyncStorage.setItem("user", JSON.stringify(data));
+
+      // ✅ Navigate to next screen
+      navigation.replace("UserCategoryScreen");
     } catch (error) {
       Alert.alert("خطأ", "حدث خطأ أثناء إرسال البيانات");
     }
@@ -139,7 +143,9 @@ function SignupScreen({ navigation }) {
             multiline
             numberOfLines={4}
             scrollEnabled
-            onContentSizeChange={e => setBioHeight(e.nativeEvent.contentSize.height)}
+            onContentSizeChange={e =>
+              setBioHeight(e.nativeEvent.contentSize.height)
+            }
             style={{ minHeight: bioHeight }}
             inputStyle={{ fontFamily: Fonts.REGULAR }}
           />
@@ -183,7 +189,6 @@ function SignupScreen({ navigation }) {
             style={{
               paddingTop: 10,
               marginBottom: 50,
-
               fontSize: 18,
             }}
           />

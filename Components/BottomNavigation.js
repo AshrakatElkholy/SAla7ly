@@ -8,7 +8,7 @@ import { Image } from 'react-native';
 const BottomNavigation = ({ navigation, activeTab, favoriteServices = [] }) => {
     return (
         <View style={styles.bottomNav}>
-            <TouchableOpacity style={styles.navItem}>
+            <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('TwoPopups')}>
                 <Icon name="person" size={24} color="#999" />
                 <Text style={styles.navText}>انا</Text>
             </TouchableOpacity>

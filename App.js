@@ -25,6 +25,8 @@ import favoriteProviderScreen from "./screens/favoriteScreens/favoriteProviderSc
 import favoriteServiceScreen from "./screens/favoriteScreens/favoriteServiceScreen.js";
 import UserLocationScreen from "./screens/industrial_screens/onboarding/UserLocationScreen";
 import ProviderProfileScreen from "./screens/ProviderProfileScreen";
+import NewCard from "./screens/Payment/NewCard";
+import TwoPopups from "./screens/Payment/2popups";
 
 // Fonts
 import * as Font from 'expo-font';
@@ -148,6 +150,8 @@ function App() {
 
         <Stack.Screen name="UserLocation" component={UserLocationScreen} />
         <Stack.Screen name="ProviderProfileScreen" component={ProviderProfileScreen} />
+        <Stack.Screen name="NewCardScreen" component={NewCard} />
+        <Stack.Screen name="TwoPopups" component={TwoPopups} />
 
         <Stack.Screen name="MessagesScreen" component={MessagesScreen} />
         <Stack.Screen

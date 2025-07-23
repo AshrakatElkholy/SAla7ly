@@ -1,5 +1,15 @@
-import React, { useState } from 'react';
-import { View, Alert, ScrollView, Text, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Alert,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomInput from '../../Components/CustomInput';
 import CustomButton from '../../Components/CustomButton';
 import SignupHeaderCard from '../../Components/SignupHeaderCard';
@@ -10,8 +20,17 @@ function LoginScreen({ navigation }) {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
-  // Dummy API endpoint (replace with your real one later)
   const API_URL = 'https://jsonplaceholder.typicode.com/posts';
+
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const storedUser = await AsyncStorage.getItem('user');
+      if (storedUser) {
+        navigation.replace('HomeScreen'); // skip login if user exists
+      }
+    };
+    checkLoginStatus();
+  }, []);
 
   const handleLogin = async () => {
     let hasError = false;
@@ -33,7 +52,9 @@ function LoginScreen({ navigation }) {
     } else {
       setPasswordError('');
     }
+
     if (hasError) return;
+
     try {
       const response = await fetch(API_URL, {
         method: 'POST',
@@ -41,8 +62,12 @@ function LoginScreen({ navigation }) {
         body: JSON.stringify({ email, password }),
       });
       const result = await response.json();
+
+      // Save user login info locally
+      await AsyncStorage.setItem('user', JSON.stringify({ email }));
+
       Alert.alert('تم تسجيل الدخول!', 'تم إرسال البيانات بنجاح.');
-      navigation.navigate('HomeScreen');
+      navigation.replace('HomeScreen');
     } catch (error) {
       Alert.alert('خطأ', 'حدث خطأ أثناء تسجيل الدخول');
     }
@@ -136,7 +161,7 @@ const styles = StyleSheet.create({
   },
   signupLinkContainer: {
     flexDirection: 'row',
-    justifyContent: "flex-end",
+    justifyContent: 'flex-end',
     marginTop: 5,
     marginEnd: 5,
   },
