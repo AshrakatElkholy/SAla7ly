@@ -1,6 +1,6 @@
 // * IndustrialIdentityScreen — ONBOARDING
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   SafeAreaView,
   View,
@@ -17,6 +17,7 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import Icon from "react-native-vector-icons/Feather";
 import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /* ⬇️ Fonts + TabsHeader component */
 import { Fonts } from "../../../constants";
@@ -55,6 +56,25 @@ const IndustrialIdentityScreen = () => {
   const [personal, setPersonal] = useState(null);
   const [idFront, setIdFront] = useState(null);
   const [idBack, setIdBack] = useState(null);
+
+  // Load saved progress on mount
+  useEffect(() => {
+    AsyncStorage.setItem('onboardingStep', 'IndustrialIdentityScreen');
+    (async () => {
+      const saved = await AsyncStorage.getItem('onboardingIdentity');
+      if (saved) {
+        const data = JSON.parse(saved);
+        setPersonal(data.personal || null);
+        setIdFront(data.idFront || null);
+        setIdBack(data.idBack || null);
+      }
+    })();
+  }, []);
+
+  // Save progress on change
+  useEffect(() => {
+    AsyncStorage.setItem('onboardingIdentity', JSON.stringify({ personal, idFront, idBack }));
+  }, [personal, idFront, idBack]);
 
   /* ---------- gallery ---------- */
   const pickImage = async (setter) => {
@@ -96,6 +116,7 @@ const IndustrialIdentityScreen = () => {
   const isReady = personal && idFront && idBack;
   const handleNext = () => {
     if (!isReady) return;
+    AsyncStorage.setItem('onboardingStep', 'IndustrialLocationScreen');
     navigation.navigate("IndustrialLocationScreen");
   };
 

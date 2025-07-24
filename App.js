@@ -41,6 +41,7 @@ import MessagesListScreen from "./screens/Chats/chats";
 import ChatScreen from "./screens/Chats/ChatScreen";
 import CategoryScreen from "./screens/categoryScreen";
 import serviceProviderScreen from "./screens/serviceProviderScreen";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Stack = createStackNavigator();
 
@@ -48,6 +49,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [splashVisible, setSplashVisible] = useState(true);
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [initialRoute, setInitialRoute] = useState(null);
 
   useEffect(() => {
     const loadFontsAndSplash = async () => {
@@ -63,7 +65,22 @@ function App() {
         console.log('Font loading error:', error);
         setFontsLoaded(true); // Continue without fonts
       }
-      
+
+      // Check login and onboarding progress
+      try {
+        const user = await AsyncStorage.getItem('user');
+        const onboardingStep = await AsyncStorage.getItem('onboardingStep');
+        if (user) {
+          setInitialRoute('HomeScreen');
+        } else if (onboardingStep) {
+          setInitialRoute(onboardingStep);
+        } else {
+          setInitialRoute('Welcome');
+        }
+      } catch (e) {
+        setInitialRoute('Welcome');
+      }
+
       // Simulate splash screen delay
       const timer = setTimeout(() => {
         setIsLoading(false);
@@ -74,7 +91,7 @@ function App() {
     loadFontsAndSplash();
   }, []);
 
-  if (!fontsLoaded || splashVisible) {
+  if (!fontsLoaded || splashVisible || !initialRoute) {
     return (
       <View style={styles.splashContainer}>
         <StatusBar style="light" backgroundColor="#004AAD" />
@@ -91,7 +108,7 @@ function App() {
     <NavigationContainer>
       <StatusBar style="light" backgroundColor="#004AAD" />
       <Stack.Navigator
-        initialRouteName="Welcome"
+        initialRouteName={initialRoute}
         screenOptions={{
           headerShown: false,
         }}

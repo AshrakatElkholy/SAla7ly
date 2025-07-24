@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   SafeAreaView,
   View,
@@ -16,6 +16,7 @@ import * as ImagePicker from "expo-image-picker";
 import Icon from "react-native-vector-icons/Feather";
 import { useNavigation } from "@react-navigation/native";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Fonts } from "../../../constants";
 import TabsHeader from "../../../Components/TabsHeader";
@@ -57,6 +58,26 @@ export default function IndustrialSpecialtyScreen() {
   const [mainImg, setMainImg] = useState(null);
   const [extraImgs, setExtraImgs] = useState([]);
 
+  // Load saved progress on mount
+  useEffect(() => {
+    AsyncStorage.setItem('onboardingStep', 'IndustrialSpecialtyScreen');
+    (async () => {
+      const saved = await AsyncStorage.getItem('onboardingSpecialty');
+      if (saved) {
+        const data = JSON.parse(saved);
+        setSpecialty(data.specialty || "");
+        setBio(data.bio || "");
+        setMainImg(data.mainImg || null);
+        setExtraImgs(data.extraImgs || []);
+      }
+    })();
+  }, []);
+
+  // Save progress on change
+  useEffect(() => {
+    AsyncStorage.setItem('onboardingSpecialty', JSON.stringify({ specialty, bio, mainImg, extraImgs }));
+  }, [specialty, bio, mainImg, extraImgs]);
+
   /* ---- image picker ---- */
   const pickImage = async (setter) => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -92,8 +113,12 @@ export default function IndustrialSpecialtyScreen() {
 
   /* ---- navigation readiness ---- */
   const isReady = specialty.trim() && bio.trim() && mainImg;
-  const handleNext = () =>
-    isReady && navigation.navigate("IndustrialIdentityScreen");
+  const handleNext = () => {
+    if (isReady) {
+      AsyncStorage.setItem('onboardingStep', 'IndustrialIdentityScreen');
+      navigation.navigate("IndustrialIdentityScreen");
+    }
+  };
 
   /* ---- render ---- */
   return (

@@ -18,6 +18,7 @@ import * as Location from "expo-location";
 import MapView, { Marker } from "react-native-maps";
 import Icon from "react-native-vector-icons/Feather";
 import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Fonts } from "../../../constants";
 import CustomButton from "../../../Components/CustomButton";
@@ -38,6 +39,24 @@ export default function IndustrialLocationScreen({ route, navigation }) {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [searchLoading, setSearchLoading] = useState(false);
+
+  // Load saved progress on mount
+  useEffect(() => {
+    AsyncStorage.setItem('onboardingStep', 'IndustrialLocationScreen');
+    (async () => {
+      const saved = await AsyncStorage.getItem('onboardingLocation');
+      if (saved) {
+        const data = JSON.parse(saved);
+        setRegion(data.region || null);
+        setMarker(data.marker || null);
+      }
+    })();
+  }, []);
+
+  // Save progress on change
+  useEffect(() => {
+    AsyncStorage.setItem('onboardingLocation', JSON.stringify({ region, marker }));
+  }, [region, marker]);
 
   /* ------------ الحصول على إحداثيّات المستخدم ------------ */
   useEffect(() => {
@@ -121,6 +140,7 @@ export default function IndustrialLocationScreen({ route, navigation }) {
   const isReady = !!marker;
   const handleSave = () => {
     if (!isReady) return;
+    AsyncStorage.multiRemove(['onboardingStep', 'onboardingSpecialty', 'onboardingIdentity', 'onboardingLocation']);
     if (role === 'provider') {
       navigation.navigate("PendingScreen");
     } else {
