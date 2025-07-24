@@ -1,42 +1,63 @@
-import React from 'react'
-import { View, Image, Text, StyleSheet, Alert } from 'react-native';
-import CustomButton from '../../Components/CustomButton';
-import { Fonts } from '../../constants';
-// import pendingImg from '../../assets/pending.PNG';
-
+import React from "react";
+import { View, Image, Text, StyleSheet, Alert } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import CustomButton from "../../Components/CustomButton";
+import { Fonts } from "../../constants";
 
 function Pending({ navigation }) {
   const handleSignout = () => {
-    // If you have authentication logic, add it here (e.g., clear tokens)
-    // For now, just navigate to login or show an alert
     if (navigation && navigation.navigate) {
-      navigation.navigate('ClientLoginScreen');
+      navigation.navigate("ClientLoginScreen");
     } else {
-      Alert.alert('تم تسجيل الخروج');
+      Alert.alert("تم تسجيل الخروج");
+    }
+  };
+
+  const handleFinishRegistration = async () => {
+    try {
+      await AsyncStorage.setItem("user", "true"); // عشان نعتبره سجل خلاص
+      navigation.navigate("providerHome");
+    } catch (error) {
+      console.log("Error saving user status", error);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Image source={require('../../assets/images3.png')} style={styles.mainDone} resizeMode="contain" />
-      <View style={{ alignItems: 'center' }}>
+      <Image
+        source={require("../../assets/images3.png")}
+        style={styles.mainDone}
+        resizeMode="contain"
+      />
+      <View style={{ alignItems: "center" }}>
         <Text style={styles.welcomeText}>طلبك تحت المراجعة</Text>
-        <Text style={styles.subtitleText}>شكراً لتسجيلك! فريقنا بيراجع بياناتك، وهنتواصل معاك قريب بعد التأكيد.</Text>
+        <Text style={styles.subtitleText}>
+          شكراً لتسجيلك! فريقنا بيراجع بياناتك، وهنتواصل معاك قريب بعد التأكيد.
+        </Text>
       </View>
-      <CustomButton 
-        title=" تسجيل خروج " 
-        onPress={handleSignout} 
-        type='filled'
+      {/* زر تسجيل الخروج (ممكن تسيبه لو حابب) */}
+      <CustomButton
+        title=" تسجيل خروج "
+        onPress={handleSignout}
+        type="filled"
+      />
+
+      {/* زر استكمال التسجيل وتحويله للصفحة الرئيسية */}
+      <CustomButton
+        title="إنهاء التسجيل (تجريبي)"
+        onPress={handleFinishRegistration}
+        type="outline"
       />
     </View>
-  )
+  );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
     padding: 24,
   },
   mainDone: {
@@ -46,21 +67,21 @@ const styles = StyleSheet.create({
   },
   welcomeText: {
     fontSize: 26,
-    fontWeight: 'bold',
-    color: '#000',
-    textAlign: 'center',
+    fontWeight: "bold",
+    color: "#000",
+    textAlign: "center",
     marginBottom: 10,
-    marginTop: 0,
     fontFamily: Fonts.REGULAR,
   },
   subtitleText: {
     fontSize: 15,
-    color: '#444',
-    textAlign: 'center',
+    color: "#444",
+    textAlign: "center",
     marginBottom: 30,
     lineHeight: 22,
     opacity: 0.9,
     fontFamily: Fonts.REGULAR,
   },
 });
-export default Pending
+
+export default Pending;

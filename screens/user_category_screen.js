@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, Image, StyleSheet, TouchableOpacity, Text } from "react-native";
 import CustomButton from "../Components/CustomButton";
 import { Fonts } from "../constants";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 function user_category_screen({ navigation }) {
   const [selectedImage, setSelectedImage] = useState(null);
@@ -16,16 +17,24 @@ function user_category_screen({ navigation }) {
     setSelectedImage("client");
   };
 
-  const handleContinuePress = () => {
+  const handleContinuePress = async () => {
     if (!selectedImage) {
       alert("يرجى اختيار نوع الحساب أولاً");
       return;
     }
-    // Instead of navigation, just log or alert the selected choice
-    if (selectedImage === "client") {
-      navigation.navigate("UserLocation"); // للعميل → شاشة اللوكيشن
-    } else {
-      navigation.navigate("IndustrialSpecialtyScreen"); // للصنايعي → شاشة التخصصات
+
+    try {
+      await AsyncStorage.setItem("userType", selectedImage);
+      await AsyncStorage.setItem("user", "true");
+
+      if (selectedImage === "client") {
+        navigation.navigate("UserLocation"); // العميل → شاشة اللوكيشن
+      } else {
+        navigation.navigate("IndustrialSpecialtyScreen"); // الصنايعي → شاشة التخصصات
+      }
+    } catch (error) {
+      console.error("AsyncStorage Error:", error);
+      alert("حدث خطأ أثناء الحفظ، حاول مرة أخرى");
     }
   };
 
@@ -33,10 +42,6 @@ function user_category_screen({ navigation }) {
     <View style={styles.container}>
       <Text style={styles.title}>من انت؟</Text>
 
-      {/* Small Space */}
-      <View style={styles.spaceSection} />
-
-      {/* Images Section - Middle */}
       <View style={styles.imagesSection}>
         <View style={styles.imageRow}>
           <TouchableOpacity
@@ -77,7 +82,6 @@ function user_category_screen({ navigation }) {
         </View>
       </View>
 
-      {/* Button Section - Bottom */}
       <View style={styles.buttonSection}>
         <CustomButton
           title={"تابع"}
@@ -101,11 +105,7 @@ const styles = StyleSheet.create({
     color: "#000000",
     textAlign: "center",
     marginTop: 20,
-    // marginBottom: 80,
   },
-  //   spaceSection: {
-  //     height: 40,
-  //   },
   imagesSection: {
     flex: 1,
     justifyContent: "center",
@@ -118,7 +118,6 @@ const styles = StyleSheet.create({
   },
   touchableImage: {
     alignItems: "center",
-    // padding: 15,
     borderRadius: 15,
     borderWidth: 2,
   },
