@@ -45,6 +45,12 @@ import CategoryScreen from "./screens/categoryScreen";
 import serviceProviderScreen from "./screens/serviceProviderScreen";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+{ /* PROVIDER CHATS SCREENS */}
+// import ProviderChats from "./screens/Chats-Provider/chats.js";
+// import ProviderChatScreen from "./screens/Chats-Provider/chatScreen.js";
+// import AgreementDetailsScreen from "./screens/Chats-Provider/AgreementDetailsScreen.js";
+
+
 const Stack = createStackNavigator();
 
 function App() {
@@ -186,6 +192,18 @@ function App() {
         <Stack.Screen name="ChatScreen" component={ChatScreen} />
 
         <Stack.Screen name="providerHome" component={ProviderHomeScreen} />
+
+       {/* PROVIDER CHATS SCREENS */}
+
+        {/* <Stack.Screen name="ProviderChats" component={ProviderChats} />
+        <Stack.Screen
+          name="ProviderChatScreen"
+          component={ProviderChatScreen}
+        />
+        <Stack.Screen
+          name="AgreementDetails"
+          component={AgreementDetailsScreen}
+        /> */}
       </Stack.Navigator>
     </NavigationContainer>
   );
