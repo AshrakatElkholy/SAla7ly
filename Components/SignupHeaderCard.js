@@ -95,7 +95,7 @@ const SignupHeaderCard = ({
 
       <View style={styles.arrowRow}>
         <TouchableOpacity style={styles.arrowButton} onPress={onBack}>
-          <Ionicons name="arrow-forward" size={20} color="#fff" />
+          <Ionicons name="chevron-forward" size={20} color="#fff" />
         </TouchableOpacity>
       </View>
       <View style={styles.textContainer}>

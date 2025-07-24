@@ -18,8 +18,11 @@ import IndustrialSpecialtyScreen from "./screens/industrial_screens/onboarding/I
 import IndustrialIdentityScreen from "./screens/industrial_screens/onboarding/IndustrialIdentityScreen";
 import IndustrialLocationScreen from "./screens/industrial_screens/onboarding/IndustrialLocationScreen";
 import UserLocationScreen from "./screens/industrial_screens/onboarding/UserLocationScreen";
+import OrdersScreen from "./screens/orders/OrdersScreen";
+import HomeScreen from "./screens/HomeScreen";
+import ServiceDetailsScreen from "./screens/ServiceDetailsScreen";
+import ProfileScreen from "./screens/profile/ProfileScreen";
 
-// Fonts
 import { Fonts } from "./constants";
 import * as Font from "expo-font";
 
@@ -83,9 +86,7 @@ function App() {
           name="UserCategoryScreen"
           component={UserCategoryScreen}
         />
-
         <Stack.Screen name="ClientLoginScreen" component={LoginScreen} />
-
         {/* Add other screens here */}
         <Stack.Screen
           name="IndustrialSpecialtyScreen"
@@ -101,6 +102,13 @@ function App() {
           component={IndustrialLocationScreen}
         />
         <Stack.Screen name="UserLocation" component={UserLocationScreen} />
+        <Stack.Screen name="OrdersScreen" component={OrdersScreen} />
+        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
+        <Stack.Screen
+          name="ServiceDetailsScreen"
+          component={ServiceDetailsScreen}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -12,20 +12,37 @@ import {
 import CustomInput from "../../Components/CustomInput";
 import CustomButton from "../../Components/CustomButton";
 import SignupHeaderCard from "../../Components/SignupHeaderCard";
-import { Fonts } from "../../constants";
 
 function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   // Dummy API endpoint (replace with your real one later)
   const API_URL = "https://jsonplaceholder.typicode.com/posts";
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert("خطأ", "يرجى إدخال البريد الإلكتروني وكلمة المرور");
-      return;
+    let hasError = false;
+    if (!email) {
+      setEmailError("يرجى إدخال البريد الإلكتروني");
+      hasError = true;
+    } else if (!email.includes("@")) {
+      setEmailError("البريد الإلكتروني غير صحيح");
+      hasError = true;
+    } else {
+      setEmailError("");
     }
+    if (!password) {
+      setPasswordError("يرجى إدخال كلمة المرور");
+      hasError = true;
+    } else if (password.length < 6) {
+      setPasswordError("كلمة المرور قصيرة جداً");
+      hasError = true;
+    } else {
+      setPasswordError("");
+    }
+    if (hasError) return;
     try {
       const response = await fetch(API_URL, {
         method: "POST",
@@ -34,7 +51,7 @@ function LoginScreen({ navigation }) {
       });
       const result = await response.json();
       Alert.alert("تم تسجيل الدخول!", "تم إرسال البيانات بنجاح.");
-      // navigation.navigate('SomeUserHomeScreen'); // Uncomment and set your home screen
+      navigation.navigate("HomeScreen");
     } catch (error) {
       Alert.alert("خطأ", "حدث خطأ أثناء تسجيل الدخول");
     }
@@ -42,25 +59,28 @@ function LoginScreen({ navigation }) {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: "#fff" }}
+      style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <SignupHeaderCard
-        onBack={() => navigation.goBack()}
-        title=" تسجيل الدخول "
-        subtitle="قم بتسجيل دخول للحصول على خدمه كامله"
-      />
       <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
+        contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <View style={{ flex: 1, padding: 16 }}>
+        <SignupHeaderCard
+          onBack={() => navigation.goBack()}
+          title=" تسجيل دخول "
+          subtitle="قم بتسجيل دخول للحصول على خدمه كامله"
+        />
+        <View style={styles.formContainer}>
           <CustomInput
             label="البريد الإلكتروني"
             value={email}
             onChangeText={setEmail}
             placeholder="example@email.com"
             keyboardType="email-address"
+            error={emailError}
+            deferError
           />
           <CustomInput
             label="كلمة المرور"
@@ -68,69 +88,82 @@ function LoginScreen({ navigation }) {
             onChangeText={setPassword}
             placeholder="أدخل كلمة المرور"
             secureTextEntry
+            error={passwordError}
+            deferError
           />
           <TouchableOpacity
             onPress={() => navigation.navigate("ForgotPasswordScreen")}
-            style={{ alignSelf: "flex-end", marginBottom: 16 }}
+            style={styles.forgotPasswordLink}
           >
-            <Text
-              style={{
-                color: "#1566C1",
-                fontSize: 14,
-                fontFamily: Fonts.REGULAR,
-              }}
-            >
-              نسيت كلمة المرور؟
-            </Text>
+            <Text style={styles.forgotPasswordText}>نسيت كلمة المرور؟</Text>
           </TouchableOpacity>
-          <View
-            style={{ height: 1, backgroundColor: "#ddd", marginVertical: 16 }}
-          />
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "flex-end",
-              marginTop: 5,
-              marginEnd: 5,
-            }}
-          >
+          <View style={styles.divider} />
+          <View style={styles.signupLinkContainer}>
             <TouchableOpacity
               onPress={() => navigation.navigate("SignupScreen")}
             >
-              <Text
-                style={{
-                  color: "#1566C1",
-                  fontSize: 16,
-                  fontFamily: Fonts.REGULAR,
-                }}
-              >
-                انشاء حساب
-              </Text>
+              <Text style={styles.signupLinkText}>انشاء حساب</Text>
             </TouchableOpacity>
-            <Text
-              style={{ fontSize: 16, fontFamily: Fonts.REGULAR, color: "#444" }}
-            >
-              ليس لديك حساب ؟{" "}
-            </Text>
+            <Text style={styles.signupPromptText}>ليس لديك حساب ؟ </Text>
           </View>
+          <View style={{ flex: 1 }} />
+          <CustomButton
+            title="تابع "
+            onPress={handleLogin}
+            type="filled"
+            style={styles.loginButton}
+          />
         </View>
       </ScrollView>
-      {/* Fixed button at the bottom */}
-      <View style={styles.bottomButtonContainer}>
-        <CustomButton title="تابع " onPress={handleLogin} type="filled" />
-      </View>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  bottomButtonContainer: {
-    width: "100%",
-    padding: 16,
+  container: {
+    flex: 1,
     backgroundColor: "#fff",
-    position: "absolute",
-    bottom: 0,
-    left: 0,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
+  formContainer: {
+    flex: 1,
+    padding: 18,
+    backgroundColor: "#fff",
+  },
+  forgotPasswordLink: {
+    alignSelf: "flex-end",
+    marginBottom: 16,
+  },
+  forgotPasswordText: {
+    color: "#1566C1",
+    fontSize: 14,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#ddd",
+    marginVertical: 16,
+  },
+  signupLinkContainer: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 5,
+    marginEnd: 5,
+  },
+  signupLinkText: {
+    color: "#1566C1",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  signupPromptText: {
+    fontSize: 14,
+    color: "#444",
+  },
+  loginButton: {
+    paddingTop: 10,
+    marginBottom: 50,
+    fontSize: 18,
   },
 });
 

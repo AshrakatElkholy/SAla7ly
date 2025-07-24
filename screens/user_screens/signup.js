@@ -12,6 +12,7 @@ import SignupHeaderCard from "../../Components/SignupHeaderCard";
 import CustomInput from "../../Components/CustomInput";
 import CustomButton from "../../Components/CustomButton";
 import { Fonts } from "../../constants";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { TouchableOpacity } from "react-native";
 function SignupScreen({ navigation }) {
@@ -51,6 +52,7 @@ function SignupScreen({ navigation }) {
         body: JSON.stringify(data),
       });
       const result = await response.json();
+      await AsyncStorage.setItem("userName", name);
       // Navigate to category screen after successful signup
       navigation.navigate("UserCategoryScreen");
     } catch (error) {
