@@ -55,7 +55,7 @@ import serviceFeedbackScreen from "./screens/serviceFeedbackScreen.js";
 import providerHomeScreen from "./screens/provider_screens/providerHomeScreen.js";
 import providerServicesScreen from "./screens/provider_screens/providerServicesScreen.js";
 import providerAddServiceScreen from "./screens/provider_screens/providerAddServiceScreen.js";
-
+import AgreementDetailsScreen from "./screens/Chats/AgreementDetailsScreen";
 const Stack = createStackNavigator();
 
 function App() {
@@ -86,7 +86,7 @@ function App() {
        const onboardingStep = await AsyncStorage.getItem("onboardingStep");
 
        if (user && userType === "sanay3y") {
-         setInitialRoute("providerHome");
+         setInitialRoute("providerHomeScreen");
        } else if (user && userType === "client") {
          setInitialRoute("userHome");
        } else if (onboardingStep) {
@@ -222,7 +222,12 @@ function App() {
           name="MessagesListScreen"
           component={MessagesListScreen}
         />
-        <Stack.Screen name="ChatScreen" component={ChatScreen} />
+            <Stack.Screen name="ChatScreen" component={ChatScreen} />
+        <Stack.Screen
+          name="AgreementDetailsScreen"
+          component={AgreementDetailsScreen}
+        />
+        {/* <Stack.Screen name="ChatScreen" component={ChatScreen} /> */}
 
         <Stack.Screen name="providerHome" component={ProviderHomeScreen} />
       </Stack.Navigator>

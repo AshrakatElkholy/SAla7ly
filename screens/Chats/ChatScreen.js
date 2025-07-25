@@ -22,7 +22,7 @@ export default function ChatScreen() {
 
         <TouchableOpacity
           style={styles.arrowBtn}
-          onPress={() => navigation.goBack()}
+          onPress={() => navigation.navigate("MessagesListScreen")}
         >
           <FontAwesome name="angle-right" size={24} color="#fff" />
         </TouchableOpacity>
@@ -30,8 +30,7 @@ export default function ChatScreen() {
 
       {/* Messages */}
       <ScrollView contentContainerStyle={styles.messagesContainer}>
-        {/* Message Bubble */}
-        {[1, 2, 3, 4].map((msg, index) => (
+        {[1, 2, 3, "special"].map((msg, index) => (
           <View key={index} style={styles.messageRow}>
             <View
               style={[
@@ -40,9 +39,42 @@ export default function ChatScreen() {
               ]}
             >
               <Text style={styles.messageSender}>Technician Name</Text>
-              <Text style={styles.messageText}>اهلا بيك</Text>
+
+              {msg === "special" ? (
+                <>
+                  <Text style={styles.messageText}>اهلا بيك</Text>
+
+                  {/* الاتفاقية */}
+                  <View style={styles.card}>
+                    <View style={styles.cardLeft}>
+                      <Text style={styles.price}>5000 ج.م</Text>
+                      <Text style={styles.title}>اتفاقية جديده</Text>
+                      <Text style={styles.subtitle}>تصليح الحمام</Text>
+                      <TouchableOpacity
+                        onPress={() =>
+                          navigation.navigate("AgreementDetailsScreen")
+                        }
+                        style={styles.detailsButton}
+                      >
+                        <Text style={styles.detailsButtonText}>تفاصيل</Text>
+                      </TouchableOpacity>
+                    </View>
+
+                    <Image
+                      source={require("../../assets/providerBG.png")}
+                      style={styles.cardImage}
+                    />
+                  </View>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.messageText}>اهلا بيك</Text>
+                </>
+              )}
+
               <Text style={styles.messageDate}>31\2\2025</Text>
             </View>
+
             <Image
               source={require("../../assets/chat-img.png")}
               style={styles.avatar}
@@ -81,10 +113,8 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     backgroundColor: "#F5F8FF",
   },
-
   headerTitle: {
     fontSize: 25,
-    fontWeight: "semi-bold",
     fontFamily: "Almarai-Bold",
     marginRight: 10,
     color: "#121217",
@@ -118,7 +148,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#E6EFFC",
   },
   messageSender: {
-    fontWeight: "bold",
     fontFamily: "Almarai-Bold",
     marginBottom: 4,
   },
@@ -153,10 +182,62 @@ const styles = StyleSheet.create({
     fontFamily: "Almarai-Regular",
   },
   sendButton: {
-    // backgroundColor: "#004AAD",
     width: 40,
     height: 40,
     padding: 5,
     borderRadius: 10,
+  },
+
+  // Special deal card styles
+  card: {
+    flexDirection: "row",
+    backgroundColor: "#004AAD",
+    borderRadius: 12,
+    overflow: "hidden",
+    marginTop: 10,
+  },
+  cardLeft: {
+    flex: 1,
+    padding: 10,
+    justifyContent: "center",
+  },
+  price: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+    fontFamily: "Almarai-Bold",
+    marginBottom: 4,
+    textAlign: "right",
+  },
+  title: {
+    color: "#fff",
+    fontSize: 14,
+    fontFamily: "Almarai-Bold",
+    textAlign: "right",
+  },
+  subtitle: {
+    color: "#fff",
+    fontSize: 12,
+    fontFamily: "Almarai-Regular",
+    textAlign: "right",
+    marginBottom: 8,
+  },
+  detailsButton: {
+    borderWidth: 1,
+    borderColor: "#fff",
+    borderRadius: 20,
+    paddingVertical: 4,
+    paddingHorizontal: 20,
+    alignSelf: "flex-start",
+  },
+  detailsButtonText: {
+    color: "#fff",
+    fontFamily: "Almarai-Bold",
+    fontSize: 14,
+  },
+  cardImage: {
+    width: 100,
+    height: "100%",
+    resizeMode: "cover",
   },
 });
