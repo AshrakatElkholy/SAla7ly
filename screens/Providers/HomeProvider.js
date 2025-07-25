@@ -49,7 +49,7 @@ const HomeProvider = () => {
         onPress={handleLogout}
       >
         <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>
-          تسجيل الخروج
+          تسجيل الخروج 
         </Text>
       </TouchableOpacity>
     </View>

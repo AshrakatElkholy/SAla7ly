@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, Image, StyleSheet, SafeAreaView, TouchableOpacity, Dimensions } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import CustomButton from '../Components/CustomButton';
-import { Fonts } from '../constants';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -70,7 +69,9 @@ const styles = StyleSheet.create({
   mainLogo: {
     width: SCREEN_WIDTH,
     height: SCREEN_WIDTH * 1.2, // Make image even larger
-    marginBottom: 0, // Remove space between image and card
+    marginBottom: 0, 
+    // Remove space between image and card
+    marginTop: 10,
   },
   roundedcard: {
     position: 'absolute',
