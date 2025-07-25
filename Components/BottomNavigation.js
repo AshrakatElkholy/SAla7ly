@@ -1,99 +1,155 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import { Image } from 'react-native';
-
+import React from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Platform,
+} from "react-native";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import { FontAwesome5 } from '@expo/vector-icons'; // This includes 'calendar-alt', 'home', 'th', 'bookmark'
 
 const BottomNavigation = ({ navigation, activeTab, favoriteServices = [] }) => {
-    return (
-        <View style={styles.bottomNav}>
-            <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('TwoPopups')}>
-                <Icon name="person" size={24} color="#999" />
-                <Text style={styles.navText}>انا</Text>
-            </TouchableOpacity>
+  const favActive = activeTab === "favorites" || favoriteServices.length > 0;
 
-            <TouchableOpacity
-                style={styles.navItem}
-                onPress={() => navigation.navigate('favoriteServiceScreen', { favorites: favoriteServices })}
-            >
-                <Image
-                    source={
-                        activeTab === 'favorites' || favoriteServices.length > 0
-                            ? require('../assets/favorite-filled.png')
-                            : require('../assets/favorite-outline.png')
-                    }
-                    style={{ width: 24, height: 24, tintColor: activeTab === 'favorites' ? '#0A71CD' : '#999' }}
-                />
-                <Text style={[styles.navText, activeTab === 'favorites' && styles.activeNavText]}>
-                    المفضلة
-                </Text>
-            </TouchableOpacity>
+  return (
+    <View style={styles.bottomNav}>
+      {/* Profile */}
+      <TouchableOpacity
+        style={styles.navItem}
+        onPress={() => navigation.navigate("ProfileScreen")}
+      >
+        <Ionicons
+          name="person-circle-outline"
+          size={24}
+          color={activeTab === "settings" ? "#0057D9" : "#CACACA"}
+        />
+        <Text
+          style={[
+            styles.navText,
+            activeTab === "settings" && styles.activeNavText,
+          ]}
+        >
+          اعدادات
+        </Text>
+      </TouchableOpacity>
 
-            <TouchableOpacity
-                style={[styles.navItem, activeTab === 'messages' && styles.activeNavItem]}
-                onPress={() => navigation.navigate('MessagesListScreen')}
-            >
-                <Icon
-                    name="message"
-                    size={24}
-                    color={activeTab === 'messages' ? "#0A71CD" : "#999"}
-                />
-                <Text style={[styles.navText, activeTab === 'messages' && styles.activeNavText]}>الرسائل</Text>
-            </TouchableOpacity>
+      {/* Favorites */}
+      <TouchableOpacity
+        style={styles.navItem}
+        onPress={() =>
+          navigation.navigate("favoriteServiceScreen", {
+            favorites: favoriteServices,
+          })
+        }
+      >
+        <FontAwesome5
+          name="bookmark"
+          size={20}
+          color={favActive ? "#0057D9" : "#CACACA"}
+          solid={favActive}
+        />
+        <Text
+          style={[
+            styles.navText,
+            activeTab === "favorites" && styles.activeNavText,
+          ]}
+        >
+          المفضلة
+        </Text>
+      </TouchableOpacity>
 
-            <TouchableOpacity
-                style={styles.navItem}
-                onPress={() => navigation.navigate('ServicesCategoryScreen')}
-            >
-                <FontAwesome5
-                    name="th-large"
-                    size={20}
-                    color={activeTab === 'services' ? "#0A71CD" : "#999"}
-                />
+      {/* Orders */}
+      <TouchableOpacity
+        style={styles.navItem}
+        onPress={() => navigation.navigate("OrdersScreen")}
+      >
+        <FontAwesome5
+          name="calendar-alt"
+          size={22}
+          color={activeTab === "orders" ? "#0057D9" : "#CACACA"}
+        />
+        <Text
+          style={[
+            styles.navText,
+            activeTab === "orders" && styles.activeNavText,
+          ]}
+        >
+          طلباتي
+        </Text>
+      </TouchableOpacity>
 
-                <Text style={[styles.navText, activeTab === 'services' && styles.activeNavText]}>الخدمات</Text>
-            </TouchableOpacity>
+      {/* Services */}
+      <TouchableOpacity
+        style={styles.navItem}
+        onPress={() => navigation.navigate("ServicesCategoryScreen")}
+      >
+        <FontAwesome5
+          name="th"
+          size={20}
+          color={activeTab === "services" ? "#0057D9" : "#CACACA"}
+        />
+        <Text
+          style={[
+            styles.navText,
+            activeTab === "services" && styles.activeNavText,
+          ]}
+        >
+          الخدمات
+        </Text>
+      </TouchableOpacity>
 
-            <TouchableOpacity
-                style={[styles.navItem, activeTab === 'home' && styles.activeNavItem]}
-                onPress={() => navigation.navigate('HomeScreen')}
-            >
-                <Icon
-                    name="home"
-                    size={24}
-                    color={activeTab === 'home' ? "#0A71CD" : "#999"}
-                />
-                <Text style={[styles.navText, activeTab === 'home' && styles.activeNavText]}>الرئيسية</Text>
-            </TouchableOpacity>
-        </View>
-    );
+      {/* Home */}
+      <TouchableOpacity
+        style={styles.navItem}
+        onPress={() => navigation.navigate("HomeScreen")}
+      >
+        <FontAwesome5
+          name="home"
+          size={22}
+          color={activeTab === "home" ? "#0057D9" : "#CACACA"}
+        />
+        <Text
+          style={[styles.navText, activeTab === "home" && styles.activeNavText]}
+        >
+          الرئيسية
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
-    bottomNav: {
-        flexDirection: 'row',
-        backgroundColor: '#ffffff',
-        paddingVertical: 20,
-        borderTopWidth: 1,
-        borderTopColor: '#f0f0f0',
-    },
-    navItem: {
-        flex: 1,
-        alignItems: 'center',
-        paddingVertical: 5,
-    },
-    activeNavItem: {
-        // Active state styling
-    },
-    navText: {
-        fontSize: 12,
-        color: '#999',
-        marginTop: 4,
-    },
-    activeNavText: {
-        color: '#0A71CD',
-    },
+  bottomNav: {
+    flexDirection: "row",
+    backgroundColor: "#fff",
+    paddingVertical: Platform.OS === "ios" ? 18 : 12,
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    elevation: 8,
+    paddingBottom: Platform.OS === "ios" ? 34 : 16,
+    borderTopEndRadius: 16,
+    borderTopStartRadius: 16,
+  },
+  navItem: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  navText: {
+    fontSize: 12,
+    color: "#CACACA",
+    marginTop: 4,
+  },
+  activeNavText: {
+    color: "#0057D9",
+    fontWeight: "600",
+  },
 });
 
 export default BottomNavigation;

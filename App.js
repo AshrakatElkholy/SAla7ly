@@ -24,20 +24,26 @@ import HomeScreen from "./screens/HomeScreen";
 import favoriteProviderScreen from "./screens/favoriteScreens/favoriteProviderScreen.js";
 import favoriteServiceScreen from "./screens/favoriteScreens/favoriteServiceScreen.js";
 import UserLocationScreen from "./screens/industrial_screens/onboarding/UserLocationScreen";
+import OrdersScreen from "./screens/orders/OrdersScreen";
+// import HomeScreen from "./screens/HomeScreen";
+import ServiceDetailsScreen from "./screens/ServiceDetailsScreen";
+ import ProfileScreen from "./screens/profile/ProfileScreen";
 import ProviderProfileScreen from "./screens/ProviderProfileScreen";
 import NewCard from "./screens/Payment/NewCard";
 import TwoPopups from "./screens/Payment/2popups";
 
 import ProviderHomeScreen from "./screens/Providers/HomeProvider";
 
+import { Fonts } from "./constants";
+import * as Font from "expo-font";
 // Fonts
-import * as Font from 'expo-font';
+// import * as Font from 'expo-font';
 import {
-  useFonts,
+   useFonts,
   Cairo_400Regular,
   Cairo_700Bold,
 } from "@expo-google-fonts/cairo";
-import ServiceDetailsScreen from "./screens/ServiceDetailsScreen";
+// import ServiceDetailsScreen from "./screens/ServiceDetailsScreen";
 import MessagesScreen from "./screens/Chats/message-empty";
 import MessagesListScreen from "./screens/Chats/chats";
 import ChatScreen from "./screens/Chats/ChatScreen";
@@ -128,6 +134,7 @@ function App() {
           component={UserCategoryScreen}
         />
         <Stack.Screen name="ClientLoginScreen" component={LoginScreen} />
+        {/* Add other screens here */}
         <Stack.Screen
           name="ServiceDetailsScreen"
           component={ServiceDetailsScreen}
@@ -171,6 +178,13 @@ function App() {
         <Stack.Screen name="RefusedScreen" component={Refused} />
 
         <Stack.Screen name="UserLocation" component={UserLocationScreen} />
+        <Stack.Screen name="OrdersScreen" component={OrdersScreen} />
+        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
+        {/* <Stack.Screen
+          name="ServiceDetailsScreen"
+          component={ServiceDetailsScreen}
+        /> */}
         <Stack.Screen
           name="ProviderProfileScreen"
           component={ProviderProfileScreen}

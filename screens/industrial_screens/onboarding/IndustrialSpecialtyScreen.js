@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState } from "react";
 import {
   SafeAreaView,
   View,
@@ -10,21 +10,18 @@ import {
   KeyboardAvoidingView,
   useWindowDimensions,
   Platform,
-  StatusBar,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import Icon from "react-native-vector-icons/Feather";
 import { useNavigation } from "@react-navigation/native";
-import Ionicons from "react-native-vector-icons/Ionicons";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Picker } from "@react-native-picker/picker";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 import { Fonts } from "../../../constants";
-import TabsHeader from "../../../Components/TabsHeader";
 import CustomInput from "../../../Components/CustomInput";
 import CustomButton from "../../../Components/CustomButton";
 import CustomHeader from "../../../Components/CustomHeader";
 
-/* ---------- Upload card ---------- */
 const UploadCard = ({ imageUri, onAdd, onRemove }) => (
   <View style={styles.card}>
     {imageUri ? (
@@ -51,34 +48,32 @@ const UploadCard = ({ imageUri, onAdd, onRemove }) => (
 export default function IndustrialSpecialtyScreen() {
   const navigation = useNavigation();
   const { width } = useWindowDimensions();
+  const daysOptions = [
+    "السبت",
+    "الأحد",
+    "الاثنين",
+    "الثلاثاء",
+    "الأربعاء",
+    "الخميس",
+    "الجمعة",
+  ];
 
-  /* ---- state ---- */
   const [specialty, setSpecialty] = useState("");
   const [bio, setBio] = useState("");
   const [mainImg, setMainImg] = useState(null);
   const [extraImgs, setExtraImgs] = useState([]);
+  const [workingHours, setWorkingHours] = useState([
+    { day: "", from: "", to: "" },
+  ]);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [selectedHourIndex, setSelectedHourIndex] = useState(null);
+  const [selectedField, setSelectedField] = useState(null);
 
-  // Load saved progress on mount
-  useEffect(() => {
-    AsyncStorage.setItem('onboardingStep', 'IndustrialSpecialtyScreen');
-    (async () => {
-      const saved = await AsyncStorage.getItem('onboardingSpecialty');
-      if (saved) {
-        const data = JSON.parse(saved);
-        setSpecialty(data.specialty || "");
-        setBio(data.bio || "");
-        setMainImg(data.mainImg || null);
-        setExtraImgs(data.extraImgs || []);
-      }
-    })();
-  }, []);
+  const isReady = specialty.trim() && bio.trim() && mainImg;
 
-  // Save progress on change
-  useEffect(() => {
-    AsyncStorage.setItem('onboardingSpecialty', JSON.stringify({ specialty, bio, mainImg, extraImgs }));
-  }, [specialty, bio, mainImg, extraImgs]);
+  const handleNext = () =>
+    isReady && navigation.navigate("IndustrialIdentityScreen");
 
-  /* ---- image picker ---- */
   const pickImage = async (setter) => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") return alert("يجب السماح بالوصول للصور");
@@ -89,57 +84,46 @@ export default function IndustrialSpecialtyScreen() {
     if (!res.canceled) setter(res.assets[0].uri);
   };
 
-  /* ---- header sizes ---- */
-  const dyn = useMemo(() => {
-    const topPad =
-      Platform.OS === "android" ? StatusBar.currentHeight || 24 : 44;
-    const h = width * 0.3;
-    return StyleSheet.create({
-      headerBg: {
-        height: h + 50,
-        backgroundColor: "#F0F4F8",
-        borderBottomRightRadius: width * 0.05,
-        borderBottomLeftRadius: width * 0.25,
-        paddingTop: topPad,
-        paddingHorizontal: 20,
-      },
-      headerRow: {
-        marginTop: 18,
-        flexDirection: "row-reverse",
-        alignItems: "center",
-      },
-    });
-  }, [width]);
+  const updateWorkingHour = (index, field, value) => {
+    const updated = [...workingHours];
+    updated[index][field] = value;
+    setWorkingHours(updated);
+  };
 
-  /* ---- navigation readiness ---- */
-  const isReady = specialty.trim() && bio.trim() && mainImg;
-  const handleNext = () => {
-    if (isReady) {
-      AsyncStorage.setItem('onboardingStep', 'IndustrialIdentityScreen');
-      navigation.navigate("IndustrialIdentityScreen");
+  const openTimePicker = (index, field) => {
+    setSelectedHourIndex(index);
+    setSelectedField(field);
+    setShowTimePicker(true);
+  };
+
+  const onTimeSelected = (event, selectedDate) => {
+    setShowTimePicker(false);
+    if (selectedDate && selectedHourIndex !== null && selectedField) {
+      const hours = selectedDate.getHours().toString().padStart(2, "0");
+      const minutes = selectedDate.getMinutes().toString().padStart(2, "0");
+      updateWorkingHour(
+        selectedHourIndex,
+        selectedField,
+        `${hours}:${minutes}`
+      );
+      setSelectedHourIndex(null);
+      setSelectedField(null);
     }
   };
 
-  /* ---- render ---- */
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-      {/* ===== Header ===== */}
       <CustomHeader
         title="تفاصيل صنايعى"
         onBack={() => navigation.goBack()}
         activeIndex={0}
       />
 
-      {/* ===== Body ===== */}
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <ScrollView
-          contentContainerStyle={{ padding: 20, paddingBottom: 50 }}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* التخصص */}
+        <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 50 }}>
           <CustomInput
             label="التخصص"
             placeholder="اضف تخصص"
@@ -148,11 +132,8 @@ export default function IndustrialSpecialtyScreen() {
             error={!specialty.trim() && "يرجى إدخال التخصص"}
             deferError
             labelStyle={{ fontFamily: Fonts.REGULAR, fontSize: 18 }}
-
-            // inputStyle={{ fontFamily: Fonts.REGULAR }}
           />
 
-          {/* أعمالك */}
           <Text style={styles.section}>أعمالك</Text>
           <UploadCard
             imageUri={mainImg}
@@ -160,7 +141,6 @@ export default function IndustrialSpecialtyScreen() {
             onRemove={() => setMainImg(null)}
           />
 
-          {/* صور إضافية */}
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -191,7 +171,6 @@ export default function IndustrialSpecialtyScreen() {
             <Icon name="plus" size={18} color="#004AAD" />
           </TouchableOpacity>
 
-          {/* نبذة */}
           <CustomInput
             label="نبذة"
             placeholder="اكتب نبذة عنك أو عن خبراتك"
@@ -199,14 +178,87 @@ export default function IndustrialSpecialtyScreen() {
             onChangeText={setBio}
             multiline
             numberOfLines={4}
-            style={{ marginTop: 2 }}
             error={!bio.trim() && "يرجى إدخال النبذة"}
             deferError
             labelStyle={{ fontFamily: Fonts.REGULAR, fontSize: 18 }}
-            // inputStyle={{ fontFamily: Fonts.REGULAR }}
           />
 
-          {/* التالى */}
+          <Text style={styles.section}>مواعيد العمل</Text>
+          {workingHours.map((item, index) => (
+            <View key={index} style={styles.workHourContainer}>
+              <View style={styles.dayPickerWrapper}>
+                <View style={styles.dayPicker}>
+                  <Picker
+                    selectedValue={item.day}
+                    onValueChange={(val) =>
+                      updateWorkingHour(index, "day", val)
+                    }
+                    style={styles.picker}
+                    mode="dropdown"
+                  >
+                    <Picker.Item label="اليوم" value="" />
+                    {daysOptions.map((day) => (
+                      <Picker.Item key={day} label={day} value={day} />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+
+              <View style={styles.timeRow}>
+                <TouchableOpacity
+                  style={styles.timeInputWrapper}
+                  onPress={() => openTimePicker(index, "from")}
+                >
+                  <Text style={styles.timeText}>{item.from || "من"}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.timeInputWrapper}
+                  onPress={() => openTimePicker(index, "to")}
+                >
+                  <Text style={styles.timeText}>{item.to || "إلى"}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    const updated = [...workingHours];
+                    updated.splice(index, 1);
+                    setWorkingHours(updated);
+                  }}
+                  style={styles.removeDayBtn}
+                >
+                  <Text
+                    style={{
+                      color: "#fff",
+                      fontSize: 12,
+                      fontFamily: Fonts.BOLD,
+                    }}
+                  >
+                    حذف
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))}
+
+          {showTimePicker && (
+            <DateTimePicker
+              mode="time"
+              display="default"
+              value={new Date()}
+              onChange={onTimeSelected}
+              is24Hour={true}
+            />
+          )}
+
+          <TouchableOpacity
+            style={styles.addMore}
+            onPress={() =>
+              setWorkingHours([...workingHours, { day: "", from: "", to: "" }])
+            }
+          >
+            <Text style={styles.addMoreText}>اضافة يوم اخر</Text>
+            <Icon name="plus" size={18} color="#004AAD" />
+          </TouchableOpacity>
+
           <CustomButton
             title="التالى"
             onPress={handleNext}
@@ -220,7 +272,6 @@ export default function IndustrialSpecialtyScreen() {
   );
 }
 
-/* ----- static styles (باقى العناصر) ----- */
 const styles = StyleSheet.create({
   section: {
     alignSelf: "flex-end",
@@ -230,28 +281,6 @@ const styles = StyleSheet.create({
     marginTop: 24,
     marginBottom: 8,
   },
-  //////header
-  headerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-
-  backButton: {
-    width: 22,
-    height: 22,
-    borderRadius: 18,
-    backgroundColor: "#004aad",
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 3,
-  },
-
-  /* card + thumbnails ... fontFamily */
   card: {
     borderWidth: 1.5,
     borderStyle: "dashed",
@@ -284,8 +313,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     paddingVertical: 10,
   },
-  addBtnTxt: { color: "#fff", fontFamily: Fonts.BOLD, fontSize: 14 },
-  preview: { width: 110, height: 110, borderRadius: 8 },
+  addBtnTxt: {
+    color: "#fff",
+    fontFamily: Fonts.BOLD,
+    fontSize: 14,
+  },
+  preview: {
+    width: 110,
+    height: 110,
+    borderRadius: 8,
+  },
   deleteBtn: {
     position: "absolute",
     top: 6,
@@ -294,7 +331,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 2,
   },
-  thumb: { width: 60, height: 60, borderRadius: 6 },
+  thumb: {
+    width: 60,
+    height: 60,
+    borderRadius: 6,
+  },
   thumbDelete: {
     position: "absolute",
     top: 2,
@@ -310,5 +351,69 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 20,
   },
-  addMoreText: { color: "#004AAD", fontFamily: Fonts.BOLD, fontSize: 14 },
+  addMoreText: {
+    color: "#004AAD",
+    fontFamily: Fonts.BOLD,
+    fontSize: 14,
+  },
+  workHourContainer: {
+    marginBottom: 15,
+    backgroundColor: "#fff",
+    padding: 8,
+    borderRadius: 10,
+  },
+  dayPickerWrapper: {
+    flexDirection: "row-reverse",
+    justifyContent: "flex-start",
+    marginBottom: 8,
+  },
+  dayPicker: {
+    flex: 1,
+    minWidth: 160,
+    width: "50%",
+    height: 50,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
+  picker: {
+    width: "100%",
+    height: 100,
+    paddingHorizontal: 10,
+    fontSize: 16,
+    color: "#000",
+    textAlign: "right",
+    fontFamily: Fonts.REGULAR,
+  },
+  timeInputWrapper: {
+    height: 40,
+    paddingHorizontal: 16,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    borderWidth: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    minWidth: 150,
+  },
+  timeText: {
+    fontFamily: Fonts.REGULAR,
+    fontSize: 16,
+    color: "#000",
+  },
+  timeRow: {
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    gap: 6,
+  },
+  removeDayBtn: {
+    backgroundColor: "#d00",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
 });

@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { Entypo, FontAwesome, Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 export default function ServiceDetailsScreen({ navigation }) {
   const services = [
     {
@@ -58,24 +58,58 @@ export default function ServiceDetailsScreen({ navigation }) {
     );
   };
 
-  const handleServiceBookNow = (service) => {
-    Alert.alert(
-      "تأكيد الحجز",
-      `هل تريد حجز خدمة "${service.title}"؟`,
-      [
-        {
-          text: "إلغاء",
-          style: "cancel",
-        },
-        {
-          text: "تأكيد",
-          onPress: () => {
+  // const handleServiceBookNow = (service) => {
+  //   Alert.alert(
+  //     "تأكيد الحجز",
+  //     `هل تريد حجز خدمة "${service.title}"؟`,
+  //     [
+  //       {
+  //         text: "إلغاء",
+  //         style: "cancel",
+  //       },
+  //       {
+  //         text: "تأكيد",
+  //         onPress: () => {
+  //           Alert.alert("تم الحجز", `تم حجز خدمة ${service.title} بنجاح!`);
+  //         },
+  //       },
+  //     ]
+  //   );
+  // };
+
+  const handleServiceBookNow = async (service, navigation) => {
+    Alert.alert("تأكيد الحجز", `هل تريد حجز خدمة "${service.title}"؟`, [
+      {
+        text: "إلغاء",
+        style: "cancel",
+      },
+      {
+        text: "تأكيد",
+        onPress: async () => {
+          const newOrder = {
+            id: Date.now(), // unique ID
+            name: service.title,
+            status: "قيد التنفيذ",
+            ...service, // include full service details
+          };
+  
+          try {
+            const existingOrders = await AsyncStorage.getItem("orders");
+            const orders = existingOrders ? JSON.parse(existingOrders) : [];
+            orders.push(newOrder);
+            await AsyncStorage.setItem("orders", JSON.stringify(orders));
             Alert.alert("تم الحجز", `تم حجز خدمة ${service.title} بنجاح!`);
-          },
+  
+            // ✅ Navigate and send order data
+            navigation.navigate("OrdersScreen", { order: newOrder });
+          } catch (error) {
+            console.error("فشل في حفظ الطلب:", error);
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
+  
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -200,7 +234,7 @@ export default function ServiceDetailsScreen({ navigation }) {
 
         {/* الحجز والسعر */}
         <View style={styles.footer}>
-          <TouchableOpacity style={styles.bookButtonFooter} onPress={handleBookNow}>
+          <TouchableOpacity style={styles.bookButtonFooter} onPress={handleServiceBookNow}>
             <Text style={styles.bookButtonTextFooter}>احجز الآن</Text>
           </TouchableOpacity>
           <Text style={styles.priceRange}>(500-600)م.ج</Text>

@@ -29,12 +29,28 @@ import CustomHeader from "../../../Components/CustomHeader";
 export default function IndustrialLocationScreen() {
   const navigation = useNavigation();
   const { width } = useWindowDimensions();
+  const [cityName, setCityName] = useState("جاري تحديد الموقع...");
 
   const [region, setRegion] = useState(null);
   const [marker, setMarker] = useState(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [searchLoading, setSearchLoading] = useState(false);
+
+  const fetchCityName = async (coords) => {
+    try {
+      const [place] = await Location.reverseGeocodeAsync(coords);
+      if (place?.city) {
+        setCityName(place.city);
+      } else if (place?.region) {
+        setCityName(place.region);
+      } else {
+        setCityName("لم يتم التعرف على الموقع");
+      }
+    } catch {
+      setCityName("حدث خطأ في تحديد المدينة");
+    }
+  };
 
   const locateMe = async () => {
     try {
@@ -49,6 +65,7 @@ export default function IndustrialLocationScreen() {
       };
       setRegion(newRegion);
       setMarker({ latitude, longitude });
+      fetchCityName({ latitude, longitude });
     } catch {
       alert("تعذر تحديد موقعك الحالي");
     }
@@ -90,6 +107,7 @@ export default function IndustrialLocationScreen() {
         };
         setRegion(newRegion);
         setMarker({ latitude, longitude });
+        fetchCityName({ latitude, longitude });
       } else {
         alert("لم يتم العثور على الموقع");
       }
@@ -143,16 +161,14 @@ export default function IndustrialLocationScreen() {
             <MapView
               style={styles.map}
               region={region}
-              onLongPress={(e) => setMarker(e.nativeEvent.coordinate)}
+              onLongPress={(e) => {
+                const coords = e.nativeEvent.coordinate;
+                setMarker(coords);
+                fetchCityName(coords);
+              }}
               onRegionChangeComplete={setRegion}
             >
-              {marker && (
-                <Marker
-                  coordinate={marker}
-                  draggable
-                  onDragEnd={(e) => setMarker(e.nativeEvent.coordinate)}
-                />
-              )}
+              {marker && <Marker coordinate={marker} />}
             </MapView>
 
             <TouchableOpacity style={styles.locateBtn} onPress={locateMe}>
