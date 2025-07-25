@@ -50,6 +50,11 @@ import ChatScreen from "./screens/Chats/ChatScreen";
 import CategoryScreen from "./screens/categoryScreen";
 import serviceProviderScreen from "./screens/serviceProviderScreen";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import appointmentBookingScreen from "./screens/appointmentBookingScreen.js";
+import serviceFeedbackScreen from "./screens/serviceFeedbackScreen.js";
+import providerHomeScreen from "./screens/provider_screens/providerHomeScreen.js";
+import providerServicesScreen from "./screens/provider_screens/providerServicesScreen.js";
+import providerAddServiceScreen from "./screens/provider_screens/providerAddServiceScreen.js";
 
 const Stack = createStackNavigator();
 
@@ -159,6 +164,26 @@ function App() {
           name="serviceProviderScreen"
           component={serviceProviderScreen}
           options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="appointmentBookingScreen"
+          component={appointmentBookingScreen}
+        />
+        <Stack.Screen
+          name="serviceFeedbackScreen"
+          component={serviceFeedbackScreen}
+        />
+        <Stack.Screen
+          name="providerHomeScreen"
+          component={providerHomeScreen}
+        />
+        <Stack.Screen
+          name="providerServicesScreen"
+          component={providerServicesScreen}
+        />
+        <Stack.Screen
+          name="providerAddServiceScreen"
+          component={providerAddServiceScreen}
         />
         <Stack.Screen
           name="IndustrialSpecialtyScreen"

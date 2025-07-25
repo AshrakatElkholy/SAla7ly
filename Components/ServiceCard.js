@@ -15,12 +15,10 @@ const ServiceCard = ({
     const [isFavorite, setIsFavorite] = useState(propIsFavorite || false);
     const isHorizontal = cardStyle === 'horizontal';
 
-    // Check if service is in favorites when component mounts
     useEffect(() => {
         checkFavoriteStatus();
     }, []);
 
-    // Update local state when prop changes (for FavoriteServiceScreen)
     useEffect(() => {
         if (propIsFavorite !== undefined) {
             setIsFavorite(propIsFavorite);
@@ -44,22 +42,19 @@ const ServiceCard = ({
         try {
             const storedFavorites = await AsyncStorage.getItem('favoriteServices');
             let favorites = storedFavorites ? JSON.parse(storedFavorites) : [];
-            
+
             const exists = favorites.some((fav) => fav.id === service.id);
-            
+
             if (exists) {
-                // Remove from favorites
                 favorites = favorites.filter((item) => item.id !== service.id);
                 setIsFavorite(false);
             } else {
-                // Add to favorites
                 favorites = [...favorites, service];
                 setIsFavorite(true);
             }
-            
+
             await AsyncStorage.setItem('favoriteServices', JSON.stringify(favorites));
-            
-            // Call the prop function if provided (for FavoriteServiceScreen)
+
             if (onToggleFavorite) {
                 onToggleFavorite(service);
             }
@@ -70,7 +65,9 @@ const ServiceCard = ({
 
     const handleBookNow = () => {
         if (navigation) {
-            navigation.navigate('ServiceDetailsScreen');
+            navigation.navigate('providerServicesScreen');
+        } else {
+            console.error('Navigation prop is not provided to ServiceCard');
         }
     };
 
@@ -87,8 +84,8 @@ const ServiceCard = ({
                         <Image
                             source={
                                 isFavorite
-                                    ? require('../assets/bookmark-filled.png') 
-                                    : require('../assets/bookmark-outline.png') 
+                                    ? require('../assets/bookmark-filled.png')
+                                    : require('../assets/bookmark-outline.png')
                             }
                             style={styles.bookmarkIcon}
                         />
@@ -142,7 +139,7 @@ const styles = StyleSheet.create({
     verticalCard: { width: '100%' },
     serviceImageContainer: {
         position: 'relative',
-        height: 120,
+        height: 140,
         overflow: 'hidden',
     },
     serviceImage: {
@@ -172,7 +169,7 @@ const styles = StyleSheet.create({
         padding: 6,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
         opacity: 0.6,
     },
 
@@ -180,12 +177,12 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#000',
         marginHorizontal: 3,
-        fontWeight: 600
+        fontWeight: '600'
     },
     reviewsText: {
         fontSize: 10,
         color: '#000',
-        fontWeight: 600
+        fontWeight: '600'
     },
     serviceInfo: { padding: 12 },
     serviceTitleRow: {
@@ -245,7 +242,9 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     bookmarkIcon: {
-        // Add any specific styling for the bookmark icon if needed
+        width: 17,
+        height: 18,
+        resizeMode: 'contain',
     },
 });
 

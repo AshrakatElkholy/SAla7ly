@@ -16,7 +16,7 @@ function Pending({ navigation }) {
   const handleFinishRegistration = async () => {
     try {
       await AsyncStorage.setItem("user", "true"); // عشان نعتبره سجل خلاص
-      navigation.navigate("providerHome");
+      navigation.navigate("providerHomeScreen");
     } catch (error) {
       console.log("Error saving user status", error);
     }
