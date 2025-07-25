@@ -1,25 +1,48 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
-// ... same imports
-
 const ProviderCard = ({ provider, isFavorite, onToggleFavorite, onDetailsPress }) => {
+  const toggleFavoriteStatus = async () => {
+    try {
+      const storedFavorites = await AsyncStorage.getItem('favoriteServices');
+      let favorites = storedFavorites ? JSON.parse(storedFavorites) : [];
+
+      const exists = favorites.some((fav) => fav.id === provider.id);
+
+      if (exists) {
+        favorites = favorites.filter((item) => item.id !== provider.id);
+      } else {
+        favorites = [...favorites, provider];
+      }
+
+      await AsyncStorage.setItem('favoriteServices', JSON.stringify(favorites));
+
+      if (onToggleFavorite) {
+        onToggleFavorite(provider);
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    }
+  };
+
   return (
     <View style={styles.card}>
       <Image source={provider.image} style={styles.image} />
 
       <View style={styles.info}>
-        {/* Bookmark top left */}
-        <TouchableOpacity onPress={() => onToggleFavorite(provider)} style={styles.bookmarkWrapper}>
-          <FontAwesome
-            name="bookmark"
-            size={16}
-            color={isFavorite ? '#004AAD' : '#D3D3D3'}
+        <TouchableOpacity style={styles.favoriteBadge} onPress={toggleFavoriteStatus}>
+          <Image
+            source={
+              isFavorite
+                ? require('../assets/bookmark-filled.png')
+                : require('../assets/bookmark-outline.png')
+            }
+            style={styles.bookmarkIcon}
           />
         </TouchableOpacity>
 
-        {/* Name + Rating */}
         <View style={styles.nameRow}>
           <Text style={styles.name}>{provider.name}</Text>
           <View style={styles.ratingBadge}>
@@ -29,10 +52,8 @@ const ProviderCard = ({ provider, isFavorite, onToggleFavorite, onDetailsPress }
           </View>
         </View>
 
-        {/* Address */}
         <Text style={styles.address}>{provider.address}</Text>
 
-        {/* Bottom row: category + details */}
         <View style={styles.bottomRow}>
           <View style={styles.categoryBadge}>
             <Text style={styles.categoryText}>{provider.category || 'كهربائي'}</Text>
@@ -72,15 +93,6 @@ const styles = StyleSheet.create({
     padding: 12,
     justifyContent: 'space-between',
   },
-  bookmarkWrapper: {
-    position: 'absolute',
-    top: 8,
-    left: 8,
-    backgroundColor: '#eee',
-    padding: 6,
-    borderRadius: 20,
-    zIndex: 2,
-  },
   nameRow: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
@@ -92,6 +104,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'right',
     color: '#000',
+  },
+  favoriteBadge: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    borderRadius: 15,
+    padding: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    opacity: 0.6,
   },
   ratingBadge: {
     flexDirection: 'row',
@@ -143,7 +166,11 @@ const styles = StyleSheet.create({
     color: '#004AAD',
     fontWeight: '600',
   },
+  bookmarkIcon: {
+    width: 17,
+    height: 18,
+    resizeMode: 'contain',
+  },
 });
 
 export default ProviderCard;
-;

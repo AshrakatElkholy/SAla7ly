@@ -23,7 +23,7 @@ const BottomNavigation = ({ navigation, activeTab, favoriteServices = [] }) => {
                             ? require('../assets/favorite-filled.png')
                             : require('../assets/favorite-outline.png')
                     }
-                    style={{ width: 24, height: 24, tintColor: activeTab === 'favorites' ? '#0A71CD' : '#999' }}
+                    style={{ width: 24, height: 22, tintColor: activeTab === 'favorites' ? '#0A71CD' : '#999' }}
                 />
                 <Text style={[styles.navText, activeTab === 'favorites' && styles.activeNavText]}>
                     المفضلة
