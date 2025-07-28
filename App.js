@@ -56,6 +56,12 @@ import providerHomeScreen from "./screens/provider_screens/providerHomeScreen.js
 import providerServicesScreen from "./screens/provider_screens/providerServicesScreen.js";
 import providerAddServiceScreen from "./screens/provider_screens/providerAddServiceScreen.js";
 import AgreementDetailsScreen from "./screens/Chats/AgreementDetailsScreen";
+// PROVIDER CHATS SCREENS
+import ProviderChatsList from "./screens/Chats-Provider/chatsp.js";
+import ProviderChats from "./screens/Chats-Provider/chatScreenp.js";
+import NewOfferScreen from "./screens/Chats-Provider/AgreementDetailsScreenp.js";
+
+
 const Stack = createStackNavigator();
 
 function App() {
@@ -205,6 +211,7 @@ function App() {
         <Stack.Screen name="UserLocation" component={UserLocationScreen} />
         <Stack.Screen name="OrdersScreen" component={OrdersScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="userHome" component={HomeScreen} />
         <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
         {/* <Stack.Screen
           name="ServiceDetailsScreen"
@@ -230,6 +237,20 @@ function App() {
         {/* <Stack.Screen name="ChatScreen" component={ChatScreen} /> */}
 
         <Stack.Screen name="providerHome" component={ProviderHomeScreen} />
+
+        {/* PROVIDER CHATS SCREENS */}
+        <Stack.Screen
+          name="ProviderChatsList"
+          component={ProviderChatsList}
+        />
+        <Stack.Screen
+          name="ProviderChatScreen"
+          component={ProviderChats}
+        />
+        <Stack.Screen
+          name="AgreementDetails"
+          component={NewOfferScreen}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

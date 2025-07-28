@@ -1,59 +1,73 @@
-import React from 'react';
+import React from "react";
 import {
   View,
   Text,
+  StyleSheet,
+  SafeAreaView,
   TouchableOpacity,
-  Alert
-} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 const HomeProvider = () => {
   const navigation = useNavigation();
 
-  const handleLogout = async () => {
-    Alert.alert('تأكيد تسجيل الخروج', 'هل أنت متأكد أنك تريد تسجيل الخروج؟', [
-      { text: 'إلغاء', style: 'cancel' },
-      {
-        text: 'تأكيد',
-        style: 'destructive',
-        onPress: async () => {
-          await AsyncStorage.multiRemove([
-            'user',
-            'onboardingStep',
-            'onboardingSpecialty',
-            'onboardingIdentity',
-            'onboardingLocation',
-          ]);
-          navigation.reset({
-            index: 0,
-            routes: [{ name: 'Welcome' }],
-          });
-        },
-      },
-    ]);
+  const handleGoToChat = () => {
+    navigation.navigate("ProviderChats"); 
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>HomeProvider</Text>
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.header}>مرحبًا بك يا صنايعي 👋</Text>
 
-      <TouchableOpacity
-        style={{
-          backgroundColor: '#E53935',
-          padding: 14,
-          borderRadius: 10,
-          alignItems: 'center',
-          marginTop: 30,
-        }}
-        onPress={handleLogout}
-      >
-        <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>
-          تسجيل الخروج 
+      <View style={styles.content}>
+        <Text style={styles.description}>
+          هذه هي شاشة الصفحة الرئيسية للصنايعي
         </Text>
-      </TouchableOpacity>
-    </View>
+
+        <TouchableOpacity style={styles.button} onPress={handleGoToChat}>
+          <Text style={styles.buttonText}>اذهب إلى المحادثة</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 };
 
 export default HomeProvider;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#F7F9FC",
+    paddingHorizontal: 20,
+    paddingTop: 50,
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#2D3E50",
+    textAlign: "center",
+    marginBottom: 30,
+  },
+  content: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  description: {
+    fontSize: 16,
+    color: "#444",
+    marginBottom: 30,
+    textAlign: "center",
+  },
+  button: {
+    backgroundColor: "#4A90E2",
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 10,
+  },
+  buttonText: {
+    color: "#FFF",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+});

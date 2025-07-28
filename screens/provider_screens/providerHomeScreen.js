@@ -109,10 +109,10 @@ const providerHomeScreen = () => {
 
                         <TouchableOpacity
                             style={styles.iconButton}
-                            onPress={() => setMessageClicked(!messageClicked)}
+                            onPress={() => navigation.navigate('ProviderChatsList')}
                         >
                             <MaterialCommunityIcons
-                                name={messageClicked ? 'message-reply-text' : 'message-reply-text-outline'}
+                                name="message-reply-text-outline"
                                 size={24}
                                 color="#333"
                             />
