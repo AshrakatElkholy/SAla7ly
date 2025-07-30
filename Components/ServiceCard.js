@@ -65,7 +65,7 @@ const ServiceCard = ({
 
     const handleBookNow = () => {
         if (navigation) {
-            navigation.navigate('providerServicesScreen');
+            navigation.navigate('ServiceDetailsScreen');
         } else {
             console.error('Navigation prop is not provided to ServiceCard');
         }

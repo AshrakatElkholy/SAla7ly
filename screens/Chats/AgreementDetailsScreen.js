@@ -210,6 +210,10 @@ export default function AgreementDetailsScreen() {
                                   style={{ width: 16, height: 16 }}
                                 />
                               </TouchableOpacity>
+                              {/* زر التعديل */}
+                              <TouchableOpacity style={styles.circleBtnEdit}>
+                                <FontAwesome name="pencil" size={14} color="#fff" />
+                              </TouchableOpacity>
                               {/* النجمة والتقييم والمراجعات */}
                               <View style={styles.ratingInfo}>
                                 <FontAwesome name="star" size={12} color="#FFD700" />
@@ -560,6 +564,15 @@ const styles = StyleSheet.create({
     backgroundColor: "#8A8AA3",
     justifyContent: "center",
     alignItems: "center",
+  },
+  circleBtnEdit: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#004AAD",
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: 8,
   },
 
   sectionTitle: {
