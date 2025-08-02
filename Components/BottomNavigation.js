@@ -5,13 +5,14 @@ import {
   TouchableOpacity,
   StyleSheet,
   Platform,
+  Image,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import { FontAwesome5 } from '@expo/vector-icons'; // This includes 'calendar-alt', 'home', 'th', 'bookmark'
+import { FontAwesome5 } from '@expo/vector-icons';
 
 const BottomNavigation = ({ navigation, activeTab, favoriteServices = [] }) => {
-  const favActive = activeTab === "favorites" || favoriteServices.length > 0;
-
+  const favActive = activeTab === "favorites";
+  
   return (
     <View style={styles.bottomNav}>
       {/* Profile */}
@@ -22,7 +23,7 @@ const BottomNavigation = ({ navigation, activeTab, favoriteServices = [] }) => {
         <Ionicons
           name="person-circle-outline"
           size={24}
-          color={activeTab === "settings" ? "#0057D9" : "#CACACA"}
+          color={activeTab === "settings" ? "#004AAD" : "#CACACA"}
         />
         <Text
           style={[
@@ -43,11 +44,13 @@ const BottomNavigation = ({ navigation, activeTab, favoriteServices = [] }) => {
           })
         }
       >
-        <FontAwesome5
-          name="bookmark"
-          size={20}
-          color={favActive ? "#0057D9" : "#CACACA"}
-          solid={favActive}
+        <Image
+          source={
+            favActive
+              ? require('../assets/favorite-filled.png')
+              : require('../assets/favorite-outline.png')
+          }
+          style={{ width: 20, height: 20 }}
         />
         <Text
           style={[
@@ -67,7 +70,7 @@ const BottomNavigation = ({ navigation, activeTab, favoriteServices = [] }) => {
         <FontAwesome5
           name="calendar-alt"
           size={22}
-          color={activeTab === "orders" ? "#0057D9" : "#CACACA"}
+          color={activeTab === "orders" ? "#004AAD" : "#CACACA"}
         />
         <Text
           style={[
@@ -87,7 +90,7 @@ const BottomNavigation = ({ navigation, activeTab, favoriteServices = [] }) => {
         <FontAwesome5
           name="th"
           size={20}
-          color={activeTab === "services" ? "#0057D9" : "#CACACA"}
+          color={activeTab === "services" ? "#004AAD" : "#CACACA"}
         />
         <Text
           style={[
@@ -107,7 +110,7 @@ const BottomNavigation = ({ navigation, activeTab, favoriteServices = [] }) => {
         <FontAwesome5
           name="home"
           size={22}
-          color={activeTab === "home" ? "#0057D9" : "#CACACA"}
+          color={activeTab === "home" ? "#004AAD" : "#CACACA"}
         />
         <Text
           style={[styles.navText, activeTab === "home" && styles.activeNavText]}
@@ -147,7 +150,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   activeNavText: {
-    color: "#0057D9",
+    color: "#004AAD",
     fontWeight: "600",
   },
 });

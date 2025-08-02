@@ -15,7 +15,7 @@ import {
 } from "react-native-safe-area-context";
 import { Fonts } from "../constants";
 
-import { useNavigation } from "@react-navigation/native"; // ✅ Added
+import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import Svg, { Line } from "react-native-svg";
 
@@ -32,7 +32,7 @@ const CustomHeaderWithLines = ({
 }) => {
   const [activeTab, setActiveTab] = useState("current");
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation(); // ✅ useNavigation hook inside component
+  const navigation = useNavigation();
 
   const handleTabPress = (tab) => {
     setActiveTab(tab);
@@ -77,24 +77,27 @@ const CustomHeaderWithLines = ({
 
         {/* الهيدر العلوي */}
         <View style={styles.headerContent}>
-          {showIcons && (
-            <View style={styles.iconsContainer}>
-              <TouchableOpacity style={styles.icon}>
-                <Feather name="bell" size={22} color="#121217" />
-              </TouchableOpacity>
+          {/* Always render icons container, but conditionally show content */}
+          <View style={styles.iconsContainer}>
+            {showIcons && (
+              <>
+                <TouchableOpacity style={styles.icon}>
+                  <Feather name="bell" size={22} color="#121217" />
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                style={styles.icon}
-                onPress={() => navigation.navigate("MessagesListScreen")} // ✅ working navigation
-              >
-                <Ionicons
-                  name="chatbubble-ellipses-outline"
-                  size={22}
-                  color="#121217"
-                />
-              </TouchableOpacity>
-            </View>
-          )}
+                <TouchableOpacity
+                  style={styles.icon}
+                  onPress={() => navigation.navigate("MessagesListScreen")}
+                >
+                  <Ionicons
+                    name="chatbubble-ellipses-outline"
+                    size={22}
+                    color="#121217"
+                  />
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
           <Text style={styles.title}>{title}</Text>
         </View>
 
@@ -132,7 +135,7 @@ const CustomHeaderWithLines = ({
 const styles = StyleSheet.create({
   container: {
     paddingTop: 15,
-    paddingBottom: 16,
+    paddingBottom: 5,
     paddingHorizontal: 16,
     position: "relative",
   },
@@ -140,11 +143,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 16,
+    marginBottom: 8,
   },
   iconsContainer: {
     flexDirection: "row",
     gap: 12,
+    minWidth: 80,
+    justifyContent: "flex-start",
   },
   icon: {
     padding: 6,
@@ -153,9 +158,11 @@ const styles = StyleSheet.create({
     borderColor: "#F5F5F5",
   },
   title: {
-    fontSize: 32,
+    fontSize: 29,
     fontFamily: Fonts.BOLD,
     color: "#000",
+    textAlign: "right",
+    flex: 1, // Allow title to take available space
   },
   tabsWrapper: {
     alignItems: "center",

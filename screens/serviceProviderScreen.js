@@ -17,8 +17,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import BottomNavigation from '../Components/BottomNavigation';
 import ServiceCard from '../Components/ServiceCard';
 import HorizontalCategoryList from '../Components/HorizontalCategoryList';
-
-
+import CustomHeaderWithLines from '../Components/CustomHeaderTemp'; 
 
 const serviceProviderScreen = () => {
     const navigation = useNavigation();
@@ -38,7 +37,6 @@ const serviceProviderScreen = () => {
         { id: 7, name: 'كهرباء', icon: require('../assets/categoryIcons/flashlight.png') },
         { id: 8, name: 'نقاشة', icon: require('../assets/categoryIcons/brush.png') },
     ];
-
 
     const services = [
         {
@@ -119,27 +117,13 @@ const serviceProviderScreen = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-
             {searchQuery.length === 0 && (
-                <View style={styles.header}>
-                    <View style={styles.headerContent}>
-                        <TouchableOpacity
-                            style={styles.backButton}
-                            onPress={() => navigation.goBack()}
-                        >
-                            <Icon name="arrow-forward" size={20} color="#fff" />
-                        </TouchableOpacity>
-
-                        <View style={styles.headerTitleContainer}>
-                            <Text style={styles.headerTitle}>{categoryName}</Text>
-                        </View>
-
-                        <View style={styles.placeholder} />
-                    </View>
-                </View>
+                <CustomHeaderWithLines 
+                    title={categoryName}
+                    showTabs={false}
+                    showIcons={false}
+                />
             )}
-
 
             <View style={styles.searchContainer}>
                 <View style={styles.searchBar}>
@@ -152,7 +136,7 @@ const serviceProviderScreen = () => {
                     <View style={styles.searchInputWrapper}>
                         <TextInput
                             style={styles.searchInput}
-                            placeholder="بحث في الخدمات"
+                            placeholder="بحث عن خدمه"
                             placeholderTextColor="#999"
                             textAlign="right"
                             value={searchQuery}
@@ -203,8 +187,6 @@ const serviceProviderScreen = () => {
                 </View>
             </ScrollView>
 
-
-
             <BottomNavigation
                 navigation={navigation}
                 activeTab="services"
@@ -218,53 +200,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#ffffff',
-    },
-    header: {
-        paddingHorizontal: 20,
-        paddingVertical: 20,
-        borderBottomWidth: 1,
-        borderBottomColor: '#E6EDF7',
-        backgroundColor: 'transparent',
-    },
-    headerContent: {
-        flexDirection: 'row-reverse',
-        alignItems: 'center',
-        justifyContent: 'flex-start',
-        gap: 10,
-    },
-
-    backButton: {
-        backgroundColor: '#004AAD',
-        padding: 8,
-        borderRadius: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: 36,
-        height: 36,
-    },
-
-    headerTitleContainer: {
-        flexDirection: 'row-reverse',
-        alignItems: 'center',
-        gap: 6,
-    },
-
-    headerTitle: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#333',
-        textAlign: 'right',
-    },
-    categoryIconContainer: {
-        width: 24,
-        height: 24,
-        borderRadius: 12,
-        backgroundColor: '#f0f8ff',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    placeholder: {
-        width: 34,
     },
     searchContainer: {
         paddingHorizontal: 20,

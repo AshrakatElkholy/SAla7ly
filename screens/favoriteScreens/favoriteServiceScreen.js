@@ -12,12 +12,12 @@ import ServiceCard from '../../Components/ServiceCard';
 import BottomNavigation from '../../Components/BottomNavigation';
 import { useRoute, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CustomHeaderWithLines from '../../Components/CustomHeaderTemp'; 
 
 const FavoriteServiceScreen = ({ navigation }) => {
     const route = useRoute();
     const [favorites, setFavorites] = useState([]);
 
-    // Load favorites from AsyncStorage when component mounts or screen is focused
     const loadFavorites = async () => {
         try {
             const storedFavorites = await AsyncStorage.getItem('favoriteServices');
@@ -66,10 +66,13 @@ const FavoriteServiceScreen = ({ navigation }) => {
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
-            <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>المفضلة</Text>
-            </View>
+            {/* Replace the old header with CustomHeaderWithLines */}
+            <CustomHeaderWithLines 
+                title="المفضلة"
+                showTabs={false}
+                showIcons={true}
+            />
+            
             {/* Tabs */}
             <View style={styles.tabContainer}>
                 <TouchableOpacity
@@ -114,17 +117,6 @@ const styles = StyleSheet.create({
     container: {
         paddingHorizontal: 20,
         paddingBottom: 100,
-    },
-    header: {
-        paddingHorizontal: 20,
-        paddingTop: 40,
-        paddingBottom: 5,
-    },
-    headerTitle: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#000',
-        textAlign: 'right',
     },
     tabContainer: {
         flexDirection: 'row',

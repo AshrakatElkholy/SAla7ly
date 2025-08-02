@@ -11,19 +11,20 @@ import {
 } from 'react-native';
 import ProviderCard from '../../Components/ProviderCard';
 import BottomNavigation from '../../Components/BottomNavigation';
+import CustomHeaderWithLines from '../../Components/CustomHeaderTemp';
 
 const initialProviders = [
     {
         id: '1',
         name: 'أحمد محمد',
         address: 'محطه الرمل ,اسكندريه',
-        image: require('../../assets/service1.jpg'), // Make sure this image exists
+        image: require('../../assets/service1.jpg'), 
     },
     {
         id: '2',
         name: 'سعيد عبد الله',
         address: 'محطه الرمل ,اسكندريه',
-        image: require('../../assets/service1.jpg'), // Make sure this image exists
+        image: require('../../assets/service1.jpg'), 
     },
 ];
 
@@ -32,10 +33,11 @@ const favoriteProviderScreen = ({ navigation, route }) => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>المفضلة</Text>
-            </View>
+            <CustomHeaderWithLines 
+                title="المفضلة"
+                showTabs={false}
+                showIcons={false}
+            />
 
             {/* Tabs */}
             <View style={styles.tabContainer}>
@@ -88,17 +90,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
-    },
-    header: {
-        paddingHorizontal: 20,
-        paddingTop: 40,
-        paddingBottom: 5,
-    },
-    headerTitle: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#000',
-        textAlign: 'right',
     },
     tabContainer: {
         flexDirection: 'row',

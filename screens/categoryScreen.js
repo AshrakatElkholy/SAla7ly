@@ -13,6 +13,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
 import BottomNavigation from '../Components/BottomNavigation';
+import CustomHeaderWithLines from '../Components/CustomHeaderTemp'; 
 
 const CategoryScreen = () => {
     const navigation = useNavigation();
@@ -38,7 +39,6 @@ const CategoryScreen = () => {
         'soldering': require('../assets/categoryIcons/soldering.png'),
     };
 
-
     const [favoriteServices, setFavoriteServices] = useState([]);
 
     const filteredCategories = serviceCategories.filter(category =>
@@ -54,14 +54,12 @@ const CategoryScreen = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-
-            {/* Header */}
-            <View style={styles.header}>
-                <View style={styles.headerContent}>
-                    <Text style={styles.headerTitle}>الخدمات</Text>
-                </View>
-            </View>
+            {/* Replace the old header with CustomHeaderWithLines */}
+            <CustomHeaderWithLines 
+                title="الخدمات"
+                showTabs={false}
+                showIcons={true}
+            />
 
             {/* Search Bar */}
             <View style={styles.searchContainer}>
@@ -75,7 +73,7 @@ const CategoryScreen = () => {
                     <View style={styles.searchInputWrapper}>
                         <TextInput
                             style={styles.searchInput}
-                            placeholder="بحث عن خدمة"
+                            placeholder="بحث عن خدمه"
                             placeholderTextColor="#999"
                             textAlign="right"
                             value={searchQuery}
@@ -130,24 +128,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#ffffff',
-    },
-    header: {
-        paddingHorizontal: 20,
-        paddingVertical: 20,
-        borderBottomWidth: 1,
-        borderBottomColor: '#f0f0f0',
-        backgroundColor: 'transparent',
-    },
-    headerContent: {
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-    },
-    headerTitle: {
-        fontSize: 32,
-        fontWeight: 'bold',
-        color: '#333',
-        textAlign: 'right',
     },
     searchContainer: {
         paddingHorizontal: 20,
@@ -225,8 +205,8 @@ const styles = StyleSheet.create({
         marginBottom: 2,
     },
     iconImage: {
-        width: 60,
-        height: 50,
+        width: 40,
+        height: 35,
         resizeMode: 'contain',
     },
     categoryWrapper: {
