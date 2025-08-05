@@ -12,7 +12,7 @@ const HomeProvider = () => {
   const navigation = useNavigation();
 
   const handleGoToChat = () => {
-    navigation.navigate("ProviderChats"); 
+    navigation.navigate("ProviderChats");
   };
 
   return (

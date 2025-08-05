@@ -7,7 +7,7 @@ import {
   StatusBar,
   Dimensions,
 } from "react-native";
-
+import {} from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import {
   SafeAreaView,
@@ -15,7 +15,7 @@ import {
 } from "react-native-safe-area-context";
 import { Fonts } from "../constants";
 
-import { useNavigation } from "@react-navigation/native"; // ✅ Added
+import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import Svg, { Line } from "react-native-svg";
 
@@ -24,15 +24,17 @@ const screenWidth = Dimensions.get("window").width;
 const CustomHeaderWithLines = ({
   title = "طلباتي",
   onTabChange,
-  tabLabels = { current: "الحاليه", past: "السابقة" },
+  tabLabels = { current: "الحاليه", past: "السابقة", new: "الجديدة" },
   style,
   showTabs = true,
   showIcons = true,
+  userType = "user",
   statusBarColor = "#EDF2F9",
 }) => {
-  const [activeTab, setActiveTab] = useState("current");
+  const initialTab = userType === "provider" ? "new" : "current";
+  const [activeTab, setActiveTab] = useState(initialTab);
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation(); // ✅ useNavigation hook inside component
+  const navigation = useNavigation();
 
   const handleTabPress = (tab) => {
     setActiveTab(tab);
@@ -95,14 +97,17 @@ const CustomHeaderWithLines = ({
               </TouchableOpacity>
             </View>
           )}
-          <Text style={styles.title}>{title}</Text>
+          {!!title && <Text style={styles.title}>{title}</Text>}
         </View>
 
         {/* التابس */}
         {showTabs && (
           <View style={styles.tabsWrapper}>
             <View style={styles.tabsContainer}>
-              {["current", "past"].map((key) => (
+              {(userType === "provider"
+                ? ["new", "current", "past"]
+                : ["current", "past"]
+              ).map((key) => (
                 <TouchableOpacity
                   key={key}
                   style={[
