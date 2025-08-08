@@ -65,7 +65,7 @@ const CurrentOrders = ({ navigation }) => {
           key={order.id}
           order={order}
           showChat={true}
-          onCancel={handleCancelOrder}
+          navigation={navigation}
         />
       ))}
     </View>

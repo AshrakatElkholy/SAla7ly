@@ -8,14 +8,18 @@ import {
   TextInput,
   SafeAreaView,
   StatusBar,
+  Alert,
+  PermissionsAndroid,
+  Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Image } from 'react-native';
-
+import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
 
 const appointmentBookingScreen = () => {
   const [activeDate, setActiveDate] = useState(null);
   const [activeTime, setActiveTime] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const getDayLetter = (dayIndex) => {
     const letters = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -32,6 +36,7 @@ const appointmentBookingScreen = () => {
     }
     return dates.reverse();
   };
+
   const generateTimes = () => {
     const times = [];
     for (let hour = 12; hour <= 21; hour++) {
@@ -40,6 +45,117 @@ const appointmentBookingScreen = () => {
       times.push({ id: hour, label: `${displayHour}:00 ${suffix}` });
     }
     return times.reverse();
+  };
+
+  // Request camera permission for Android
+  const requestCameraPermission = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.CAMERA,
+          {
+            title: 'Camera Permission',
+            message: 'App needs camera permission to take photos',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          }
+        );
+        return granted === PermissionsAndroid.RESULTS.GRANTED;
+      } catch (err) {
+        console.warn(err);
+        return false;
+      }
+    }
+    return true;
+  };
+
+  // Show photo selection options
+  const showImagePickerOptions = () => {
+    Alert.alert(
+      'اختر صورة',
+      'من أين تريد اختيار الصورة؟',
+      [
+        {
+          text: 'إلغاء',
+          style: 'cancel',
+        },
+        {
+          text: 'معرض الصور',
+          onPress: selectFromGallery,
+        },
+        {
+          text: 'الكاميرا',
+          onPress: selectFromCamera,
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  // Select image from gallery
+  const selectFromGallery = () => {
+    const options = {
+      mediaType: 'photo',
+      quality: 0.7,
+      maxWidth: 1000,
+      maxHeight: 1000,
+    };
+
+    launchImageLibrary(options, (response) => {
+      if (response.didCancel || response.errorMessage) {
+        return;
+      }
+
+      if (response.assets && response.assets[0]) {
+        setSelectedImage(response.assets[0]);
+      }
+    });
+  };
+
+  // Select image from camera
+  const selectFromCamera = async () => {
+    const hasPermission = await requestCameraPermission();
+    if (!hasPermission) {
+      Alert.alert('خطأ', 'يجب السماح بالوصول للكاميرا');
+      return;
+    }
+
+    const options = {
+      mediaType: 'photo',
+      quality: 0.7,
+      maxWidth: 1000,
+      maxHeight: 1000,
+    };
+
+    launchCamera(options, (response) => {
+      if (response.didCancel || response.errorMessage) {
+        return;
+      }
+
+      if (response.assets && response.assets[0]) {
+        setSelectedImage(response.assets[0]);
+      }
+    });
+  };
+
+  // Remove selected image
+  const removeImage = () => {
+    Alert.alert(
+      'حذف الصورة',
+      'هل تريد حذف الصورة المحددة؟',
+      [
+        {
+          text: 'إلغاء',
+          style: 'cancel',
+        },
+        {
+          text: 'حذف',
+          onPress: () => setSelectedImage(null),
+          style: 'destructive',
+        },
+      ]
+    );
   };
 
   return (
@@ -88,7 +204,6 @@ const appointmentBookingScreen = () => {
               </TouchableOpacity>
             ))}
           </ScrollView>
-
         </View>
 
         {/* Time Selection */}
@@ -112,8 +227,6 @@ const appointmentBookingScreen = () => {
               </TouchableOpacity>
             ))}
           </ScrollView>
-
-
         </View>
 
         {/* Problem Description */}
@@ -131,15 +244,40 @@ const appointmentBookingScreen = () => {
         {/* Problem Image */}
         <View style={appointmentBookingStyles.imageSection}>
           <Text style={appointmentBookingStyles.sectionTitle}>صوره لمشكله</Text>
-          <TouchableOpacity style={appointmentBookingStyles.imageUpload}>
-            <View style={appointmentBookingStyles.uploadIconContainer}>
+          
+          {selectedImage ? (
+            <View style={appointmentBookingStyles.selectedImageContainer}>
               <Image
-                source={require('../assets/addImage.png')}
-                style={appointmentBookingStyles.uploadIconImage}
+                source={{ uri: selectedImage.uri }}
+                style={appointmentBookingStyles.selectedImage}
               />
+              <TouchableOpacity
+                style={appointmentBookingStyles.removeImageButton}
+                onPress={removeImage}
+              >
+                <Icon name="close" size={20} color="#fff" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={appointmentBookingStyles.changeImageButton}
+                onPress={showImagePickerOptions}
+              >
+                <Text style={appointmentBookingStyles.changeImageText}>تغيير الصورة</Text>
+              </TouchableOpacity>
             </View>
-
-          </TouchableOpacity>
+          ) : (
+            <TouchableOpacity 
+              style={appointmentBookingStyles.imageUpload}
+              onPress={showImagePickerOptions}
+            >
+              <View style={appointmentBookingStyles.uploadIconContainer}>
+                <Image
+                  source={require('../assets/addImage.png')}
+                  style={appointmentBookingStyles.uploadIconImage}
+                />
+              </View>
+              <Text style={appointmentBookingStyles.uploadText}>اضغط لإضافة صورة</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Book Now Button */}
@@ -288,14 +426,54 @@ const appointmentBookingStyles = StyleSheet.create({
     borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 10,
   },
-
   uploadIconImage: {
     width: 20,
     height: 20,
     resizeMode: 'contain',
   },
-
+  uploadText: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+  },
+  selectedImageContainer: {
+    position: 'relative',
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  selectedImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+    resizeMode: 'cover',
+  },
+  removeImageButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 15,
+    width: 30,
+    height: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  changeImageButton: {
+    position: 'absolute',
+    bottom: 10,
+    left: 10,
+    backgroundColor: 'rgba(0, 74, 173, 0.8)',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  changeImageText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
   bookButton: {
     backgroundColor: '#004AAD',
     paddingVertical: 12,

@@ -14,6 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import ProviderBottomNavigation from '../../Components/providerBottomNavigation';
+import * as ImagePicker from 'expo-image-picker';
 
 const providerAddServiceScreen = ({ navigation, route }) => {
     const isEdit = route.params?.isEdit || false;
@@ -25,6 +26,105 @@ const providerAddServiceScreen = ({ navigation, route }) => {
     const [minPrice, setMinPrice] = useState(serviceToEdit ? priceArray[0] : '');
     const [maxPrice, setMaxPrice] = useState(serviceToEdit ? priceArray[1] : '');
     const [description, setDescription] = useState(serviceToEdit ? serviceToEdit.description : '');
+    const [selectedImage, setSelectedImage] = useState(null);
+
+    // Request permissions
+    const requestPermissions = async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('خطأ', 'يجب السماح بالوصول لمعرض الصور');
+            return false;
+        }
+        
+        const cameraStatus = await ImagePicker.requestCameraPermissionsAsync();
+        if (cameraStatus.status !== 'granted') {
+            Alert.alert('خطأ', 'يجب السماح بالوصول للكاميرا');
+            return false;
+        }
+        
+        return true;
+    };
+
+    // Open gallery directly
+    const openGallery = async () => {
+        const hasPermission = await requestPermissions();
+        if (!hasPermission) return;
+
+        try {
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 0.7,
+            });
+
+            if (!result.canceled && result.assets[0]) {
+                setSelectedImage(result.assets[0]);
+            }
+        } catch (error) {
+            Alert.alert('خطأ', 'حدث خطأ أثناء اختيار الصورة');
+        }
+    };
+
+    // Select image from gallery
+    const selectFromGallery = async () => {
+        const hasPermission = await requestPermissions();
+        if (!hasPermission) return;
+
+        try {
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 0.7,
+            });
+
+            if (!result.canceled && result.assets[0]) {
+                setSelectedImage(result.assets[0]);
+            }
+        } catch (error) {
+            Alert.alert('خطأ', 'حدث خطأ أثناء اختيار الصورة');
+        }
+    };
+
+    // Select image from camera
+    const selectFromCamera = async () => {
+        const hasPermission = await requestPermissions();
+        if (!hasPermission) return;
+
+        try {
+            const result = await ImagePicker.launchCameraAsync({
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 0.7,
+            });
+
+            if (!result.canceled && result.assets[0]) {
+                setSelectedImage(result.assets[0]);
+            }
+        } catch (error) {
+            Alert.alert('خطأ', 'حدث خطأ أثناء التقاط الصورة');
+        }
+    };
+
+    // Remove selected image
+    const removeImage = () => {
+        Alert.alert(
+            'حذف الصورة',
+            'هل تريد حذف الصورة المحددة؟',
+            [
+                {
+                    text: 'إلغاء',
+                    style: 'cancel',
+                },
+                {
+                    text: 'حذف',
+                    onPress: () => setSelectedImage(null),
+                    style: 'destructive',
+                },
+            ]
+        );
+    };
 
     const handleAddService = () => {
         if (!serviceName.trim()) {
@@ -46,6 +146,7 @@ const providerAddServiceScreen = ({ navigation, route }) => {
                 category: serviceName,
                 priceRange: `${minPrice} - ${maxPrice}`,
                 description: description,
+                image: selectedImage ? { uri: selectedImage.uri } : serviceToEdit.image,
             };
 
             if (route.params && route.params.onEditService) {
@@ -66,7 +167,7 @@ const providerAddServiceScreen = ({ navigation, route }) => {
                 rating: "0.0",
                 reviews: "0", 
                 description: description,
-                image: require('../../assets/service1.jpg') 
+                image: selectedImage ? { uri: selectedImage.uri } : require('../../assets/service1.jpg')
             };
 
             if (route.params && route.params.onAddService) {
@@ -156,15 +257,42 @@ const providerAddServiceScreen = ({ navigation, route }) => {
 
                 {/* Service Image */}
                 <Text style={styles.fieldLabel}>صورة الخدمة</Text>
-                <TouchableOpacity style={styles.imageUpload}>
-                    <View style={styles.uploadIconContainer}>
+                
+                {selectedImage ? (
+                    <View style={styles.selectedImageContainer}>
                         <Image
-                            source={require('../../assets/addImage.png')}
-                            style={styles.uploadIconImage}
+                            source={{ uri: selectedImage.uri }}
+                            style={styles.selectedImage}
                         />
+                        <TouchableOpacity
+                            style={styles.removeImageButton}
+                            onPress={removeImage}
+                        >
+                            <Icon name="close" size={20} color="#fff" />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.changeImageButton}
+                            onPress={openGallery}
+                        >
+                            <Text style={styles.changeImageText}>تغيير الصورة</Text>
+                        </TouchableOpacity>
                     </View>
-                    <Text style={styles.imageUploadText}>{isEdit ? 'اضغط لتعديل صورة الخدمة' : 'اضغط لاضافه صوره  اثبات هويه خلفيه'}</Text>
-                </TouchableOpacity>
+                ) : (
+                    <TouchableOpacity 
+                        style={styles.imageUpload}
+                        onPress={openGallery}
+                    >
+                        <View style={styles.uploadIconContainer}>
+                            <Image
+                                source={require('../../assets/addImage.png')}
+                                style={styles.uploadIconImage}
+                            />
+                        </View>
+                        <Text style={styles.imageUploadText}>
+                            {isEdit ? 'اضغط لتعديل صورة الخدمة' : 'اضغط لاضافه صوره الخدمة'}
+                        </Text>
+                    </TouchableOpacity>
+                )}
 
                 {/* Add Service Button */}
                 <TouchableOpacity style={styles.submitButton} onPress={handleAddService}>
@@ -189,8 +317,6 @@ const styles = StyleSheet.create({
     header: {
         paddingHorizontal: 20,
         paddingVertical: 15,
-        borderBottomWidth: 1,
-        borderBottomColor: '#E6EDF7',
         backgroundColor: 'transparent',
     },
     headerContent: {
@@ -267,6 +393,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#007AFF',
         marginTop: 10,
+        textAlign: 'center',
     },
     uploadIconContainer: {
         backgroundColor: '#E6EDF7',
@@ -280,6 +407,43 @@ const styles = StyleSheet.create({
         width: 20,
         height: 20,
         resizeMode: 'contain',
+    },
+    selectedImageContainer: {
+        position: 'relative',
+        borderRadius: 10,
+        overflow: 'hidden',
+        marginTop: 10,
+    },
+    selectedImage: {
+        width: '100%',
+        height: 200,
+        borderRadius: 10,
+        resizeMode: 'cover',
+    },
+    removeImageButton: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        borderRadius: 15,
+        width: 30,
+        height: 30,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    changeImageButton: {
+        position: 'absolute',
+        bottom: 10,
+        left: 10,
+        backgroundColor: 'rgba(0, 74, 173, 0.8)',
+        paddingHorizontal: 15,
+        paddingVertical: 8,
+        borderRadius: 20,
+    },
+    changeImageText: {
+        color: '#fff',
+        fontSize: 12,
+        fontWeight: '600',
     },
     submitButton: {
         backgroundColor: '#004AAD',

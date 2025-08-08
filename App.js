@@ -27,19 +27,20 @@ import UserLocationScreen from "./screens/industrial_screens/onboarding/UserLoca
 import OrdersScreen from "./screens/orders/OrdersScreen";
 // import HomeScreen from "./screens/HomeScreen";
 import ServiceDetailsScreen from "./screens/ServiceDetailsScreen";
- import ProfileScreen from "./screens/profile/ProfileScreen";
+import ProfileScreen from "./screens/profile/ProfileScreen";
 import ProviderProfileScreen from "./screens/ProviderProfileScreen";
 import NewCard from "./screens/Payment/NewCard";
 import TwoPopups from "./screens/Payment/2popups";
 
-import ProviderHomeScreen from "./screens/Providers/HomeProvider";
-
+// import ProviderHomeScreen from "./screens/Providers/HomeProvider";
+import ProviderOrdersScreen from "./screens/provider_screens/orders/ProviderOrdersScreen";
+import ProviderServiceDetailsScreen from "./screens/provider_screens/ProviderServiceDetailsScreen";
 import { Fonts } from "./constants";
 import * as Font from "expo-font";
 // Fonts
 // import * as Font from 'expo-font';
 import {
-   useFonts,
+  useFonts,
   Cairo_400Regular,
   Cairo_700Bold,
 } from "@expo-google-fonts/cairo";
@@ -49,18 +50,19 @@ import MessagesListScreen from "./screens/Chats/chats";
 import ChatScreen from "./screens/Chats/ChatScreen";
 import CategoryScreen from "./screens/categoryScreen";
 import serviceProviderScreen from "./screens/serviceProviderScreen";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import appointmentBookingScreen from "./screens/appointmentBookingScreen.js";
 import serviceFeedbackScreen from "./screens/serviceFeedbackScreen.js";
 import providerHomeScreen from "./screens/provider_screens/providerHomeScreen.js";
 import providerServicesScreen from "./screens/provider_screens/providerServicesScreen.js";
 import providerAddServiceScreen from "./screens/provider_screens/providerAddServiceScreen.js";
+import ProviderSettingsScreen from "./screens/provider_screens/ProviderSettingsScreen";
+
 import AgreementDetailsScreen from "./screens/Chats/AgreementDetailsScreen";
 // PROVIDER CHATS SCREENS
 import ProviderChatsList from "./screens/Chats-Provider/chatsp.js";
 import ProviderChats from "./screens/Chats-Provider/chatScreenp.js";
 import NewOfferScreen from "./screens/Chats-Provider/AgreementDetailsScreenp.js";
-
 
 const Stack = createStackNavigator();
 
@@ -70,51 +72,51 @@ function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [initialRoute, setInitialRoute] = useState(null);
 
- useEffect(() => {
-   const loadFontsAndSplash = async () => {
-     try {
-       await Font.loadAsync({
-         "Almarai-Light": require("./assets/fonts/Almarai/Almarai-Light.ttf"),
-         "Almarai-Regular": require("./assets/fonts/Almarai/Almarai-Regular.ttf"),
-         "Almarai-Bold": require("./assets/fonts/Almarai/Almarai-Bold.ttf"),
-         "Almarai-ExtraBold": require("./assets/fonts/Almarai/Almarai-ExtraBold.ttf"),
-       });
-       setFontsLoaded(true);
-     } catch (error) {
-       console.log("Font loading error:", error);
-       setFontsLoaded(true); // Continue without fonts
-     }
+  useEffect(() => {
+    const loadFontsAndSplash = async () => {
+      try {
+        await Font.loadAsync({
+          "Almarai-Light": require("./assets/fonts/Almarai/Almarai-Light.ttf"),
+          "Almarai-Regular": require("./assets/fonts/Almarai/Almarai-Regular.ttf"),
+          "Almarai-Bold": require("./assets/fonts/Almarai/Almarai-Bold.ttf"),
+          "Almarai-ExtraBold": require("./assets/fonts/Almarai/Almarai-ExtraBold.ttf"),
+        });
+        setFontsLoaded(true);
+      } catch (error) {
+        console.log("Font loading error:", error);
+        setFontsLoaded(true); // Continue without fonts
+      }
 
-     // Check login and onboarding progress
-     try {
-       const user = await AsyncStorage.getItem("user");
-       const userType = await AsyncStorage.getItem("userType");
-       const onboardingStep = await AsyncStorage.getItem("onboardingStep");
+      // Check login and onboarding progress
+      try {
+        const user = await AsyncStorage.getItem("user");
+        const userType = await AsyncStorage.getItem("userType");
+        const onboardingStep = await AsyncStorage.getItem("onboardingStep");
 
-       if (user && userType === "sanay3y") {
-         setInitialRoute("providerHomeScreen");
-       } else if (user && userType === "client") {
-         setInitialRoute("userHome");
-       } else if (onboardingStep) {
-         setInitialRoute(onboardingStep);
-       } else {
-         setInitialRoute("Welcome");
-       }
-     } catch (e) {
-       console.log("AsyncStorage error:", e);
-       setInitialRoute("Welcome");
-     }
+        if (user && userType === "sanay3y") {
+          setInitialRoute("providerHome");
+        } else if (user && userType === "client") {
+          setInitialRoute("userHome");
+        } else if (onboardingStep) {
+          setInitialRoute(onboardingStep);
+        } else {
+          setInitialRoute("Welcome");
+        }
+      } catch (e) {
+        console.log("AsyncStorage error:", e);
+        setInitialRoute("Welcome");
+      }
 
-     // Simulate splash screen delay
-     const timer = setTimeout(() => {
-       setIsLoading(false);
-       setSplashVisible(false);
-     }, 2000);
-     return () => clearTimeout(timer);
-   };
+      // Simulate splash screen delay
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+        setSplashVisible(false);
+      }, 2000);
+      return () => clearTimeout(timer);
+    };
 
-   loadFontsAndSplash();
- }, []);
+    loadFontsAndSplash();
+  }, []);
 
   if (!fontsLoaded || splashVisible || !initialRoute) {
     return (
@@ -207,7 +209,6 @@ function App() {
         <Stack.Screen name="PendingScreen" component={Pending} />
         <Stack.Screen name="DoneScreen" component={Done} />
         <Stack.Screen name="RefusedScreen" component={Refused} />
-
         <Stack.Screen name="UserLocation" component={UserLocationScreen} />
         <Stack.Screen name="OrdersScreen" component={OrdersScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
@@ -223,33 +224,33 @@ function App() {
         />
         <Stack.Screen name="NewCardScreen" component={NewCard} />
         <Stack.Screen name="TwoPopups" component={TwoPopups} />
-
         <Stack.Screen name="MessagesScreen" component={MessagesScreen} />
         <Stack.Screen
           name="MessagesListScreen"
           component={MessagesListScreen}
         />
-            <Stack.Screen name="ChatScreen" component={ChatScreen} />
+        <Stack.Screen name="ChatScreen" component={ChatScreen} />
         <Stack.Screen
           name="AgreementDetailsScreen"
           component={AgreementDetailsScreen}
         />
         {/* <Stack.Screen name="ChatScreen" component={ChatScreen} /> */}
-
-        <Stack.Screen name="providerHome" component={ProviderHomeScreen} />
-
+        <Stack.Screen name="providerHome" component={providerHomeScreen} />
         {/* PROVIDER CHATS SCREENS */}
+        <Stack.Screen name="ProviderChatsList" component={ProviderChatsList} />
+        <Stack.Screen name="ProviderChatScreen" component={ProviderChats} />
+        <Stack.Screen name="AgreementDetails" component={NewOfferScreen} />
         <Stack.Screen
-          name="ProviderChatsList"
-          component={ProviderChatsList}
+          name="ProviderOrdersScreen"
+          component={ProviderOrdersScreen}
         />
         <Stack.Screen
-          name="ProviderChatScreen"
-          component={ProviderChats}
+          name="ProviderServiceDetailsScreen"
+          component={ProviderServiceDetailsScreen}
         />
         <Stack.Screen
-          name="AgreementDetails"
-          component={NewOfferScreen}
+          name="ProviderSettingsScreen"
+          component={ProviderSettingsScreen}
         />
       </Stack.Navigator>
     </NavigationContainer>

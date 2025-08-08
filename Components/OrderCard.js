@@ -19,7 +19,7 @@ const statusColors = {
   ملغي: { color: "#FF675D", bg: "#fff1f0" },
 };
 
-const OrderCard = ({ order, showChat = false, onCancel }) => {
+const OrderCard = ({ order, showChat = false, onCancel, navigation }) => {
   const { name, status } = order;
   const statusStyle = statusColors[status] || {
     color: "#999",
@@ -28,31 +28,31 @@ const OrderCard = ({ order, showChat = false, onCancel }) => {
 
   return (
     <View style={styles.card}>
-      {status === "قيد التنفيذ" && onCancel && (
-        <TouchableOpacity
-          style={styles.cancelButton}
-          onPress={() => {
-            Alert.alert(
-              "تأكيد الإلغاء",
-              "هل أنت متأكد أنك تريد إلغاء هذه الخدمة؟",
-              [
-                {
-                  text: "إلغاء",
-                  style: "cancel",
-                },
-                {
-                  text: "موافق",
-                  onPress: () => onCancel(order.id),
-                  style: "destructive",
-                },
-              ],
-              { cancelable: true }
-            );
-          }}
-        >
-          <Ionicons name="close-circle" size={24} color="red" />
-        </TouchableOpacity>
-      )}
+      {/* {status === "قيد التنفيذ" && onCancel && (
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={() => {
+              Alert.alert(
+                "تأكيد الإلغاء",
+                "هل أنت متأكد أنك تريد إلغاء هذه الخدمة؟",
+                [
+                  {
+                    text: "إلغاء",
+                    style: "cancel",
+                  },
+                  {
+                    text: "موافق",
+                    onPress: () => onCancel(order.id),
+                    style: "destructive",
+                  },
+                ],
+                { cancelable: true }
+              );
+            }}
+          >
+            <Ionicons name="close-circle" size={24} color="red" />
+          </TouchableOpacity>
+        )} */}
 
       {/* Left Image */}
       <Image source={require("../assets/plumber.jpg")} style={styles.image} />
@@ -94,7 +94,7 @@ const OrderCard = ({ order, showChat = false, onCancel }) => {
           />
 
           <View style={styles.titleColumn}>
-            <Text style={styles.title}>{order.service?.name}</Text>
+            <Text style={styles.title}>صيانة مطبخ</Text>
             <Text style={styles.technicianName}>احمد محمد</Text>
           </View>
         </View>
@@ -109,7 +109,9 @@ const OrderCard = ({ order, showChat = false, onCancel }) => {
 
           <CustomButton
             title="تفاصيل"
-            onPress={() => {}}
+            onPress={() => {
+              navigation.navigate("ServiceDetailsScreen");
+            }}
             type="outline"
             color="#4F77F7"
             style={styles.detailsBtn}
@@ -208,12 +210,6 @@ const styles = StyleSheet.create({
     width: 170,
     paddingVertical: 6,
     paddingHorizontal: 0,
-  },
-  cancelButton: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    zIndex: 10,
   },
 });
 

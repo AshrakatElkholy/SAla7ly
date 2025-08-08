@@ -43,7 +43,12 @@ const PastOrders = ({ navigation }) => {
   return (
     <View>
       {orders.map((order) => (
-        <OrderCard key={order.id} order={order} showChat={false} />
+        <OrderCard
+          key={order.id}
+          order={order}
+          showChat={false}
+          navigation={navigation}
+        />
       ))}
     </View>
   );
