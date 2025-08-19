@@ -10,20 +10,37 @@ import {
     SafeAreaView,
     StatusBar,
     I18nManager,
+    Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ProviderBottomNavigation from '../../Components/providerBottomNavigation';
 import ProviderServiceCard from '../../Components/providerServiceCard';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
+const NGROK_URL = 'https://ea2872fee6cc.ngrok-free.app';
 
 const providerHomeScreen = () => {
-    const serviceData = {
+    // State for API data
+    const [providerData, setProviderData] = useState(null);
+    const [ordersData, setOrdersData] = useState([]); // New state for orders
+    const [loading, setLoading] = useState(true);
+    const [ordersLoading, setOrdersLoading] = useState(true); // New loading state for orders
+    const [error, setError] = useState(null);
+
+    // Original states
+    const [favoriteServices, setFavoriteServices] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const navigation = useNavigation();
+    const [notificationIconActive, setNotificationIconActive] = useState(false);
+    const [messageClicked, setMessageClicked] = useState(false);
+
+    // Default service data for fallback (keeping original structure)
+    const defaultServiceData = {
         name: "احمد علي",
         image: require('../../assets/service1.jpg'),
         services: [
@@ -35,7 +52,6 @@ const providerHomeScreen = () => {
                 reviews: "50",
                 description: " اهلا يباشا انا احمد من اسكندرديه ومفروض عندى مشكله فى حنفيه...",
                 image: require('../../assets/service1.jpg')
-
             },
             {
                 id: 2,
@@ -45,34 +61,192 @@ const providerHomeScreen = () => {
                 reviews: "50",
                 description: " اهلا يباشا انا احمد من اسكندرديه ومفروض عندى مشكله فى حنفيه...",
                 image: require('../../assets/service1.jpg')
-
             },
-            {
-                id: 3,
-                title: " محطة الرمل,اسكندريه ",
-                category: "صيانه مطبخ",
-                rating: "4.5",
-                reviews: "50",
-                description: " اهلا يباشا انا احمد من اسكندرديه ومفروض عندى مشكله فى حنفيه...",
-                image: require('../../assets/service1.jpg')
-            },
+            // {
+            //     id: 3,
+            //     title: " محطة الرمل,اسكندريه ",
+            //     category: "صيانه مطبخ",
+            //     rating: "4.5",
+            //     reviews: "50",
+            //     description: " اهلا يباشا انا احمد من اسكندرديه ومفروض عندى مشكله فى حنفيه...",
+            //     image: require('../../assets/service1.jpg')
+            // },
         ],
         stats: [
-
             { label: "إجمالي خدمات", value: "8", iconImage: require('../../assets/totalServices.png') },
             { label: "إجمالي الدخل", value: "20000ج.م", iconImage: require('../../assets/income.png') },
             { label: "التقييم النهائي", value: "4.5", iconImage: require('../../assets/star.png') },
             { label: "إجمالي عملاء", value: "50", iconImage: require('../../assets/userIcon.png') }
-
         ]
     };
 
-    const [favoriteServices, setFavoriteServices] = useState([]);
-    const [searchQuery, setSearchQuery] = useState('');
-    const navigation = useNavigation();
-    const [notificationIconActive, setNotificationIconActive] = useState(false);
-    const [messageClicked, setMessageClicked] = useState(false);
+    // Function to get token from AsyncStorage
+    const getToken = async () => {
+        try {
+            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OTllYTJmZDhlMjFhNzMxNWIyM2FiMCIsImVtYWlsIjoiYmF0ZXNoYWthbWFsQGdtYWlsLmNvbSIsInJvbGUiOiJwcm92aWRlciIsImlhdCI6MTc1NTYzNjA3NiwiZXhwIjoxNzU1NzIyNDc2fQ.cCOD3ziNycXNXx3RVr7k4wGVsaqfSmBB_06xV2olZQ4';
+            console.log('Token from AsyncStorage:', token);
+            return token;
+        } catch (error) {
+            console.error('Error getting token:', error);
+            return null;
+        }
+    };
 
+
+    const fetchOrdersData = async () => {
+        try {
+            setOrdersLoading(true);
+            const token = await getToken();
+
+            if (!token) {
+                console.log('No token found for orders API');
+                setOrdersLoading(false);
+                return;
+            }
+
+            const response = await fetch(`https://ea2872fee6cc.ngrok-free.app/provider/getMyOrders`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    'ngrok-skip-browser-warning': 'true', // مهم علشان ngrok
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const orders = await response.json();
+            console.log('Orders API Response:', orders);
+
+            // Transform orders data to match ProviderServiceCard structure
+            // Transform orders data to match ProviderServiceCard structure
+            const transformedOrders = orders.map((order, index) => ({
+                id: order.id || order._id,
+                title: order.userId?.name || `عميل ${index + 1}`,
+                category: order.serviceId?.title || "خدمة",
+                rating: "4.5",
+                reviews: "50",
+                description: order.description || "وصف الطلب",
+                image: order.userId?.profilePic?.secure_url || require('../../assets/service1.jpg'),
+                avatar: order.userId?.profilePic?.secure_url || require('../../assets/service1.jpg'),
+                provider: order.userId?.name || "العميل",
+                providerBrief: order.description || "تفاصيل الطلب",
+                status: order.status || "pending",
+                deliveryDate: order.deliveryDate,
+                serviceTitle: order.serviceId?.title,
+                minPrice: order.serviceId?.minPrice,
+                maxPrice: order.serviceId?.maxPrice,
+                userAddress: order.userId?.address || "بدون عنوان",
+                userPhone: order.userId?.phone
+            }));
+
+
+            setOrdersData(transformedOrders);
+        } catch (error) {
+            console.error('Error fetching orders data:', error);
+        } finally {
+            setOrdersLoading(false);
+        }
+    };
+
+
+    // Function to fetch provider data from API
+    const fetchProviderData = async () => {
+        try {
+            setLoading(true);
+            const token = await getToken();
+
+            if (!token) {
+                console.log('No token found, using default data');
+                setProviderData(defaultServiceData);
+                setLoading(false);
+                return;
+            }
+
+            const response = await fetch('http://localhost:3000/provider/getMyOrders', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('API Response:', data);
+
+            if (data && data.length > 0) {
+                // Get the first provider (current logged in provider)
+                const provider = data[0];
+
+                // Transform API data to match your component structure
+                const transformedData = {
+                    id: provider._id || '',
+                    name: provider.userId?.name || "احمد علي",
+                    image: provider.image?.secure_url || require('../../assets/service1.jpg'),
+                    address: provider.userId?.address || "محطة الرمل,اسكندريه",
+                    description: provider.description || "اهلا يباشا انا احمد من اسكندرديه",
+                    profession: provider.serviceId?.title || "صيانه مطبخ",
+
+
+                    //     {
+                    //         id: 1,
+                    //         title: provider.address || " محطة الرمل,اسكندريه ",
+                    //         category: provider.profession || "صيانه مطبخ",
+                    //         rating: "4.5",
+                    //         reviews: "50",
+                    //         description: provider.description || " اهلا يباشا انا احمد من اسكندرديه ومفروض عندى مشكله فى حنفيه...",
+                    //         image: require('../../assets/service1.jpg')
+                    //     },
+                    //     {
+                    //         id: 2,
+                    //         title: provider.address || " محطة الرمل,اسكندريه ",
+                    //         category: provider.profession || "صيانه مطبخ",
+                    //         rating: "4.5",
+                    //         reviews: "50",
+                    //         description: provider.description || " اهلا يباشا انا احمد من اسكندرديه ومفروض عندى مشكله فى حنفيه...",
+                    //         image: require('../../assets/service1.jpg')
+                    //     },
+                    //     // {
+                    //     //     id: 3,
+                    //     //     title: provider.address || " محطة الرمل,اسكندريه ",
+                    //     //     category: provider.profession || "صيانه مطبخ",
+                    //     //     rating: "4.5",
+                    //     //     reviews: "50",
+                    //     //     description: provider.description || " اهلا يباشا انا احمد من اسكندرديه ومفروض عندى مشكله فى حنفيه...",
+                    //     //     image: require('../../assets/service1.jpg')
+                    //     // },
+                    // ],
+                    stats: [
+                        { label: "إجمالي خدمات", value: "8", iconImage: require('../../assets/totalServices.png') },
+                        { label: "إجمالي الدخل", value: "20000ج.م", iconImage: require('../../assets/income.png') },
+                        { label: "التقييم النهائي", value: "4.5", iconImage: require('../../assets/star.png') },
+                        { label: "إجمالي عملاء", value: "50", iconImage: require('../../assets/userIcon.png') }
+                    ]
+                };
+
+                setProviderData(transformedData);
+            } else {
+                setProviderData(defaultServiceData);
+            }
+        } catch (error) {
+            // تجاهل الخطأ بدون إظهاره
+            setProviderData(defaultServiceData);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // UseEffect to fetch data on component mount
+    useEffect(() => {
+        fetchProviderData();
+        fetchOrdersData(); // Fetch orders data
+    }, []);
 
     const toggleFavorite = (service) => {
         setFavoriteServices(prev => {
@@ -88,6 +262,12 @@ const providerHomeScreen = () => {
     const isFavorite = (service) => {
         return favoriteServices.some(item => item.id === service.id);
     };
+
+    // Use providerData or defaultServiceData
+    const serviceData = providerData || defaultServiceData;
+
+    // Use orders data if available, otherwise fall back to default services
+    const servicesToShow = ordersData.length > 0 ? ordersData : serviceData.services;
 
     return (
         <SafeAreaView style={styles.container}>
@@ -121,7 +301,7 @@ const providerHomeScreen = () => {
                     </View>
 
                     <View style={styles.userInfo}>
-                        <Text style={styles.welcomeText}>أهلا أحمد علي</Text>
+                        <Text style={styles.welcomeText}>أهلا {serviceData.name}</Text>
                         <View style={styles.subTextContainer}>
                             <Text style={styles.subText}>مرحباً بك في التطبيق</Text>
                             <Icon name="location-on" size={16} color="#666" style={styles.locationIcon} />
@@ -146,8 +326,6 @@ const providerHomeScreen = () => {
                             <Text style={styles.bannerTextLine2}>ضيف شغلك وخلى ناس تتعرف اعمالك من حد</Text>
                         </View>
                     </View>
-
-
                 </View>
 
                 {/* Services Categories */}
@@ -171,43 +349,48 @@ const providerHomeScreen = () => {
                             ) : (
                                 <Text style={styles.statValue}>{stat.value}</Text>
                             )}
-
-
                         </View>
                     ))}
                 </View>
 
-
-
-                {/* Best Services */}
+                {/* New Services - Now showing orders data */}
                 <View style={styles.sectionContainer}>
                     <View style={styles.sectionHeader}>
                         <Text style={styles.sectionTitle}>الطلبات الجديده</Text>
                     </View>
 
-                    <ScrollView
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        style={styles.servicesScrollView}
-                        contentContainerStyle={styles.servicesContainer}
-                    >
-                        {serviceData.services.map((service) => (
-                            <ProviderServiceCard
-                                key={service.id}
-                                title={service.title}
-                                category={service.category}
-                                rating={service.rating}
-                                reviews={service.reviews}
-                                description={service.description}
-                                image={service.image}
-                                avatar={service.image}
-                                provider={serviceData.name}
-                                providerBrief={service.description}
-                                onPress={() => navigation.navigate('providerHomeScreen')}
-                            />
-                        ))}
-                    </ScrollView>
+                    {ordersLoading ? (
+                        <View style={styles.loadingContainer}>
+                            <Text style={styles.loadingText}>جاري تحميل الطلبات...</Text>
+                        </View>
+                    ) : (
+                        <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            style={styles.servicesScrollView}
+                            contentContainerStyle={[styles.servicesContainer, { flexDirection: 'row-reverse' }]}
+                        >
+                            {servicesToShow.map((service) => (
+                                <ProviderServiceCard
+                                    key={service.id}
+                                    title={service.userAddress}
+                                    category={service.category}
+                                    rating={service.rating}
+                                    reviews={service.reviews}
+                                    description={service.description}
+                                    image={service.image}
+                                    avatar={service.avatar}
+                                    provider={service.provider}
+                                    providerBrief={service.providerBrief}
+                                    address={service.userAddress}
+                                    onPress={() => navigation.navigate('providerHomeScreen')}
+                                />
+                            ))}
+                        </ScrollView>
+
+                    )}
                 </View>
+
 
             </ScrollView>
 
@@ -267,16 +450,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 10,
     },
-
     iconButton: {
         padding: 5,
     },
-
     iconImage: {
         width: 22,
         height: 22,
     },
-
     content: {
         flex: 1,
     },
@@ -301,9 +481,8 @@ const styles = StyleSheet.create({
         left: 20,
         right: 20,
         alignItems: 'flex-end',
-        zIndex: 2, // ensures text is above the overlay
+        zIndex: 2,
     },
-
     bannerTextLine1: {
         color: '#fff',
         fontSize: 20,
@@ -311,14 +490,12 @@ const styles = StyleSheet.create({
         marginBottom: 5,
         textAlign: 'right',
     },
-
     bannerTextLine2: {
         color: '#fff',
         fontSize: 12,
         fontWeight: '700',
         textAlign: 'left',
     },
-
     bannerImage: {
         width: '100%',
         height: '100%',
@@ -341,12 +518,21 @@ const styles = StyleSheet.create({
         textAlign: 'right',
         marginRight: 5
     },
+    loadingContainer: {
+        height: 200,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    loadingText: {
+        fontSize: 16,
+        color: '#666',
+        textAlign: 'center',
+    },
     statsContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         backgroundColor: 'white',
         paddingHorizontal: 20,
-        // marginBottom: 10,
         justifyContent: 'flex-end',
     },
     statItem: {
@@ -383,28 +569,23 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
         gap: 6,
     },
-
     ratingBadge: {
         flexDirection: 'row',
         alignItems: 'center',
-        // backgroundColor: '#F5F5F5', 
         paddingHorizontal: 6,
         paddingVertical: 2,
         borderRadius: 12,
     },
-
     ratingText: {
         fontSize: 12,
         color: '#000',
         fontWeight: '600',
         marginHorizontal: 3,
     },
-
     reviewsText: {
         fontSize: 10,
         color: '#666',
     },
-
     statIconWrapper: {
         width: 30,
         height: 30,
@@ -414,7 +595,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginLeft: 6,
     },
-
     statIconImage: {
         width: 16,
         height: 16,
@@ -427,7 +607,20 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         paddingRight: 0,
     },
-
+    debugContainer: {
+        margin: 20,
+        padding: 10,
+        backgroundColor: '#f0f0f0',
+        borderRadius: 5,
+    },
+    debugTitle: {
+        fontWeight: 'bold',
+        marginBottom: 5,
+    },
+    debugText: {
+        fontSize: 12,
+        marginBottom: 2,
+    },
 });
 
 export default providerHomeScreen;

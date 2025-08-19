@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -9,26 +9,21 @@ import {
     TextInput,
     ScrollView,
     Image,
+    ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
 import BottomNavigation from '../Components/BottomNavigation';
 import CustomHeaderWithLines from '../Components/CustomHeaderTemp'; 
 
-const CategoryScreen = () => {
+const NGROK_URL = "https://422aa57c657c.ngrok-free.app";
+
+const categoryScreen = () => {
     const navigation = useNavigation();
     const [searchQuery, setSearchQuery] = useState('');
-
-    const serviceCategories = [
-        { id: 1, name: 'نقاشة', icon: 'brush' },
-        { id: 2, name: 'حفر', icon: 'shovel' },
-        { id: 3, name: 'سباكة', icon: 'pipe-wrench' },
-        { id: 4, name: 'كهرباء', icon: 'flashlight' },
-        { id: 5, name: 'ميكانيكي', icon: 'tool-box' },
-        { id: 6, name: 'فني الأجهزة الكهربائية', icon: 'soldering' },
-        { id: 7, name: 'كهرباء', icon: 'flashlight' },
-        { id: 8, name: 'نقاشة', icon: 'brush' },
-    ];
+    const [categories, setCategories] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [favoriteServices, setFavoriteServices] = useState([]);
 
     const iconImages = {
         'brush': require('../assets/categoryIcons/brush.png'),
@@ -39,29 +34,99 @@ const CategoryScreen = () => {
         'soldering': require('../assets/categoryIcons/soldering.png'),
     };
 
-    const [favoriteServices, setFavoriteServices] = useState([]);
+    useEffect(() => {
+        fetchCategories();
+    }, []);
 
-    const filteredCategories = serviceCategories.filter(category =>
-        category.name.toLowerCase().includes(searchQuery.toLowerCase())
+    const fetchCategories = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`${NGROK_URL}/category`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+                timeout: 10000,
+            });
+
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+            const data = await response.json();
+            const categoriesArray = Array.isArray(data) ? data : (data?.categories ? data.categories : []);
+
+            if (categoriesArray.length === 0) {
+                setCategories([]);
+                return;
+            }
+
+            const mappedCategories = categoriesArray.map((cat, index) => ({
+                id: cat._id || cat.id || `category-${index}`,
+                name: cat.title || 'خدمة',
+                title: cat.title || 'خدمة',
+                icon: getIconForCategory(cat.title || 'خدمة'),
+                iconImage: getIconForCategory(cat.title || 'خدمة'),
+                apiIcon: cat.image?.secure_url || null,
+                description: cat.description || '',
+                providerCount: cat.providerCount || 0,
+                servicesCount: cat.servicesCount || 0
+            }));
+
+            setCategories(mappedCategories);
+        } catch (error) {
+            setCategories([
+                {
+                    id: 'test1',
+                    title: 'نقاشه',
+                    name: 'نقاشه',
+                    icon: 'brush',
+                    iconImage: 'brush',
+                    apiIcon: null,
+                    description: 'test category'
+                },
+                {
+                    id: 'test2',
+                    title: 'كهربائي',
+                    name: 'كهربائي',
+                    icon: 'flashlight',
+                    iconImage: 'flashlight',
+                    apiIcon: null,
+                    description: 'test category 2'
+                }
+            ]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getIconForCategory = (categoryName) => {
+        const name = categoryName.toLowerCase();
+        if (name.includes('نقاش') || name.includes('paint')) return 'brush';
+        if (name.includes('حفر') || name.includes('dig')) return 'shovel';
+        if (name.includes('سباك') || name.includes('plumb')) return 'pipe-wrench';
+        if (name.includes('كهرباء') || name.includes('electric') || name.includes('كهربائي')) return 'flashlight';
+        if (name.includes('ميكانيك') || name.includes('mechanic')) return 'tool-box';
+        if (name.includes('أجهزة') || name.includes('device')) return 'soldering';
+        return 'brush';
+    };
+
+    const filteredCategories = categories.filter(category =>
+        (category.name || category.title).toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const handleCategoryPress = (category) => {
         navigation.navigate('serviceProviderScreen', {
-            categoryName: category.name,
-            categoryIcon: category.icon
+            categoryName: category.name || category.title,
+            categoryIcon: category.apiIcon || iconImages[category.icon],
+            categoryId: category.id
         });
     };
 
     return (
         <SafeAreaView style={styles.container}>
-            {/* Replace the old header with CustomHeaderWithLines */}
             <CustomHeaderWithLines 
                 title="الخدمات"
                 showTabs={false}
                 showIcons={true}
             />
 
-            {/* Search Bar */}
             <View style={styles.searchContainer}>
                 <View style={styles.searchBar}>
                     <View style={styles.searchImageIcon}>
@@ -85,36 +150,50 @@ const CategoryScreen = () => {
             </View>
 
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-                {/* Categories Grid */}
                 <View style={styles.categoriesSection}>
-                    <View style={styles.categoriesGrid}>
-                        {filteredCategories.map((category) => (
-                            <View key={category.id} style={styles.categoryWrapper}>
-                                <TouchableOpacity
-                                    style={styles.categoryItem}
-                                    onPress={() => handleCategoryPress(category)}
-                                >
-                                    <View style={styles.categoryIcon}>
-                                        <Image
-                                            source={iconImages[category.icon]}
-                                            style={styles.iconImage}
-                                        />
+                    {loading ? (
+                        <View style={styles.loadingContainer}>
+                            <ActivityIndicator size="large" color="#007bff" />
+                            <Text style={styles.loadingText}>جاري تحميل التصنيفات...</Text>
+                        </View>
+                    ) : (
+                        <View style={styles.categoriesGrid}>
+                            {filteredCategories.length === 0 ? (
+                                <View style={styles.noResultsContainer}>
+                                    <Text style={styles.noResultsText}>
+                                        {searchQuery ? 'لا توجد خدمات مطابقة لبحثك' : 'لا توجد تصنيفات متاحة'}
+                                    </Text>
+                                </View>
+                            ) : (
+                                filteredCategories.map((category) => (
+                                    <View key={category.id} style={styles.categoryWrapper}>
+                                        <TouchableOpacity
+                                            style={styles.categoryItem}
+                                            onPress={() => handleCategoryPress(category)}
+                                        >
+                                            <View style={styles.categoryIcon}>
+                                                {category.apiIcon ? (
+                                                    <Image
+                                                        source={{ uri: category.apiIcon }}
+                                                        style={styles.iconImage}
+                                                    />
+                                                ) : (
+                                                    <Image
+                                                        source={iconImages[category.iconImage] || iconImages['brush']}
+                                                        style={styles.iconImage}
+                                                    />
+                                                )}
+                                            </View>
+                                        </TouchableOpacity>
+                                        <Text style={styles.categoryText}>{category.name || category.title}</Text>
                                     </View>
-                                </TouchableOpacity>
-                                <Text style={styles.categoryText}>{category.name}</Text>
-                            </View>
-                        ))}
-                    </View>
-
-                    {filteredCategories.length === 0 && (
-                        <View style={styles.noResultsContainer}>
-                            <Text style={styles.noResultsText}>لا توجد خدمات مطابقة لبحثك</Text>
+                                ))
+                            )}
                         </View>
                     )}
                 </View>
             </ScrollView>
 
-            {/* Bottom Navigation */}
             <BottomNavigation
                 navigation={navigation}
                 activeTab="services"
@@ -125,14 +204,8 @@ const CategoryScreen = () => {
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#ffffff',
-    },
-    searchContainer: {
-        paddingHorizontal: 20,
-        paddingVertical: 15,
-    },
+    container: { flex: 1, backgroundColor: '#ffffff' },
+    searchContainer: { paddingHorizontal: 20, paddingVertical: 15 },
     searchBar: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -143,44 +216,19 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         height: 45,
     },
-    searchImageIcon: {
-        backgroundColor: '#fff',
-        borderRadius: 10,
-        padding: 4,
-        marginRight: 8,
-    },
-    searchImage: {
-        width: 24,
-        height: 24,
-        resizeMode: 'contain',
-    },
+    searchImageIcon: { backgroundColor: '#fff', borderRadius: 10, padding: 4, marginRight: 8 },
+    searchImage: { width: 24, height: 24, resizeMode: 'contain' },
     searchInputWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
         flex: 1,
         justifyContent: 'flex-end',
     },
-    searchInput: {
-        flex: 1,
-        fontSize: 16,
-        color: '#333',
-        paddingHorizontal: 8,
-    },
-    searchIcon: {
-        marginLeft: 8,
-    },
-    content: {
-        flex: 1,
-    },
-    categoriesSection: {
-        paddingHorizontal: 25,
-        paddingVertical: 20,
-    },
-    categoriesGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-    },
+    searchInput: { flex: 1, fontSize: 16, color: '#333', paddingHorizontal: 8 },
+    searchIcon: { marginLeft: 8 },
+    content: { flex: 1 },
+    categoriesSection: { paddingHorizontal: 25, paddingVertical: 20 },
+    categoriesGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
     categoryItem: {
         width: '80%',
         height: 100,
@@ -204,32 +252,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 2,
     },
-    iconImage: {
-        width: 40,
-        height: 35,
-        resizeMode: 'contain',
-    },
-    categoryWrapper: {
-        width: '50%',
-        alignItems: 'center',
-        marginBottom: 20,
-        gap: 2,
-    },
-    categoryText: {
-        fontSize: 22,
-        fontWeight: '500',
-        color: '#000',
-        textAlign: 'center',
-    },
-    noResultsContainer: {
-        alignItems: 'center',
-        paddingVertical: 40,
-    },
-    noResultsText: {
-        fontSize: 16,
-        color: '#666',
-        textAlign: 'center',
-    },
+    iconImage: { width: 70, height: 50, resizeMode: 'contain' },
+    categoryWrapper: { width: '50%', alignItems: 'center', marginBottom: 20, gap: 2 },
+    categoryText: { fontSize: 22, fontWeight: '500', color: '#000', textAlign: 'center' },
+    loadingContainer: { alignItems: 'center', paddingVertical: 60 },
+    loadingText: { marginTop: 10, fontSize: 16, color: '#666' },
+    noResultsContainer: { alignItems: 'center', paddingVertical: 40, width: '100%' },
+    noResultsText: { fontSize: 16, color: '#666', textAlign: 'center' },
 });
 
-export default CategoryScreen;
+export default categoryScreen;

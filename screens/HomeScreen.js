@@ -9,6 +9,7 @@ import {
     TextInput,
     SafeAreaView,
     StatusBar,
+    ActivityIndicator,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { useNavigation } from "@react-navigation/native";
@@ -18,23 +19,19 @@ import BottomNavigation from "../Components/BottomNavigation";
 import ServiceCard from "../Components/ServiceCard";
 import CustomHeaderWithLines from "../Components/CustomHeaderTemp";
 
+const NGROK_URL = "https://422aa57c657c.ngrok-free.app"; 
+
 const HomeScreen = () => {
     const navigation = useNavigation();
+    const [favoriteServices, setFavoriteServices] = useState([]);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [userName, setUserName] = useState("");
+    const [categories, setCategories] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const filteredCategories = categories.filter(category =>
+        (category.name || category.title).toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
-    // ====== Data ======
-    const serviceCategories = {
-        'brush': require('../assets/categoryIcons/brush.png'),
-        'shovel': require('../assets/categoryIcons/shovel.png'),
-        'pipe-wrench': require('../assets/categoryIcons/pipe-wrench.png'),
-        'flashlight': require('../assets/categoryIcons/flashlight.png'),
-    };
-
-    const categoriesData = [
-        { id: 1, name: 'نقاشة', icon: 'brush', iconImage: 'brush' },
-        { id: 2, name: 'حفر', icon: 'shovel', iconImage: 'shovel' },
-        { id: 3, name: 'سباكة', icon: 'pipe-wrench', iconImage: 'pipe-wrench' },
-        { id: 4, name: 'كهرباء', icon: 'flashlight', iconImage: 'flashlight' },
-    ];
 
     const services = [
         {
@@ -59,25 +56,70 @@ const HomeScreen = () => {
         },
     ];
 
-    // ====== State ======
-    const [favoriteServices, setFavoriteServices] = useState([]);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [userName, setUserName] = useState("");
-
-    // ====== Effects ======
     useEffect(() => {
         const fetchUserName = async () => {
             try {
                 const storedName = await AsyncStorage.getItem("userName");
                 if (storedName) setUserName(storedName);
             } catch (error) {
-                console.error("خطأ أثناء تحميل الاسم:", error);
+                console.error(error);
             }
         };
         fetchUserName();
+        fetchCategories();
     }, []);
 
-    // ====== Helpers ======
+    const fetchCategories = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`${NGROK_URL}/category`);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const data = await response.json();
+            const categoriesArray = Array.isArray(data) ? data : (data?.categories ? data.categories : []);
+
+            const mappedCategories = categoriesArray.map((cat, index) => ({
+                id: cat._id || cat.id || `category-${index}`,
+                title: cat.title || "خدمة",
+                name: cat.title || "خدمة",
+                icon: getIconForCategory(cat.title || "خدمة"),
+                iconImage: getIconForCategory(cat.title || "خدمة"),
+                apiIcon: cat.image?.secure_url || null,
+                description: cat.description || ""
+            }));
+
+            setCategories(mappedCategories.slice(0, 4));
+        } catch (error) {
+            setCategories([
+                { id: "test1", title: "نقاشه", name: "نقاشه", icon: "brush", iconImage: "brush", apiIcon: null },
+                { id: "test2", title: "كهربائي", name: "كهربائي", icon: "flashlight", iconImage: "flashlight", apiIcon: null },
+                { id: "test3", title: "سباك", name: "سباك", icon: "pipe-wrench", iconImage: "pipe-wrench", apiIcon: null },
+                { id: "test4", title: "ميكانيكي", name: "ميكانيكي", icon: "tool-box", iconImage: "tool-box", apiIcon: null }
+            ]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getIconForCategory = (categoryName) => {
+        const name = categoryName.toLowerCase();
+        if (name.includes("نقاش") || name.includes("paint")) return "brush";
+        if (name.includes("حفر") || name.includes("dig")) return "shovel";
+        if (name.includes("سباك") || name.includes("plumb")) return "pipe-wrench";
+        if (name.includes("كهرباء") || name.includes("electric") || name.includes("كهربائي")) return "flashlight";
+        if (name.includes("ميكانيك") || name.includes("mechanic")) return "tool-box";
+        if (name.includes("أجهزة") || name.includes("device")) return "soldering";
+        return "brush";
+    };
+
+    const serviceCategories = {
+        brush: require("../assets/categoryIcons/brush.png"),
+        shovel: require("../assets/categoryIcons/shovel.png"),
+        "pipe-wrench": require("../assets/categoryIcons/pipe-wrench.png"),
+        flashlight: require("../assets/categoryIcons/flashlight.png"),
+        "tool-box": require("../assets/categoryIcons/tool-box.png"),
+        soldering: require("../assets/categoryIcons/soldering.png"),
+    };
+
     const toggleFavorite = (service) => {
         setFavoriteServices((prev) => {
             const exists = prev.find((item) => item.id === service.id);
@@ -87,34 +129,29 @@ const HomeScreen = () => {
 
     const isFavorite = (service) => favoriteServices.some((item) => item.id === service.id);
 
-    const filteredCategories = categoriesData.filter((c) =>
-        c.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const handleCategoryPress = (category) => {
+        navigation.navigate("serviceProviderScreen", {
+            categoryName: category.title,
+            categoryIcon: category.apiIcon || serviceCategories[category.icon],
+            categoryId: category.id,
+        });
+    };
 
-    // ====== Render ======
     return (
         <SafeAreaView style={styles.container}>
             <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-
             <CustomHeaderWithLines
                 title={userName ? `أهلاً، ${userName}` : "الرئيسية"}
                 showTabs={false}
                 showIcons={true}
             />
 
-            <ScrollView
-                style={styles.content}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: 120 }}
-            >
-                {/* Search Bar */}
+            <ScrollView style={styles.content} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+                {/* 🔍 Search Bar */}
                 <View style={styles.searchContainer}>
                     <View style={styles.searchBar}>
                         <View style={styles.searchImageIcon}>
-                            <Image
-                                source={require("../assets/filter-square.png")}
-                                style={styles.searchImage}
-                            />
+                            <Image source={require("../assets/filter-square.png")} style={styles.searchImage} />
                         </View>
                         <View style={styles.searchInputWrapper}>
                             <TextInput
@@ -125,65 +162,64 @@ const HomeScreen = () => {
                                 value={searchQuery}
                                 onChangeText={setSearchQuery}
                             />
-                            <Icon
-                                name="search"
-                                size={20}
-                                color="#999"
-                                style={styles.searchIcon}
-                            />
+                            <Icon name="search" size={20} color="#999" style={styles.searchIcon} />
                         </View>
                     </View>
                 </View>
 
-                {/* Featured Banner */}
+                {/* 🖼️ Banner */}
                 <View style={styles.bannerContainer}>
                     <View style={styles.banner}>
-                        <Image
-                            source={require("../assets/banner.jpg")}
-                            style={styles.bannerImage}
-                        />
-                          <View style={styles.bannerTextContainer}>
+                        <Image source={require("../assets/banner.jpg")} style={styles.bannerImage} />
+                        <View style={styles.bannerTextContainer}>
                             <Text style={styles.bannerTextLine1}>خدمة صيانة الأجهزة</Text>
                             <Text style={styles.bannerTextLine2}>دلوقتي تقدر تطلب فني للغسالة، التلاجة أو البوتاجاز.</Text>
                         </View>
                     </View>
-                    
                 </View>
 
-                {/* Services Categories */}
+                {/* 📌 Categories */}
                 <View style={styles.sectionContainer}>
-                    <View className="sectionHeader" style={styles.sectionHeader}>
-                        <TouchableOpacity
-                            style={styles.moreButton}
-                            onPress={() => navigation.navigate("ServicesCategoryScreen")}
-                        >
+                    <View style={styles.sectionHeader}>
+                        <TouchableOpacity style={styles.moreButton} onPress={() => navigation.navigate("ServicesCategoryScreen")}>
                             <Text style={styles.moreButtonText}>المزيد</Text>
                         </TouchableOpacity>
                         <Text style={styles.sectionTitle}>الخدمات</Text>
                     </View>
 
-                    <View style={styles.categoriesContainer}>
-                        {filteredCategories.map((category) => (
-                            <TouchableOpacity
-                                key={category.id}
-                                style={styles.categoryItem}
-                                onPress={() =>
-                                    navigation.navigate("serviceProviderScreen", {
-                                        categoryName: category.name,
-                                        categoryIcon: serviceCategories[category.icon],
-                                    })
-                                }
-                            >
-                                <View style={styles.categoryIcon}>
-                                    <Image source={serviceCategories[category.iconImage]} style={styles.iconImage} />
+                    {loading ? (
+                        <View style={styles.loadingContainer}>
+                            <ActivityIndicator size="large" color="#007bff" />
+                            <Text style={styles.loadingText}>جاري تحميل الخدمات...</Text>
+                        </View>
+                    ) : (
+                        <View style={styles.categoriesContainer}>
+                            {filteredCategories.length === 0 ? (
+                                <View style={styles.noCategoriesContainer}>
+                                    <Text style={styles.noCategoriesText}>
+                                        {searchQuery ? "لا توجد خدمات مطابقة لبحثك" : "لا توجد تصنيفات متاحة"}
+                                    </Text>
                                 </View>
-                                <Text style={styles.categoryText}>{category.name}</Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
+                            ) : (
+                                filteredCategories.map((category) => (
+                                    <TouchableOpacity key={category.id} style={styles.categoryItem} onPress={() => handleCategoryPress(category)}>
+                                        <View style={styles.categoryIcon}>
+                                            {category.apiIcon ? (
+                                                <Image source={{ uri: category.apiIcon }} style={styles.iconImage} />
+                                            ) : (
+                                                <Image source={serviceCategories[category.iconImage] || serviceCategories["brush"]} style={styles.iconImage} />
+                                            )}
+                                        </View>
+                                        <Text style={styles.categoryText}>{category.title}</Text>
+                                    </TouchableOpacity>
+                                ))
+                            )}
+
+                        </View>
+                    )}
                 </View>
 
-                {/* Best Services */}
+                {/* ⭐ Best Services */}
                 <View style={styles.sectionContainer}>
                     <View style={styles.sectionHeader}>
                         <TouchableOpacity style={styles.moreButton}>
@@ -192,12 +228,7 @@ const HomeScreen = () => {
                         <Text style={styles.sectionTitle}>أفضل خدمات</Text>
                     </View>
 
-                    <ScrollView
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        style={styles.servicesScrollView}
-                        contentContainerStyle={styles.servicesContainer}
-                    >
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.servicesScrollView} contentContainerStyle={styles.servicesContainer}>
                         {services.map((service) => (
                             <ServiceCard
                                 key={service.id}
@@ -212,12 +243,7 @@ const HomeScreen = () => {
                 </View>
             </ScrollView>
 
-            {/* Bottom Navigation */}
-            <BottomNavigation
-                navigation={navigation}
-                activeTab="home"
-                favoriteServices={favoriteServices}
-            />
+            <BottomNavigation navigation={navigation} activeTab="home" favoriteServices={favoriteServices} />
         </SafeAreaView>
     );
 };
@@ -226,89 +252,34 @@ const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: "#ffffff" },
     content: { flex: 1 },
     searchContainer: { paddingHorizontal: 20, paddingVertical: 15 },
-    searchBar: {
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "#fff",
-        borderWidth: 1,
-        borderColor: "lightgray",
-        borderRadius: 10,
-        paddingHorizontal: 10,
-        height: 45,
-    },
+    searchBar: { flexDirection: "row", alignItems: "center", backgroundColor: "#fff", borderWidth: 1, borderColor: "lightgray", borderRadius: 10, paddingHorizontal: 10, height: 45 },
     searchImageIcon: { backgroundColor: "#fff", borderRadius: 10, padding: 4, marginRight: 8 },
     searchImage: { width: 24, height: 24, resizeMode: "contain" },
     searchInputWrapper: { flexDirection: "row", alignItems: "center", flex: 1, justifyContent: "flex-end" },
     searchInput: { flex: 1, fontSize: 16, color: "#333", paddingHorizontal: 8 },
     searchIcon: { marginLeft: 8 },
-
     bannerContainer: { paddingHorizontal: 20, marginBottom: 20 },
     banner: { height: 160, borderRadius: 15, overflow: "hidden", position: "relative" },
     bannerImage: { width: "100%", height: "100%", resizeMode: "cover" },
-
     sectionContainer: { paddingHorizontal: 15, marginBottom: 20 },
     sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 15 },
     sectionTitle: { fontSize: 18, fontWeight: "bold", color: "#333", textAlign: "right" },
     moreButton: { paddingHorizontal: 12, paddingVertical: 4 },
     moreButtonText: { fontSize: 14, color: "#000", textAlign: "left" },
-
-    categoriesContainer: {
-        flexDirection: "row",
-        flexWrap: "wrap",
-        justifyContent: "space-around", 
-    },
-
-    categoryItem: {
-        alignItems: "center",
-        flexBasis: "24%", 
-        marginBottom: 16,
-    },
-
-    categoryIcon: {
-        width: 80,
-        height: 80,
-        borderRadius: 12,
-        backgroundColor: "#f0f8ff",
-        justifyContent: "center",
-        alignItems: "center",
-        marginBottom: 8,
-    },
-    iconImage: {
-        width: 60,
-        height: 50,
-        resizeMode: 'contain',
-    },
-
-    categoryText: {
-        fontSize: 16,
-        color: "#333",
-        textAlign: "center",
-        fontWeight: "500",
-    },
-        bannerTextContainer: {
-        position: 'absolute',
-        bottom: 20,
-        left: 20,
-        right: 20,
-        alignItems: 'flex-end',
-    },
-
-    bannerTextLine1: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 5,
-        textAlign: 'right',
-    },
-
-    bannerTextLine2: {
-        color: '#fff',
-        fontSize: 16,
-        textAlign: 'left',
-    },
-
+    categoriesContainer: { flexDirection: "row", flexWrap: "wrap", justifyContent: "flex-end", paddingHorizontal: 5 },
+    categoryItem: { alignItems: "center", width: "22%", marginBottom: 12, marginHorizontal: "1%" },
+    categoryIcon: { width: 70, height: 70, borderRadius: 12, backgroundColor: "#f0f8ff", justifyContent: "center", alignItems: "center", marginBottom: 6 },
+    iconImage: { width: 50, height: 42, resizeMode: "contain" },
+    categoryText: { fontSize: 14, color: "#333", textAlign: "center", fontWeight: "500", paddingHorizontal: 2 },
+    bannerTextContainer: { position: "absolute", bottom: 20, left: 20, right: 20, alignItems: "flex-end" },
+    bannerTextLine1: { color: "#fff", fontSize: 18, fontWeight: "bold", marginBottom: 5, textAlign: "right" },
+    bannerTextLine2: { color: "#fff", fontSize: 16, textAlign: "left" },
     servicesScrollView: { flexGrow: 0 },
     servicesContainer: { flexDirection: "row", paddingRight: 0 },
+    loadingContainer: { alignItems: "center", paddingVertical: 40 },
+    loadingText: { marginTop: 10, fontSize: 16, color: "#666" },
+    noCategoriesContainer: { alignItems: "center", paddingVertical: 40 },
+    noCategoriesText: { fontSize: 16, color: "#666", textAlign: "center" },
 });
 
 export default HomeScreen;
