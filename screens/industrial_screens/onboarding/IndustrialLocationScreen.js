@@ -1,100 +1,112 @@
-// screens/industrial_screens/onboarding/IndustrialLocationScreen.js
-import React, { useEffect, useState, useMemo } from "react";
+// IndustrialLocationScreen.js
+import React, { useEffect, useState, useContext } from "react";
 import {
   SafeAreaView,
   View,
-  Text,
-  StyleSheet,
-  Platform,
   ActivityIndicator,
-  StatusBar,
-  useWindowDimensions,
-  KeyboardAvoidingView,
-  TouchableOpacity,
+  StyleSheet,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableOpacity,
   ScrollView,
 } from "react-native";
 import * as Location from "expo-location";
 import MapView, { Marker } from "react-native-maps";
 import Icon from "react-native-vector-icons/Feather";
-import { useNavigation } from "@react-navigation/native";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { Fonts } from "../../../constants";
 import CustomButton from "../../../Components/CustomButton";
 import CustomInput from "../../../Components/CustomInput";
 import CustomHeader from "../../../Components/CustomHeader";
+import { UserContext } from "../../Context/UserContext";
 
-export default function IndustrialLocationScreen({ route, navigation }) {
-  const { width } = useWindowDimensions();
+export default function IndustrialLocationScreen({ navigation }) {
+  const { userInfo } = useContext(UserContext);
 
-  // Get role from navigation params (default to 'provider' for now)
-  const role = route?.params?.role || 'provider'; // TODO: update when user roles are implemented
-
-  /* ------------ state ------------ */
   const [region, setRegion] = useState(null);
   const [marker, setMarker] = useState(null);
-  const [centerRegion, setCenterRegion] = useState(null);
-
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [searchLoading, setSearchLoading] = useState(false);
 
-  // Load saved progress on mount
+  // Load saved progress
   useEffect(() => {
-    AsyncStorage.setItem('onboardingStep', 'IndustrialLocationScreen');
+    AsyncStorage.setItem("onboardingStep", "IndustrialLocationScreen");
     (async () => {
-      const saved = await AsyncStorage.getItem('onboardingLocation');
-      if (saved) {
-        const data = JSON.parse(saved);
-        setRegion(data.region || null);
-        setMarker(data.marker || null);
+      try {
+        const saved = await AsyncStorage.getItem("onboardingLocation");
+        if (saved) {
+          const data = JSON.parse(saved);
+          setRegion(data.region || null);
+          setMarker(data.marker || null);
+        }
+      } catch {
+        console.log("No saved location data");
       }
     })();
   }, []);
 
-  // Save progress on change
+  // Save progress
   useEffect(() => {
-    AsyncStorage.setItem('onboardingLocation', JSON.stringify({ region, marker }));
+    if (region && marker) {
+      AsyncStorage.setItem(
+        "onboardingLocation",
+        JSON.stringify({ region, marker })
+      );
+    }
   }, [region, marker]);
 
-  /* ------------ الحصول على إحداثيّات المستخدم ------------ */
+  // Get current location
   useEffect(() => {
     (async () => {
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== "granted") throw new Error("permission denied");
+        if (status !== "granted") throw new Error("Location permission denied");
 
         const {
           coords: { latitude, longitude },
-        } = await Location.getCurrentPositionAsync({});
-        setRegion({
+        } = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+
+        const currentRegion = {
           latitude,
           longitude,
           latitudeDelta: 0.015,
           longitudeDelta: 0.015,
-        });
-      } catch {
-        // fallback: Cairo
-        setRegion({
+        };
+        setRegion(currentRegion);
+        setMarker({ latitude, longitude });
+      } catch (error) {
+        console.log("⚠️ Location error, using Cairo fallback:", error.message);
+        const fallbackRegion = {
           latitude: 30.0444,
           longitude: 31.2357,
           latitudeDelta: 0.05,
           longitudeDelta: 0.05,
-        });
+        };
+        setRegion(fallbackRegion);
+        setMarker({ latitude: 30.0444, longitude: 31.2357 });
       } finally {
         setLoading(false);
       }
     })();
   }, []);
 
-  /* ------------ البحث بالنص ------------ */
+  // Search city
   const handleCitySearch = async () => {
-    if (!search.trim()) return;
+    if (!search.trim()) {
+      Alert.alert("تنبيه", "يرجى إدخال اسم المدينة للبحث");
+      return;
+    }
+
     try {
       setSearchLoading(true);
       const results = await Location.geocodeAsync(search.trim());
-      if (results.length) {
+
+      if (results.length > 0) {
         const { latitude, longitude } = results[0];
         const newRegion = {
           latitude,
@@ -105,74 +117,219 @@ export default function IndustrialLocationScreen({ route, navigation }) {
         setRegion(newRegion);
         setMarker({ latitude, longitude });
       } else {
-        alert("لم يتم العثور على الموقع");
+        Alert.alert("لا توجد نتائج", "لم يتم العثور على الموقع المطلوب");
       }
     } catch {
-      alert("حدث خطأ أثناء البحث");
+      Alert.alert("خطأ", "حدث خطأ أثناء البحث عن الموقع");
     } finally {
       setSearchLoading(false);
     }
   };
 
-  /* ------------ أبعاد الهيدر (responsive) ------------ */
-  const dyn = useMemo(() => {
-    const topPad =
-      Platform.OS === "android" ? StatusBar.currentHeight || 24 : 44;
-    const h = width * 0.3;
-    return StyleSheet.create({
-      headerBg: {
-        height: h + 50,
-        backgroundColor: "#F0F4F8",
-        borderBottomLeftRadius: width * 0.25,
-        borderBottomRightRadius: width * 0.05,
-        paddingTop: topPad,
-        paddingHorizontal: 20,
-      },
-      headerRow: {
-        marginTop: 18,
-        flexDirection: "row-reverse",
-        alignItems: "center",
-      },
-    });
-  }, [width]);
+  // Register
+  const handleRegister = async () => {
+    if (!marker) {
+      Alert.alert("خطأ", "يجب تحديد موقعك على الخريطة");
+      return;
+    }
 
-  /* ------------ الحفظ / التالى ------------ */
-  const isReady = !!marker;
-  const handleSave = () => {
-    if (!isReady) return;
-    AsyncStorage.multiRemove(['onboardingStep', 'onboardingSpecialty', 'onboardingIdentity', 'onboardingLocation']);
-    if (role === 'provider') {
-      navigation.navigate("PendingScreen");
-    } else {
-      Alert.alert('تم اختيار الموقع', 'سيتم تحويلك للصفحة الرئيسية قريباً.');
+    setLoading(true);
+
+    try {
+      const signupForm = new FormData();
+
+      // Required fields
+      signupForm.append("name", userInfo?.name?.trim() || "");
+      signupForm.append("email", userInfo?.email?.trim() || "");
+      signupForm.append("password", userInfo?.password || "");
+      signupForm.append("rePassword", userInfo?.password || "");
+      signupForm.append("phone", userInfo?.phone?.trim() || "");
+      signupForm.append("role", "provider");
+      signupForm.append("address", userInfo?.address || "القاهرة");
+      signupForm.append("profession", userInfo?.profession || "نجار");
+
+      if (userInfo?.aboutMe) signupForm.append("aboutMe", userInfo.aboutMe);
+
+      // Identity images
+      if (userInfo?.identity?.profilePic?.uri) {
+        signupForm.append("profilePic", {
+          uri: userInfo.identity.profilePic.uri,
+          type: userInfo.identity.profilePic.type || "image/jpeg",
+          name: userInfo.identity.profilePic.name || "profilePic.jpg",
+        });
+      }
+      if (userInfo?.identity?.idFront?.uri) {
+        signupForm.append("identityPic", {
+          uri: userInfo.identity.idFront.uri,
+          type: userInfo.identity.idFront.type || "image/jpeg",
+          name: userInfo.identity.idFront.name || "idFront.jpg",
+        });
+      }
+      if (userInfo?.identity?.idBack?.uri) {
+        signupForm.append("identityPic", {
+          uri: userInfo.identity.idBack.uri,
+          type: userInfo.identity.idBack.type || "image/jpeg",
+          name: userInfo.identity.idBack.name || "idBack.jpg",
+        });
+      }
+
+      const signupRes = await fetch(
+        "https://557431a98314.ngrok-free.app/auth/signUp",
+        {
+          method: "POST",
+          headers: { "ngrok-skip-browser-warning": "true" },
+          body: signupForm,
+        }
+      );
+
+      const signupText = await signupRes.text();
+      console.log("📩 Server Raw Response:", signupText);
+      console.log("📡 Response Status:", signupRes.status);
+
+      let signupResult;
+      try {
+        signupResult = JSON.parse(signupText);
+      } catch {
+        console.log("❌ JSON parse failed, raw text:", signupText);
+        throw new Error("خطأ في تحليل استجابة السيرفر");
+      }
+
+      console.log("✅ Parsed Server Response:", signupResult);
+
+      if (!signupRes.ok) throw new Error(signupResult.message || "فشل التسجيل");
+
+      const token =
+        signupResult?.token ||
+        signupResult?.access_token ||
+        signupResult?.accessToken;
+
+      if (!token) throw new Error("لم يتم استرجاع التوكن من السيرفر");
+
+      await AsyncStorage.setItem("access_token", token);
+
+      // ✅ Upload workshop images with token
+      await uploadWorkshop(token);
+
+      Alert.alert("تم التسجيل بنجاح", "مرحباً بك في صلحلي!", [
+        {
+          text: "موافق",
+          onPress: () =>  navigation.navigate("PendingScreen")
+        },
+      ]);
+    } catch (error) {
+      console.log("❌ Signup failed:", error);
+      Alert.alert("خطأ", error.message || "تعذر الاتصال بالخادم");
+    } finally {
+      setLoading(false);
     }
   };
 
-  /* ------------ render ------------ */
+  // Upload workshop API
+  const uploadWorkshop = async (token) => {
+    try {
+      const workshopForm = new FormData();
+
+      // ✅ send mainImage
+      if (userInfo?.workshop?.mainImage?.uri) {
+        workshopForm.append("mainImage", {
+          uri: userInfo.workshop.mainImage.uri,
+          type: userInfo.workshop.mainImage.type || "image/jpeg",
+          name: userInfo.workshop.mainImage.name || "mainImage.jpg",
+        });
+      }
+
+      // ✅ send multiple images
+      if (userInfo?.workshop?.images?.length > 0) {
+        userInfo.workshop.images.forEach((img, i) => {
+          workshopForm.append("images", {
+            uri: img.uri,
+            type: img.type || "image/jpeg",
+            name: img.name || `image_${i + 1}.jpg`,
+          });
+        });
+      }
+
+      const res = await fetch(
+        "https://557431a98314.ngrok-free.app/provider/addWorkShop",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `bearer ${token}`, // ✅ lowercase
+            "ngrok-skip-browser-warning": "true",
+            "Content-Type": "multipart/form-data",
+          },
+          body: workshopForm,
+        }
+      );
+
+      const text = await res.text();
+      console.log("🏭 Workshop API Raw:", text);
+
+      let result;
+      try {
+        result = JSON.parse(text);
+      } catch {
+        console.log("❌ Workshop JSON parse failed:", text);
+        return;
+      }
+
+      console.log("✅ Workshop API Response:", result);
+    } catch (err) {
+      console.log("❌ Workshop upload failed:", err);
+    }
+  };
+
+  // get current location button
+  const getCurrentLocation = async () => {
+    try {
+      setLoading(true);
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") throw new Error("Location permission denied");
+
+      const {
+        coords: { latitude, longitude },
+      } = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+
+      const newRegion = {
+        latitude,
+        longitude,
+        latitudeDelta: 0.015,
+        longitudeDelta: 0.015,
+      };
+      setRegion(newRegion);
+      setMarker({ latitude, longitude });
+    } catch {
+      Alert.alert("خطأ", "فشل في تحديد الموقع الحالي");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safe}>
-      {/* ===== Header ===== */}
       <CustomHeader
         title="حدد موقعك"
         onBack={() => navigation.goBack()}
         activeIndex={2}
+        steps={["بيانات صنايعى", "اثبات شخصيه", "الموقع"]}
+        currentStep={2}
       />
 
-      {/* ===== Body ===== */}
-      {loading || !region ? (
+      {loading && !region ? (
         <View style={styles.loader}>
           <ActivityIndicator size="large" color="#004AAD" />
         </View>
       ) : (
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
-          {/* ===== حقل البحث ===== */}
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+          {/* Search */}
           <View style={styles.searchWrap}>
             <CustomInput
-              placeholder="بحث"
+              placeholder="بحث عن مدينة أو منطقة"
               value={search}
               onChangeText={setSearch}
               onSubmitEditing={handleCitySearch}
-              deferError
               inputStyle={{ paddingRight: 52 }}
             />
             <TouchableOpacity onPress={handleCitySearch} style={styles.icHit}>
@@ -184,64 +341,43 @@ export default function IndustrialLocationScreen({ route, navigation }) {
             </TouchableOpacity>
           </View>
 
-          {/* ===== Map ===== */}
+          {/* Map */}
           <View style={styles.mapBox}>
             <MapView
               style={styles.map}
-              initialRegion={region}
               region={region}
-              onRegionChangeComplete={(reg) => {
-                setRegion(reg);
-                setCenterRegion(reg);
-              }}
+              onRegionChangeComplete={setRegion}
               onLongPress={(e) => setMarker(e.nativeEvent.coordinate)}
+              showsUserLocation
             >
               {marker && (
                 <Marker
                   coordinate={marker}
                   draggable
                   onDragEnd={(e) => setMarker(e.nativeEvent.coordinate)}
+                  title="موقعك"
+                  description="اسحب لتغيير الموقع"
                 />
               )}
             </MapView>
-            {/* ===== Crosshair Button ===== */}
             <TouchableOpacity
               style={styles.crosshairButton}
-              onPress={async () => {
-                try {
-                  setLoading(true);
-                  const {
-                    coords: { latitude, longitude },
-                  } = await Location.getCurrentPositionAsync({});
-                  const newRegion = {
-                    latitude,
-                    longitude,
-                    latitudeDelta: 0.015,
-                    longitudeDelta: 0.015,
-                  };
-                  setRegion(newRegion);
-                  setMarker({ latitude, longitude });
-                } catch (error) {
-                  alert("فشل في تحديد الموقع");
-                } finally {
-                  setLoading(false);
-                }
-              }}
+              onPress={getCurrentLocation}
             >
               <Icon name="crosshair" size={22} color="#004AAD" />
             </TouchableOpacity>
           </View>
 
-          {/* ===== Save Button ===== */}
+          {/* Button */}
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
           >
             <View style={{ paddingHorizontal: 20, paddingBottom: 24 }}>
               <CustomButton
-                title="ابدا مع صلحلى"
-                onPress={handleSave}
-                disabled={!isReady}
-                type={isReady ? "filled" : "outline"}
+                title={loading ? "جاري التسجيل..." : "ابدا مع صلحلى"}
+                onPress={handleRegister}
+                disabled={loading || !marker}
+                type={!marker ? "outline" : "filled"}
                 textStyle={{ fontFamily: Fonts.BOLD }}
               />
             </View>
@@ -252,32 +388,10 @@ export default function IndustrialLocationScreen({ route, navigation }) {
   );
 }
 
-/* -------- Styles -------- */
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-
-  headerTitle: {
-    fontSize: 18,
-    fontFamily: Fonts.BOLD,
-    marginRight: 8,
-    fontFamily: Fonts.REGULAR,
-  },
-
-  /* search */
-  searchWrap: {
-    marginTop: 16,
-    marginHorizontal: 20,
-    position: "relative",
-  },
-  icHit: {
-    position: "absolute",
-    right: 30,
-    top: 12,
-  },
-
+  safe: { flex: 1, backgroundColor: "#fff" },
+  searchWrap: { marginTop: 16, marginHorizontal: 20, position: "relative" },
+  icHit: { position: "absolute", right: 30, top: 12 },
   mapBox: {
     marginHorizontal: 20,
     marginTop: 8,
@@ -285,31 +399,17 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     aspectRatio: 0.7,
     position: "relative",
+    elevation: 5,
   },
   crosshairButton: {
     position: "absolute",
     bottom: 20,
-    right: 30,
+    right: 20,
     backgroundColor: "#fff",
     padding: 12,
     borderRadius: 30,
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    elevation: 8,
   },
-
   map: { flex: 1 },
-
   loader: { flex: 1, justifyContent: "center", alignItems: "center" },
-  section: {
-    alignSelf: "flex-end",
-    fontSize: 16,
-    fontFamily: Fonts.BOLD,
-    color: "#333",
-    marginTop: 24,
-    marginBottom: 8,
-    fontFamily: Fonts.REGULAR,
-  },
 });

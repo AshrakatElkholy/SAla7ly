@@ -1,52 +1,49 @@
-// screens/industrial_screens/onboarding/IndustrialLocationScreen.js
+// screens/user_screens/onboarding/UserLocationScreen.js
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import {
   SafeAreaView,
   View,
-  Text,
   StyleSheet,
   Platform,
   ActivityIndicator,
-  StatusBar,
-  useWindowDimensions,
   KeyboardAvoidingView,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from "react-native";
 import * as Location from "expo-location";
 import MapView, { Marker } from "react-native-maps";
 import Icon from "react-native-vector-icons/Feather";
-import { Ionicons } from "@expo/vector-icons";
-
 import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { Fonts } from "../../../constants";
 import CustomButton from "../../../Components/CustomButton";
 import CustomInput from "../../../Components/CustomInput";
 import CustomHeader from "../../../Components/CustomHeader";
+import { UserContext } from "../../Context/UserContext";
 
-export default function IndustrialLocationScreen() {
+const API_BASE = "https://557431a98314.ngrok-free.app";
+
+export default function UserLocationScreen() {
   const navigation = useNavigation();
-  const { width } = useWindowDimensions();
-  const [cityName, setCityName] = useState("جاري تحديد الموقع...");
+  const { userInfo } = useContext(UserContext);
 
+  const [cityName, setCityName] = useState("جاري تحديد الموقع...");
   const [region, setRegion] = useState(null);
   const [marker, setMarker] = useState(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [searchLoading, setSearchLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const fetchCityName = async (coords) => {
     try {
       const [place] = await Location.reverseGeocodeAsync(coords);
-      if (place?.city) {
-        setCityName(place.city);
-      } else if (place?.region) {
-        setCityName(place.region);
-      } else {
-        setCityName("لم يتم التعرف على الموقع");
-      }
+      if (place?.city) setCityName(place.city);
+      else if (place?.region) setCityName(place.region);
+      else setCityName("لم يتم التعرف على الموقع");
     } catch {
       setCityName("حدث خطأ في تحديد المدينة");
     }
@@ -76,10 +73,8 @@ export default function IndustrialLocationScreen() {
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") throw new Error("permission denied");
-
         await locateMe();
       } catch {
-        // fallback: Cairo
         setRegion({
           latitude: 30.0444,
           longitude: 31.2357,
@@ -118,8 +113,67 @@ export default function IndustrialLocationScreen() {
     }
   };
 
+  const handleSave = async () => {
+    if (!marker) {
+      Alert.alert("تنبيه", "الرجاء اختيار موقعك على الخريطة");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+
+      const signupForm = new FormData();
+      signupForm.append("name", userInfo?.name?.trim() || "");
+      signupForm.append("email", userInfo?.email?.trim() || "");
+      signupForm.append("password", userInfo?.password || "");
+      signupForm.append("rePassword", userInfo?.password || "");
+      signupForm.append("phone", userInfo?.phone?.trim() || "");
+      signupForm.append("role", "user");
+      signupForm.append("address", cityName || "القاهرة");
+
+      console.log("📤 Sending User signup payload (FormData):", signupForm);
+
+      const response = await fetch(`${API_BASE}/auth/signUp`, {
+        method: "POST",
+        headers: { "ngrok-skip-browser-warning": "true" },
+        body: signupForm,
+      });
+
+      const data = await response.json().catch(async () => {
+        const txt = await response.text();
+        console.error("❌ Non-JSON response:", txt);
+        return null;
+      });
+
+      console.log("📍 Signup response:", data);
+
+      // ✅ التصليح هنا: نقبل token أو access_token
+      if (response.ok && (data?.access_token || data?.token)) {
+        const token = data.access_token || data.token;
+        const refresh = data.refresh_token || "";
+
+        await AsyncStorage.setItem("access_token", token);
+        if (refresh) {
+          await AsyncStorage.setItem("refresh_token", refresh);
+        }
+
+        Alert.alert("نجاح", "تم إنشاء حسابك بنجاح ✅", [
+          { text: "موافق", onPress: () => navigation.replace("DoneScreen") },
+        ]);
+      } else {
+        let msg = data?.message || "فشل في إنشاء الحساب";
+        if (Array.isArray(msg)) msg = msg.join("\n");
+        Alert.alert("خطأ", msg);
+      }
+    } catch (err) {
+      console.error("❌ Signup error:", err);
+      Alert.alert("خطأ", "تعذر إنشاء الحساب");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const isReady = !!marker;
-  const handleSave = () => isReady && navigation.navigate("ClientLoginScreen");
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -136,7 +190,10 @@ export default function IndustrialLocationScreen() {
           <ActivityIndicator size="large" color="#004AAD" />
         </View>
       ) : (
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+        >
           <View style={styles.searchWrap}>
             <CustomInput
               placeholder="بحث"
@@ -144,9 +201,7 @@ export default function IndustrialLocationScreen() {
               onChangeText={setSearch}
               onSubmitEditing={handleCitySearch}
               deferError
-              inputStyle={{
-                paddingRight: 52,
-              }}
+              inputStyle={{ paddingRight: 52 }}
             />
             <TouchableOpacity onPress={handleCitySearch} style={styles.icHit}>
               {searchLoading ? (
@@ -181,9 +236,9 @@ export default function IndustrialLocationScreen() {
           >
             <View style={{ paddingHorizontal: 20, paddingBottom: 24 }}>
               <CustomButton
-                title="ابدا مع صلحلى"
+                title={submitting ? "جارٍ التسجيل..." : "ابدا مع صلحلى"}
                 onPress={handleSave}
-                disabled={!isReady}
+                disabled={!isReady || submitting}
                 type={isReady ? "filled" : "outline"}
                 textStyle={{ fontFamily: Fonts.BOLD, fontSize: 18 }}
               />
@@ -199,33 +254,7 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingTop:0
-  },
-  headerContainer: {
-    backgroundColor: "#fff",
-    paddingTop: Platform.OS === "android" ? 60 : 70,
-    paddingBottom: 5,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    paddingHorizontal: 16,
-  },
-  title: {
-    fontSize: 20,
-    color: "#000",
-    marginLeft: 10,
-    marginRight: 10,
-    fontFamily: Fonts.BOLD,
-  },
-  backCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: "#004AAD",
-    alignItems: "center",
-    justifyContent: "center",
+    paddingTop: 0,
   },
   searchWrap: {
     marginTop: 16,
@@ -244,9 +273,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     aspectRatio: 0.6,
   },
-  map: {
-    flex: 1,
-  },
+  map: { flex: 1 },
   locateBtn: {
     position: "absolute",
     bottom: 20,

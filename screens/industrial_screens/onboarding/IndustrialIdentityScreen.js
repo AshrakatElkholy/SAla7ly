@@ -1,6 +1,5 @@
-// * IndustrialIdentityScreen — ONBOARDING
-
-import React, { useState, useMemo, useEffect } from "react";
+// screens/industrial_screens/onboarding/IndustrialIdentityScreen.js
+import React, { useState, useContext } from "react";
 import {
   SafeAreaView,
   View,
@@ -9,24 +8,19 @@ import {
   Image,
   TouchableOpacity,
   StyleSheet,
-  useWindowDimensions,
-  KeyboardAvoidingView,
-  Platform,
-  StatusBar,
+  Alert,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import Icon from "react-native-vector-icons/Feather";
-import { useNavigation } from "@react-navigation/native";
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
-/* ⬇️ Fonts + TabsHeader component */
 import { Fonts } from "../../../constants";
 import CustomButton from "../../../Components/CustomButton";
 import CustomHeader from "../../../Components/CustomHeader";
+import { UserContext } from "../../Context/UserContext";
 
-/* ---------- Re‑usable upload card ---------- */
+// 🔹 Reusable upload card
 const UploadCard = ({ label, imageUri, onAdd, onRemove }) => (
-  <View style={styles.card}>
+  <TouchableOpacity style={styles.card} onPress={onAdd}>
     {imageUri ? (
       <>
         <Image source={{ uri: imageUri }} style={styles.preview} />
@@ -45,170 +39,191 @@ const UploadCard = ({ label, imageUri, onAdd, onRemove }) => (
         </TouchableOpacity>
       </>
     )}
-  </View>
+  </TouchableOpacity>
 );
 
-const IndustrialIdentityScreen = () => {
-  const navigation = useNavigation();
-  const { width } = useWindowDimensions();
+const IndustrialIdentityScreen = ({ navigation }) => {
+  const { userInfo, setUserInfo } = useContext(UserContext);
 
-  /* ---------- state ---------- */
-  const [personal, setPersonal] = useState(null);
-  const [idFront, setIdFront] = useState(null);
-  const [idBack, setIdBack] = useState(null);
+  const [profilePic, setProfilePic] = useState(userInfo?.identity?.profilePic?.uri || null);
+  const [idFront, setIdFront] = useState(userInfo?.identity?.idFront?.uri || null);
+  const [idBack, setIdBack] = useState(userInfo?.identity?.idBack?.uri || null);
 
-  // Load saved progress on mount
-  useEffect(() => {
-    AsyncStorage.setItem('onboardingStep', 'IndustrialIdentityScreen');
-    (async () => {
-      const saved = await AsyncStorage.getItem('onboardingIdentity');
-      if (saved) {
-        const data = JSON.parse(saved);
-        setPersonal(data.personal || null);
-        setIdFront(data.idFront || null);
-        setIdBack(data.idBack || null);
+  const isReady = profilePic && idFront && idBack;
+
+  // helper → keep file object (uri + name + type)
+  const prepareFile = (uri, fieldName) => {
+    const fileName = uri.split("/").pop();
+    const ext = fileName.split(".").pop();
+    return {
+      uri,
+      name: `${fieldName}.${ext}`,
+      type: `image/${ext === "jpg" ? "jpeg" : ext}`,
+    };
+  };
+
+  const pickImage = async (setter, fieldName) => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("خطأ", "يرجى السماح بالوصول للصور");
+        return;
       }
-    })();
-  }, []);
 
-  // Save progress on change
-  useEffect(() => {
-    AsyncStorage.setItem('onboardingIdentity', JSON.stringify({ personal, idFront, idBack }));
-  }, [personal, idFront, idBack]);
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
 
-  /* ---------- gallery ---------- */
-  const pickImage = async (setter) => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      alert("يرجى السماح بالوصول للصور");
+      if (!result.canceled) {
+        const fileObj = prepareFile(result.assets[0].uri, fieldName);
+        setter(fileObj.uri);
+
+        // save immediately to context
+        setUserInfo((prev) => ({
+          ...prev,
+          identity: {
+            ...prev.identity,
+            [fieldName]: fileObj,
+          },
+        }));
+      }
+    } catch (error) {
+      console.error("❌ Image picker error:", error);
+      Alert.alert("خطأ", "حدث خطأ أثناء اختيار الصورة");
+    }
+  };
+
+  const handleNext = () => {
+    if (!isReady) {
+      Alert.alert("خطأ", "يرجى رفع جميع الصور المطلوبة");
       return;
     }
-    const res = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.8,
+
+    // ✅ Merge everything: profession + workshop images + identity
+    const updatedInfo = {
+      ...userInfo,
+      profession: userInfo.profession, // keep profession from speciality
+      mainImage: userInfo.mainImage, // keep main workshop image
+      images: userInfo.images || [], // keep workshop images
+      identity: {
+        profilePic: userInfo.identity?.profilePic,
+        idFront: userInfo.identity?.idFront,
+        idBack: userInfo.identity?.idBack,
+      },
+    };
+
+    setUserInfo(updatedInfo);
+
+    console.log("✅ Identity + Workshop + Profession saved:", updatedInfo);
+
+    navigation.navigate("IndustrialLocationScreen", {
+      profession: updatedInfo.profession,
     });
-    if (!res.canceled) setter(res.assets[0].uri);
   };
 
-  /* ---------- header dims ---------- */
-  const dyn = useMemo(() => {
-    const topPad =
-      Platform.OS === "android" ? StatusBar.currentHeight || 24 : 44;
-    const h = width * 0.3;
-    return StyleSheet.create({
-      headerBg: {
-        height: h + 50,
-        backgroundColor: "#F0F4F8",
-        borderBottomLeftRadius: width * 0.25,
-        borderBottomRightRadius: width * 0.05,
-        paddingTop: topPad,
-        paddingHorizontal: 20,
-      },
-      headerRow: {
-        marginTop: 18,
-        flexDirection: "row-reverse",
-        alignItems: "center",
-      },
-    });
-  }, [width]);
+  const completedCount = [profilePic, idFront, idBack].filter(Boolean).length;
 
-  /* ---------- navigation ---------- */
-  const isReady = personal && idFront && idBack;
-  const handleNext = () => {
-    if (!isReady) return;
-    AsyncStorage.setItem('onboardingStep', 'IndustrialLocationScreen');
-    navigation.navigate("IndustrialLocationScreen");
-  };
-
-  /* ---------------- render ---------------- */
   return (
     <SafeAreaView style={styles.safe}>
-      {/* ===== Header ===== */}
       <CustomHeader
-        title="تفاصيل صنايعى"
+        title="اثبات الهوية"
         onBack={() => navigation.goBack()}
         activeIndex={1}
+        steps={["بيانات صنايعى", "اثبات شخصيه", "الموقع"]}
+        currentStep={1}
       />
 
-      {/* ===== Body ===== */}
-      <KeyboardAvoidingView
-        style={{ flex: 2 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
-      >
-        <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
-          <Text style={styles.section}>صوره شخصيه</Text>
-          <UploadCard
-            label="اضغط لاضافه صوره شخصيه"
-            imageUri={personal}
-            onAdd={() => pickImage(setPersonal)}
-            onRemove={() => setPersonal(null)}
-          />
+      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
+        <Text style={styles.instruction}>
+          يرجى رفع الصور التالية لإثبات هويتك وإكمال عملية التسجيل
+        </Text>
 
-          <Text style={styles.section}>اثبات هويه اماميه</Text>
-          <UploadCard
-            label="اضغط لاضافه صوره اثبات هويه اماميه"
-            imageUri={idFront}
-            onAdd={() => pickImage(setIdFront)}
-            onRemove={() => setIdFront(null)}
-          />
+        <Text style={styles.section}>صورة شخصية</Text>
+        <UploadCard
+          label="اضغط لاضافه صوره شخصيه"
+          imageUri={profilePic}
+          onAdd={() => pickImage(setProfilePic, "profilePic")}
+          onRemove={() => {
+            setProfilePic(null);
+            setUserInfo((prev) => ({
+              ...prev,
+              identity: { ...prev.identity, profilePic: null },
+            }));
+          }}
+        />
 
-          <Text style={styles.section}>اثبات هويه خلفيه</Text>
-          <UploadCard
-            label="اضغط لاضافه صوره اثبات هويه خلفيه"
-            imageUri={idBack}
-            onAdd={() => pickImage(setIdBack)}
-            onRemove={() => setIdBack(null)}
-          />
+        <Text style={styles.section}>اثبات هوية أمامية</Text>
+        <UploadCard
+          label="اضغط لاضافه صوره اثبات هويه اماميه"
+          imageUri={idFront}
+          onAdd={() => pickImage(setIdFront, "idFront")}
+          onRemove={() => {
+            setIdFront(null);
+            setUserInfo((prev) => ({
+              ...prev,
+              identity: { ...prev.identity, idFront: null },
+            }));
+          }}
+        />
 
-          {/* Next */}
-          <CustomButton
-            title="التالى"
-            onPress={handleNext}
-            disabled={!isReady}
-            type={isReady ? "filled" : "outline"}
-            textStyle={{ fontFamily: Fonts.BOLD, fontSize: 18 }}
-          />
-        </ScrollView>
-      </KeyboardAvoidingView>
+        <Text style={styles.section}>اثبات هوية خلفية</Text>
+        <UploadCard
+          label="اضغط لاضافه صوره اثبات هويه خلفيه"
+          imageUri={idBack}
+          onAdd={() => pickImage(setIdBack, "idBack")}
+          onRemove={() => {
+            setIdBack(null);
+            setUserInfo((prev) => ({
+              ...prev,
+              identity: { ...prev.identity, idBack: null },
+            }));
+          }}
+        />
+
+        {/* progress */}
+        <View style={styles.progressContainer}>
+          <Text style={styles.progressText}>{`${completedCount}/3 صور مكتملة`}</Text>
+          <View style={styles.progressBar}>
+            <View
+              style={[styles.progressFill, { width: `${(completedCount / 3) * 100}%` }]}
+            />
+          </View>
+        </View>
+
+        <CustomButton
+          title="التالي"
+          onPress={handleNext}
+          disabled={!isReady}
+          type={isReady ? "filled" : "outline"}
+          textStyle={{ fontFamily: Fonts.BOLD, fontSize: 18 }}
+          style={{ marginTop: 20 }}
+        />
+      </ScrollView>
     </SafeAreaView>
   );
 };
 
-/* -------- Styles -------- */
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#fff" },
-
-  /* header */
-  headerTitle: {
-    fontSize: 18,
-    fontFamily: Fonts.BOLD,
-    marginRight: 8,
+  instruction: {
+    fontSize: 14,
+    color: "#666",
+    textAlign: "center",
+    marginBottom: 20,
+    fontFamily: Fonts.REGULAR,
+    lineHeight: 20,
   },
-  backCircle: {
-    padding: 6,
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-
-  /* section headings */
   section: {
     alignSelf: "flex-end",
     fontSize: 18,
-    fontFamily: Fonts.REGULAR,
+    fontFamily: Fonts.BOLD,
     color: "#333",
     marginTop: 24,
     marginBottom: 8,
   },
-
-  /* upload card */
   card: {
     borderWidth: 1.5,
     borderStyle: "dashed",
@@ -218,6 +233,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#fff",
     marginBottom: 12,
+    position: "relative",
   },
   iconCircle: {
     width: 45,
@@ -246,30 +262,41 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: Fonts.BOLD,
   },
-
-  preview: { width: 110, height: 110, borderRadius: 8 },
+  preview: {
+    width: "100%",
+    height: 160,
+    borderRadius: 8,
+    resizeMode: "cover",
+  },
   deleteBtn: {
     position: "absolute",
-    top: 6,
-    right: 6,
-    backgroundColor: "#555",
-    borderRadius: 10,
-    padding: 2,
+    top: 8,
+    right: 8,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    borderRadius: 12,
+    padding: 4,
   },
-
-  /* next button */
-  nextBtn: {
+  progressContainer: {
+    alignItems: "center",
+    marginTop: 16,
+  },
+  progressText: {
+    fontSize: 14,
+    color: "#666",
+    fontFamily: Fonts.REGULAR,
+    marginBottom: 8,
+  },
+  progressBar: {
+    width: "80%",
+    height: 6,
+    backgroundColor: "#E0E0E0",
+    borderRadius: 3,
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: "100%",
     backgroundColor: "#004AAD",
-    paddingVertical: 16,
-    borderRadius: 999,
-    marginTop: 30,
-  },
-  nextBtnDisabled: { backgroundColor: "#BFD2F6" },
-  nextTxt: {
-    color: "#fff",
-    fontSize: 16,
-    fontFamily: Fonts.BOLD,
-    textAlign: "center",
+    borderRadius: 3,
   },
 });
 

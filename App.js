@@ -31,7 +31,7 @@ import ProfileScreen from "./screens/profile/ProfileScreen";
 import ProviderProfileScreen from "./screens/ProviderProfileScreen";
 import NewCard from "./screens/Payment/NewCard";
 import TwoPopups from "./screens/Payment/2popups";
-
+import UserContextProvider from './screens/Context/UserContext.js';
 // import ProviderHomeScreen from "./screens/Providers/HomeProvider";
 import ProviderOrdersScreen from "./screens/provider_screens/orders/ProviderOrdersScreen";
 import ProviderServiceDetailsScreen from "./screens/provider_screens/ProviderServiceDetailsScreen";
@@ -132,6 +132,7 @@ function App() {
   }
 
   return (
+    <UserContextProvider>
     <NavigationContainer>
       <StatusBar style="light" backgroundColor="#004AAD" />
       <Stack.Navigator
@@ -254,6 +255,7 @@ function App() {
         />
       </Stack.Navigator>
     </NavigationContainer>
+    </UserContextProvider>
   );
 }
 

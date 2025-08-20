@@ -1,53 +1,68 @@
-import React, { useState } from "react";
-import { View, Image, StyleSheet, TouchableOpacity, Text } from "react-native";
+// screens/UserCategoryScreen.js
+import React, { useState, useContext } from "react";
+import {
+  View,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  Text,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import CustomButton from "../Components/CustomButton";
 import { Fonts } from "../constants";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { UserContext } from "./Context/UserContext";
 
-function user_category_screen({ navigation }) {
-  const [selectedImage, setSelectedImage] = useState(null);
+function UserCategoryScreen({ navigation }) {
+  const { userInfo, setUserInfo } = useContext(UserContext);
+  const [selectedImage, setSelectedImage] = useState(userInfo?.role || null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSanay3yPress = () => {
-    console.log("Sanay3y image pressed");
-    setSelectedImage("sanay3y");
-  };
-
-  const handleSnay3y1Press = () => {
-    console.log("Snay3y1 image pressed");
-    setSelectedImage("client");
-  };
+  const handleSanay3yPress = () => setSelectedImage("provider");
+  const handleClientPress = () => setSelectedImage("client");
 
   const handleContinuePress = async () => {
     if (!selectedImage) {
-      alert("يرجى اختيار نوع الحساب أولاً");
+      Alert.alert("تنبيه", "يرجى اختيار نوع الحساب أولاً");
       return;
     }
 
-    try {
-      await AsyncStorage.setItem("userType", selectedImage);
-      await AsyncStorage.setItem("user", "true");
+    // ✅ Save role in Context
+    setUserInfo((prev) => ({ ...prev, role: selectedImage }));
 
-      if (selectedImage === "client") {
-        navigation.navigate("UserLocation"); // العميل → شاشة اللوكيشن
-      } else {
-        navigation.navigate("IndustrialSpecialtyScreen"); // الصنايعي → شاشة التخصصات
-      }
-    } catch (error) {
-      console.error("AsyncStorage Error:", error);
-      alert("حدث خطأ أثناء الحفظ، حاول مرة أخرى");
+    if (selectedImage === "client") {
+      // 🔹 Instead of registering → go to UserLocationScreen
+      navigation.navigate("UserLocation", { role: "client" });
+    } else {
+      // Provider → continue flow
+      navigation.navigate("IndustrialSpecialtyScreen");
     }
   };
+
+  if (loading) {
+    return (
+      <View
+        style={[
+          styles.container,
+          { justifyContent: "center", alignItems: "center" },
+        ]}
+      >
+        <ActivityIndicator size="large" color="#004AAD" />
+        <Text style={styles.title}>جاري المتابعة...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>من انت؟</Text>
-
       <View style={styles.imagesSection}>
         <View style={styles.imageRow}>
+          {/* صنايعي */}
           <TouchableOpacity
             style={[
               styles.touchableImage,
-              selectedImage === "sanay3y"
+              selectedImage === "provider"
                 ? styles.selectedImage
                 : styles.unselectedImage,
             ]}
@@ -62,6 +77,7 @@ function user_category_screen({ navigation }) {
             <Text style={styles.imageLabel}>صنايعي</Text>
           </TouchableOpacity>
 
+          {/* مستخدم */}
           <TouchableOpacity
             style={[
               styles.touchableImage,
@@ -69,7 +85,7 @@ function user_category_screen({ navigation }) {
                 ? styles.selectedImage
                 : styles.unselectedImage,
             ]}
-            onPress={handleSnay3y1Press}
+            onPress={handleClientPress}
             activeOpacity={0.7}
           >
             <Image
@@ -84,7 +100,7 @@ function user_category_screen({ navigation }) {
 
       <View style={styles.buttonSection}>
         <CustomButton
-          title={"تابع"}
+          title="تابع"
           onPress={handleContinuePress}
           type="filled"
         />
@@ -94,11 +110,7 @@ function user_category_screen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#ffffff",
-    paddingTop: 50,
-  },
+  container: { flex: 1, backgroundColor: "#ffffff", paddingTop: 50 },
   title: {
     fontSize: 28,
     fontFamily: Fonts.BOLD,
@@ -106,10 +118,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 20,
   },
-  imagesSection: {
-    flex: 1,
-    justifyContent: "center",
-  },
+  imagesSection: { flex: 1, justifyContent: "center" },
   imageRow: {
     flexDirection: "row",
     justifyContent: "center",
@@ -121,19 +130,9 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     borderWidth: 2,
   },
-  selectedImage: {
-    backgroundColor: "#B0C7E6",
-    borderColor: "#B0C7E6",
-  },
-  unselectedImage: {
-    backgroundColor: "#00000033",
-    borderColor: "#00000033",
-  },
-  brandImage: {
-    width: 160,
-    height: 200,
-    marginBottom: 20,
-  },
+  selectedImage: { backgroundColor: "#B0C7E6", borderColor: "#B0C7E6" },
+  unselectedImage: { backgroundColor: "#00000033", borderColor: "#00000033" },
+  brandImage: { width: 160, height: 200, marginBottom: 20 },
   imageLabel: {
     fontSize: 18,
     fontFamily: Fonts.BOLD,
@@ -147,4 +146,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default user_category_screen;
+export default UserCategoryScreen;
