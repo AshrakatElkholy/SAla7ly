@@ -22,9 +22,9 @@ import { Fonts } from "../../../constants";
 import CustomButton from "../../../Components/CustomButton";
 import CustomInput from "../../../Components/CustomInput";
 import CustomHeader from "../../../Components/CustomHeader";
-import { UserContext } from "../../Context/UserContext";
+import { UserContext } from "../../../screens/Context/UserContext";
 
-const API_BASE = "https://f27ad2cde96b.ngrok-free.app";
+const API_BASE = "https://45df9571624f.ngrok-free.app";
 
 export default function UserLocationScreen() {
   const navigation = useNavigation();

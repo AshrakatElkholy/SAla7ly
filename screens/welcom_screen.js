@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, SafeAreaView, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, Image, StyleSheet, SafeAreaView, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import CustomButton from '../Components/CustomButton';
 
@@ -21,33 +21,34 @@ function welcom_screen({ navigation, route }) {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" backgroundColor="#fff" />
-
-      {/* Main Image */}
-      <View style={styles.imageContainer}>
-        <Image 
-          source={require('../assets/snay3y1.png')} 
-          style={styles.mainLogo}
-          resizeMode="contain"
-        />
-      </View>
-
-      {/* Bottom Card Overlay */}
-      <View style={styles.roundedcard}>
-        <Text style={styles.welcomeText}>صلّحها بـ "صلّحلي"!</Text>
-        <Text style={styles.subtitleText}>بدل ما تدوّر… خلّي "صلّحلي" يجيبلك الصنايعي لحد باب البيت!</Text>
-        <View style={styles.buttonContainer}>
-          <CustomButton 
-            title="انشاء حساب" 
-            onPress={handleSignupPress} 
-            type='filled'
-          />
-          <CustomButton 
-            title="تسجيل الدخول" 
-            onPress={handleLoginPress} 
-            type='outline'
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        {/* Main Image */}
+        <View style={styles.imageContainer}>
+          <Image 
+            source={require('../assets/snay3y1.png')} 
+            style={styles.mainLogo}
+            resizeMode="contain"
           />
         </View>
-      </View>
+
+        {/* Bottom Card Overlay */}
+        <View style={styles.roundedcard}>
+          <Text style={styles.welcomeText}>صلّحها بـ "صلّحلي"!</Text>
+          <Text style={styles.subtitleText}>بدل ما تدوّر… خلّي "صلّحلي" يجيبلك الصنايعي لحد باب البيت!</Text>
+          <View style={styles.buttonContainer}>
+            <CustomButton 
+              title="انشاء حساب" 
+              onPress={handleSignupPress} 
+              type='filled'
+            />
+            <CustomButton 
+              title="تسجيل الدخول" 
+              onPress={handleLoginPress} 
+              type='outline'
+            />
+          </View>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -56,6 +57,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  scrollContainer: {
+    flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'flex-start',
   },
@@ -74,9 +78,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   roundedcard: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
     width: '100%',
     borderWidth: 1,
     borderColor: '#D1D1DB',

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -14,22 +14,17 @@ import { Entypo } from "@expo/vector-icons";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ServiceCard from "../Components/ServiceCard";
+import { UserContext } from "../screens/Context/UserContext";
 
 export default function ProviderProfileScreen({ navigation, route }) {
   const [provider, setProvider] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [token, setToken] = useState(null);
+  const { token } = useContext(UserContext);
 
   const userId = route.params?.userId;
   const BASE_URL =
-    route.params?.baseUrl || "https://f27ad2cde96b.ngrok-free.app";
-
-  // Load token from AsyncStorage
-  const loadToken = async () => {
-    const storedToken = await AsyncStorage.getItem("token");
-    setToken(storedToken);
-  };
+    route.params?.baseUrl || "https://45df9571624f.ngrok-free.app";
 
   const fetchProvider = async () => {
     if (!token) return;
@@ -48,10 +43,6 @@ export default function ProviderProfileScreen({ navigation, route }) {
       setRefreshing(false);
     }
   };
-
-  useEffect(() => {
-    loadToken();
-  }, []);
 
   useEffect(() => {
     if (token) fetchProvider();

@@ -1,56 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { ScrollView, ActivityIndicator } from 'react-native';
 import { RefreshControl } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { UserContext } from '../../../../screens/Context/UserContext';
 
-const PastOrdersProvider = ({ navigation, token: propToken }) => {
-  const BASE_URL = "https://f27ad2cde96b.ngrok-free.app";
+const PastOrdersProvider = ({ navigation }) => {
+  const BASE_URL = "https://45df9571624f.ngrok-free.app";
+  const { token } = useContext(UserContext);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [userToken, setUserToken] = useState(propToken || null);
-
-  // ✅ Get token from AsyncStorage if not provided as prop
-  const getToken = async () => {
-    try {
-      if (propToken) {
-        setUserToken(propToken);
-        return propToken;
-      }
-      
-      const storedToken = await AsyncStorage.getItem('access_token');
-      console.log("User Token from AsyncStorage:", storedToken);
-      
-      if (storedToken) {
-        setUserToken(storedToken);
-        return storedToken;
-      }
-      
-      console.warn("No token found in AsyncStorage or props");
-      return null;
-    } catch (error) {
-      console.error("Error getting token:", error);
-      return null;
-    }
-  };
 
   const fetchOrders = async () => {
     try {
-      // Get token first
-      const currentToken = await getToken();
-      
-      if (!currentToken) {
+      if (!token) {
         console.error("No token available for API call");
         setOrders([]);
         return;
       }
 
-      console.log("Fetching orders with token:", currentToken);
+      console.log("Fetching orders with token:", token);
       
       const res = await axios.get(`${BASE_URL}/provider/getMyOrders`, {
         headers: { 
-          Authorization: `bearer ${currentToken}`,
+          Authorization: `bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
@@ -80,7 +53,7 @@ const PastOrdersProvider = ({ navigation, token: propToken }) => {
 
   useEffect(() => {
     fetchOrders();
-  }, [propToken]); // Re-fetch when propToken changes
+  }, [token]); // Re-fetch when token changes
 
   const onRefresh = () => {
     setRefreshing(true);

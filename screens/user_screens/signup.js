@@ -14,7 +14,7 @@ import SignupHeaderCard from "../../Components/SignupHeaderCard";
 import CustomInput from "../../Components/CustomInput";
 import CustomButton from "../../Components/CustomButton";
 import { Fonts } from "../../constants";
-import { UserContext } from "../Context/UserContext";
+import { UserContext } from "../../screens/Context/UserContext";
 
 function FormInput({ navigation }) {
   const { setUserInfo } = useContext(UserContext);

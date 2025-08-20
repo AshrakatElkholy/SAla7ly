@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useContext } from "react";
 import {
   View,
   Text,
@@ -8,31 +8,14 @@ import {
 } from "react-native";
 import ProviderOrderCard from "../../../../Components/ProviderOrderCard";
 import axios from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { UserContext } from "../../../../screens/Context/UserContext";
 
 const CurrentOrdersProvider = ({ navigation, baseUrl }) => {
-  const BASE_URL = baseUrl || "https://f27ad2cde96b.ngrok-free.app";
+  const BASE_URL = baseUrl || "https://45df9571624f.ngrok-free.app";
+  const { token } = useContext(UserContext);
 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState(null);
-
-  // ✅ استرجاع التوكن من AsyncStorage
-  useEffect(() => {
-    const loadToken = async () => {
-      try {
-        const savedToken = await AsyncStorage.getItem("userToken");
-        if (savedToken) {
-          setToken(savedToken);
-          console.log("Token loaded:", savedToken);
-        }
-      } catch (error) {
-        console.error("Error loading token:", error);
-      }
-    };
-
-    loadToken();
-  }, []);
 
   // ✅ دالة لجلب الطلبات
   const fetchOrders = useCallback(async () => {

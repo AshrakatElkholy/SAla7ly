@@ -14,15 +14,15 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import ProviderBottomNavigation from '../../Components/providerBottomNavigation';
 import ProviderServiceCard from '../../Components/providerServiceCard';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { UserContext } from '../../screens/Context/UserContext';
 
-const NGROK_URL = 'https://f27ad2cde96b.ngrok-free.app';
+const NGROK_URL = 'https://45df9571624f.ngrok-free.app';
 
 const providerHomeScreen = () => {
     // State for API data
@@ -80,22 +80,11 @@ const providerHomeScreen = () => {
         ]
     };
 
-    // Function to get token from AsyncStorage - UPDATED
-    const getToken = async () => {
-        try {
-            const token = await AsyncStorage.getItem('userToken');
-            console.log('Token from AsyncStorage:', token);
-            return token;
-        } catch (error) {
-            console.error('Error getting token from AsyncStorage:', error);
-            return null;
-        }
-    };
+    const { token } = useContext(UserContext);
 
     const fetchOrdersData = async () => {
         try {
             setOrdersLoading(true);
-            const token = await getToken();
 
             if (!token) {
                 console.log('No token found for orders API');
@@ -153,7 +142,6 @@ const providerHomeScreen = () => {
     const fetchProviderData = async () => {
         try {
             setLoading(true);
-            const token = await getToken();
 
             if (!token) {
                 console.log('No token found, using default data');

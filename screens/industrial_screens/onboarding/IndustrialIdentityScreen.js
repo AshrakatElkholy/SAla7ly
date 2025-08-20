@@ -16,7 +16,7 @@ import Icon from "react-native-vector-icons/Feather";
 import { Fonts } from "../../../constants";
 import CustomButton from "../../../Components/CustomButton";
 import CustomHeader from "../../../Components/CustomHeader";
-import { UserContext } from "../../Context/UserContext";
+import { UserContext } from "../../../screens/Context/UserContext";
 
 // 🔹 Reusable upload card
 const UploadCard = ({ label, imageUri, onAdd, onRemove }) => (

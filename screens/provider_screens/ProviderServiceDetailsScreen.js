@@ -15,12 +15,12 @@ import CustomServiceCard from "../../Components/CustomServiceCard";
 import CustomButton from "../../Components/CustomButton";
 import { Fonts } from "../../constants";
 import axios from "axios";
-import { AuthContext } from "../../context/AuthContext"; // ✅ Import your context
+import { UserContext } from "../../screens/Context/UserContext"; // Updated to use UserContext
 
 const screenWidth = Dimensions.get("window").width;
 
 const ProviderServiceDetailsScreen = ({ navigation, route }) => {
-  const { token } = useContext(AuthContext); // ✅ Get token from context
+  const { token } = useContext(UserContext); // Updated to use UserContext
   const currentOrder = route.params?.order;
 
   const service = {
@@ -41,7 +41,7 @@ const ProviderServiceDetailsScreen = ({ navigation, route }) => {
     },
   };
 
-  const BASE_URL = "https://f27ad2cde96b.ngrok-free.app";
+  const BASE_URL = "https://45df9571624f.ngrok-free.app";
 
   const updateOrderStatus = async (status) => {
     console.log("Sending orderId:", currentOrder._id, "with status:", status);

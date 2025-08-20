@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,101 +6,82 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  I18nManager,
   SafeAreaView,
   Alert,
+  ActivityIndicator,
 } from "react-native";
-import { Entypo, FontAwesome, Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { Entypo } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-export default function ServiceDetailsScreen({ navigation }) {
-  const services = [
-    {
-      id: 1,
-      title: "صيانة مكيفات",
-      provider: "احمد محمد",
-      price: "250ج.م",
-      rating: "4.5",
-      reviews: "(6)",
-      image: require("../assets/providerBG.png"),
-    },
-    {
-      id: 2,
-      title: "صيانة مكيفات",
-      provider: "احمد محمد",
-      price: "250ج.م",
-      rating: "4.5",
-      reviews: "(6)",
-      image: require("../assets/providerBG.png"),
-    },
-  ];
+import axios from "axios";
+
+const BASE_URL = "https://98c21eeda706.ngrok-free.app";
+
+export default function ServiceDetailsScreen({ route, navigation }) {
+  const serviceId = route?.params?.serviceId;
+  console.log("Service ID:", serviceId);
+
+  const [service, setService] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [otherServices, setOtherServices] = useState([]);
+
+  useEffect(() => {
+    const fetchService = async () => {
+      try {
+        const { data } = await axios.get(
+          `${BASE_URL}/user/getService/${serviceId}`
+        );
+        setService(data);
+
+        navigation.setOptions({ title: data.title });
+
+        const { data: allServices } = await axios.get(
+          `${BASE_URL}/user/getServiceByCategory/${data.categoryId._id}`
+        );
+        setOtherServices(allServices.services);
+      } catch (error) {
+        console.error(
+          "خطأ في تحميل الخدمة:",
+          error.response?.data || error.message
+        );
+        Alert.alert("خطأ", "لم يتم تحميل بيانات الخدمة");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (serviceId) {
+      // لو حابب، ممكن تحط هنا عنوان مؤقت قبل ما ييجي الرد من السيرفر
+      navigation.setOptions({ title: `تفاصيل الخدمة رقم ${serviceId}` });
+
+      fetchService();
+    }
+  }, [serviceId, navigation]);
 
   const handleBackPress = () => {
     navigation.goBack();
   };
 
-  const handleBookNow = () => {
-    Alert.alert(
-      "تأكيد الحجز",
-      "هل تريد تأكيد حجز هذه الخدمة؟",
-      [
-        {
-          text: "إلغاء",
-          style: "cancel",
-        },
-        {
-          text: "تأكيد",
-          onPress: () => {
-            Alert.alert("تم الحجز", "تم حجز الخدمة بنجاح!");
-          },
-        },
-      ]
-    );
-  };
+  const handleServiceBookNow = async () => {
+    if (!service) return;
 
-  // const handleServiceBookNow = (service) => {
-  //   Alert.alert(
-  //     "تأكيد الحجز",
-  //     `هل تريد حجز خدمة "${service.title}"؟`,
-  //     [
-  //       {
-  //         text: "إلغاء",
-  //         style: "cancel",
-  //       },
-  //       {
-  //         text: "تأكيد",
-  //         onPress: () => {
-  //           Alert.alert("تم الحجز", `تم حجز خدمة ${service.title} بنجاح!`);
-  //         },
-  //       },
-  //     ]
-  //   );
-  // };
-
-  const handleServiceBookNow = async (service, navigation) => {
     Alert.alert("تأكيد الحجز", `هل تريد حجز خدمة "${service.title}"؟`, [
-      {
-        text: "إلغاء",
-        style: "cancel",
-      },
+      { text: "إلغاء", style: "cancel" },
       {
         text: "تأكيد",
         onPress: async () => {
           const newOrder = {
-            id: Date.now(), // unique ID
+            id: Date.now(),
             name: service.title,
             status: "قيد التنفيذ",
-            ...service, // include full service details
+            ...service,
           };
-  
+
           try {
             const existingOrders = await AsyncStorage.getItem("orders");
             const orders = existingOrders ? JSON.parse(existingOrders) : [];
             orders.push(newOrder);
             await AsyncStorage.setItem("orders", JSON.stringify(orders));
             Alert.alert("تم الحجز", `تم حجز خدمة ${service.title} بنجاح!`);
-  
-            // ✅ Navigate and send order data
             navigation.navigate("OrdersScreen", { order: newOrder });
           } catch (error) {
             console.error("فشل في حفظ الطلب:", error);
@@ -109,7 +90,23 @@ export default function ServiceDetailsScreen({ navigation }) {
       },
     ]);
   };
-  
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#004AAD" />
+        <Text>جاري تحميل الخدمة...</Text>
+      </View>
+    );
+  }
+
+  if (!service) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>لم يتم العثور على الخدمة</Text>
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -117,12 +114,14 @@ export default function ServiceDetailsScreen({ navigation }) {
         {/* صورة الخدمة */}
         <View style={styles.headerImageWrapper}>
           <Image
-            source={require("../assets/providerBG.png")}
+            source={{ uri: service.mainImage?.secure_url }}
             style={styles.headerImage}
           />
-          {/* أزرار أعلى الصورة */}
           <View style={styles.imageTopButtons}>
-            <TouchableOpacity style={styles.circleBtn} onPress={handleBackPress}>
+            <TouchableOpacity
+              style={styles.circleBtn}
+              onPress={handleBackPress}
+            >
               <Entypo name="chevron-right" size={24} color="gray" />
             </TouchableOpacity>
 
@@ -139,7 +138,7 @@ export default function ServiceDetailsScreen({ navigation }) {
         <View style={styles.content}>
           {/* العنوان والتقييم */}
           <View style={styles.titleSection}>
-            <Text style={styles.serviceTitle}>صيانه مطبخ</Text>
+            <Text style={styles.serviceTitle}>{service.title}</Text>
             <Text style={styles.ratingText}>⭐ 4.5 (51)</Text>
           </View>
 
@@ -147,13 +146,7 @@ export default function ServiceDetailsScreen({ navigation }) {
 
           {/* وصف الخدمة */}
           <Text style={styles.sectionTitle}>عن الخدمة</Text>
-          <Text style={styles.descriptionText}>
-            هذه الخدمة تشمل أعمال صيانة المطبخ من تركيب وصيانة الأجهزة وتنظيم
-            المساحات بطريقة احترافية. نقوم بفحص شامل لمشاكل السباكة والكهرباء،
-            واستبدال الأجزاء التالفة، مع تحسين توزيع الأجهزة لتسهيل الاستخدام
-            اليومي. كما نوفر حلولًا مبتكرة لتوفير المساحة وتعزيز كفاءة المطبخ
-            بما يتناسب مع احتياجاتك.
-          </Text>
+          <Text style={styles.descriptionText}>{service.description}</Text>
 
           <View style={styles.divider} />
 
@@ -161,83 +154,73 @@ export default function ServiceDetailsScreen({ navigation }) {
           <Text style={styles.sectionTitle}>مقدم الخدمة</Text>
           <View style={styles.providerSection}>
             <Image
-              source={require("../assets/providerBG.png")}
+              source={{ uri: service.providerId?.profilePic?.secure_url }}
               style={styles.avatar}
             />
             <View style={styles.providerInfo}>
-              <Text style={styles.providerName}>أحمد محمد</Text>
-              <Text style={styles.providerSubtitle}>مهندس عام - مطروح</Text>
+              <Text style={styles.providerName}>
+                {service.providerId?.name}
+              </Text>
+              <Text style={styles.providerSubtitle}>
+                {service.providerId?.address}
+              </Text>
               <View style={styles.categoryTag}>
-                <Text style={styles.categoryText}>كهربائي</Text>
+                <Text style={styles.categoryText}>
+                  {service.categoryId?.title}
+                </Text>
               </View>
             </View>
-            <TouchableOpacity style={styles.detailButton} onPress={() => navigation.navigate('ProviderProfileScreen')}>
+            <TouchableOpacity
+              style={styles.detailButton}
+              onPress={() => navigation.navigate("ProviderProfileScreen")}
+            >
               <Text style={styles.detailButtonText}>تفاصيل</Text>
             </TouchableOpacity>
           </View>
+
           <View style={styles.divider} />
 
-          {/* خدمات أخرى */}
-          <Text style={styles.sectionTitle}>خدمات أخرى</Text>
-        </View>
-        <View style={styles.sectionContainer}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.servicesScrollView}
-            contentContainerStyle={{ flexDirection: "row-reverse" }}
-          >
-            <View style={styles.servicesContainer}>
-              {services.map((service) => (
-                <View key={service.id} style={styles.serviceCard}>
-                  <View style={styles.serviceImageContainer}>
-                    <Image source={service.image} style={styles.serviceImage} />
+          {/* الحجز والسعر */}
+          <View style={styles.footer}>
+            <TouchableOpacity
+              style={styles.bookButtonFooter}
+              onPress={handleServiceBookNow}
+            >
+              <Text style={styles.bookButtonTextFooter}>احجز الآن</Text>
+            </TouchableOpacity>
+            <Text style={styles.priceRange}>
+              ({service.minPrice}-{service.maxPrice}) ج.م
+            </Text>
+          </View>
 
-                    <View style={styles.ratingBadge}>
-                      {/* زر البوكمارك */}
-                      <TouchableOpacity style={styles.circleBtnBookmark}>
-                        <Image
-                          source={require("../assets/bookmark.png")}
-                          style={{ width: 16, height: 16 }}
-                        />
-                      </TouchableOpacity>
-                      {/* النجمة والتقييم والمراجعات */}
-                      <View style={styles.ratingInfo}>
-                        <FontAwesome name="star" size={12} color="#FFD700" />
-                        <Text style={styles.ratingText}>{service.rating}</Text>
-                        <Text style={styles.reviewsText}>
-                          {service.reviews}
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-                  <View style={styles.serviceInfo}>
-                    <View style={styles.serviceTitleRow}>
-                      <Text style={styles.servicePrice}>{service.price}</Text>
-                      <Text style={styles.serviceTitle}>{service.title}</Text>
-                    </View>
-                    <Text style={styles.serviceProvider}>
-                      {service.provider}
-                    </Text>
-                    <TouchableOpacity 
-                      style={styles.bookButton}
-                      onPress={() => handleServiceBookNow(service)}
-                    >
-                      <Text style={styles.bookButtonText}>احجز الان</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              ))}
-            </View>
+          <View style={styles.divider} />
+
+          {/* ✅ الخدمات الأخرى */}
+          <Text style={styles.sectionTitle}>خدمات أخري في نفس الفئة</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {otherServices.map((item) => (
+              <TouchableOpacity
+                key={item._id}
+                style={styles.otherServiceCard}
+                onPress={() =>
+                  navigation.push("ServiceDetailsScreen", {
+                    serviceId: item._id,
+                  })
+                }
+              >
+                <Image
+                  source={{ uri: item.mainImage?.secure_url }}
+                  style={styles.otherServiceImage}
+                />
+                <Text style={styles.otherServiceTitle} numberOfLines={1}>
+                  {item.title}
+                </Text>
+                <Text style={styles.otherServicePrice}>
+                  {item.minPrice}-{item.maxPrice} ج.م
+                </Text>
+              </TouchableOpacity>
+            ))}
           </ScrollView>
-        </View>
-
-        {/* الحجز والسعر */}
-        <View style={styles.footer}>
-          <TouchableOpacity style={styles.bookButtonFooter} onPress={handleServiceBookNow}>
-            <Text style={styles.bookButtonTextFooter}>احجز الآن</Text>
-          </TouchableOpacity>
-          <Text style={styles.priceRange}>(500-600)م.ج</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -245,10 +228,7 @@ export default function ServiceDetailsScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
+  safeArea: { flex: 1, backgroundColor: "#fff" },
   container: { flex: 1, backgroundColor: "#fff" },
   headerImageWrapper: { position: "relative" },
   headerImage: {
@@ -283,8 +263,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     elevation: 4,
   },
-  btnIcon: { fontSize: 16 },
-
   content: { padding: 20 },
   titleSection: {
     flexDirection: "row-reverse",
@@ -292,8 +270,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   serviceTitle: { fontSize: 20, fontWeight: "bold", textAlign: "right" },
-  ratingText: { fontSize: 14, color: "#666", textAlign: "left" },
-
+  ratingText: { fontSize: 14, color: "#666" },
   sectionTitle: {
     marginTop: 15,
     fontWeight: "bold",
@@ -306,16 +283,11 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     textAlign: "right",
   },
-  divider: {
-    height: 1,
-    backgroundColor: "#ccc",
-    marginVertical: 10,
-  },
+  divider: { height: 1, backgroundColor: "#ccc", marginVertical: 10 },
   providerSection: {
     flexDirection: "row-reverse",
     alignItems: "center",
     marginTop: 10,
-    // backgroundColor: "#f9f9f9",
     padding: 10,
     borderRadius: 10,
   },
@@ -332,7 +304,6 @@ const styles = StyleSheet.create({
     alignSelf: "flex-end",
   },
   categoryText: { color: "#2e8b57", fontSize: 12 },
-
   detailButton: {
     borderWidth: 1,
     borderColor: "#004AAD",
@@ -345,22 +316,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     paddingHorizontal: 20,
   },
-
-  otherServiceCard: {
-    width: 120,
-    marginLeft: 10,
-    marginTop: 10,
-    borderRadius: 12,
-    overflow: "hidden",
-    backgroundColor: "#f0f0f0",
-  },
-  otherServiceImage: { width: "100%", height: 80 },
-  otherRating: {
-    textAlign: "center",
-    padding: 5,
-    fontSize: 12,
-  },
-
   footer: {
     padding: 20,
     flexDirection: "row-reverse",
@@ -375,150 +330,30 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   bookButtonTextFooter: { color: "#fff", fontWeight: "bold", fontSize: 16 },
-
-  sectionContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 15,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-    textAlign: "right",
-  },
-  moreButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-  },
-  moreButtonText: {
-    fontSize: 14,
-    color: "#2196F3",
-    textAlign: "left",
-  },
-
-  servicesScrollView: {
-    flexGrow: 0,
-  },
-  servicesContainer: {
-    flexDirection: "row",
-    paddingRight: 20,
-  },
-  serviceCard: {
-    width: 250,
-    marginRight: 15,
-    backgroundColor: "#ffffff",
-    borderRadius: 15,
-    shadowColor: "#000",
-    // shadowOffset: {
-    //   width: 0,
-    //   height: 2,
-    // },
-    // shadowOpacity: 0.1,
-    // shadowRadius: 4,
-    // elevation: 3,
-    overflow: "hidden",
-  },
-  serviceImageContainer: {
-    position: "relative",
-  },
-  serviceImage: {
-    width: "100%",
-    height: 120,
-    resizeMode: "cover",
-  },
-  ratingBadge: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
-    borderRadius: 15,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    flexDirection: "row",
+  otherServiceCard: {
+    width: 140,
+    marginRight: 10,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 10,
+    elevation: 3,
     alignItems: "center",
   },
-  ratingText: {
-    fontSize: 12,
-    color: "#333",
-    marginHorizontal: 3,
-  },
-  reviewsText: {
-    fontSize: 10,
-    color: "#666",
-  },
-  serviceInfo: {
-    padding: 12,
-  },
-  serviceTitleRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 4,
-  },
-  serviceTitle: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "#333",
-    textAlign: "right",
-    flex: 1,
-  },
-  serviceProvider: {
-    fontSize: 12,
-    color: "#666",
-    marginBottom: 12,
-    textAlign: "right",
-  },
-  servicePrice: {
-    fontSize: 15,
-    fontWeight: 700,
-    color: "#000",
-    textAlign: "left",
-  },
-  bookButton: {
-    backgroundColor: "transparent",
-    borderWidth: 2,
-    borderColor: "#004AAD",
-    borderRadius: 20,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    alignItems: "center",
-  },
-  bookButtonText: {
-    color: "#004AAD",
-    fontSize: 14,
-    fontWeight: "bold",
-  },
-  ratingBadge: {
-    position: "absolute",
-    top: 8,
-    left: 8,
-    right: 8,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-
-  ratingInfo: {
-    backgroundColor: "#FFFFFF5C",
-    padding: 4,
+  otherServiceImage: {
+    width: 120,
+    height: 80,
     borderRadius: 8,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
   },
-
-  circleBtnBookmark: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: "#8A8AA3",
-    justifyContent: "center",
-    alignItems: "center",
+  otherServiceTitle: {
+    marginTop: 5,
+    fontWeight: "bold",
+    fontSize: 14,
+    textAlign: "center",
+  },
+  otherServicePrice: {
+    fontSize: 12,
+    color: "#666",
+    marginTop: 3,
+    textAlign: "center",
   },
 });

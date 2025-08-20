@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, SafeAreaView } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 
@@ -8,7 +8,7 @@ export default function MessagesScreen() {
   const navigation = useNavigation();
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>الرسائل</Text>
@@ -18,6 +18,7 @@ export default function MessagesScreen() {
       </View>
 
       {/* Body */}
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.body}>
         <TouchableOpacity
           onPress={() => navigation.navigate("MessagesListScreen")}
@@ -33,7 +34,8 @@ export default function MessagesScreen() {
           سيتم التواصل معك عند قبول عرضك من الصنايعي
         </Text>
       </View>
-    </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -42,6 +44,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+  },
+  scrollContainer: {
+    flexGrow: 1,
   },
 
   header: {

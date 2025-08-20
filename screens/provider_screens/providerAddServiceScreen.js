@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {
     View,
     Text,
@@ -15,10 +15,10 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import ProviderBottomNavigation from '../../Components/providerBottomNavigation';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
+import { UserContext } from '../../screens/Context/UserContext';
 
-const NGROK_URL = 'https://f27ad2cde96b.ngrok-free.app';
+const NGROK_URL = 'https://45df9571624f.ngrok-free.app';
 
 const providerAddServiceScreen = ({ navigation, route }) => {
     const isEdit = route.params?.isEdit || false;
@@ -33,17 +33,8 @@ const providerAddServiceScreen = ({ navigation, route }) => {
     const [selectedImage, setSelectedImage] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    // Get token from AsyncStorage
-    const getUserToken = async () => {
-        try {
-            const token = await AsyncStorage.getItem('userToken');
-            console.log("User Token from AsyncStorage:", token);
-            return token;
-        } catch (error) {
-            console.error('Error getting token from AsyncStorage:', error);
-            return null;
-        }
-    };
+    // Get token from UserContext
+    const { token } = useContext(UserContext);
 
     // Request permissions
     const requestPermissions = async () => {
@@ -139,13 +130,13 @@ const providerAddServiceScreen = ({ navigation, route }) => {
         return formData;
     };
 
-    // Test API connectivity - Updated to use AsyncStorage token
+    // Test API connectivity - Updated to use token from context
     const testAPIConnectivity = async () => {
         try {
             console.log('=== TESTING API CONNECTIVITY ===');
             
-            const userToken = await getUserToken();
-            const userRole = await AsyncStorage.getItem('userRole');
+            const userToken = token;
+            const userRole = 'provider';
             
             if (!userToken) {
                 console.error('No token found in AsyncStorage');
@@ -234,10 +225,10 @@ const providerAddServiceScreen = ({ navigation, route }) => {
         }
     };
 
-    // FIXED: Add new service via API with multiple fallback attempts - Updated to use AsyncStorage token
+    // FIXED: Add new service via API with multiple fallback attempts - Updated to use token from context
     const addServiceToAPI = async () => {
-        const userToken = await getUserToken();
-        const userRole = await AsyncStorage.getItem('userRole');
+        const userToken = token;
+        const userRole = 'provider';
 
         if (!userToken) {
             Alert.alert('خطأ', 'يجب تسجيل الدخول أولاً');
@@ -363,11 +354,11 @@ const providerAddServiceScreen = ({ navigation, route }) => {
         throw new Error('جميع الطرق فشلت. تحقق من وجود endpoint في الخادم');
     };
 
-    // Edit service via API - Updated to use AsyncStorage token
+    // Edit service via API - Updated to use token from context
     const editServiceInAPI = async () => {
         try {
-            const userToken = await getUserToken();
-            const userRole = await AsyncStorage.getItem('userRole');
+            const userToken = token;
+            const userRole = 'provider';
 
             if (!userToken) {
                 Alert.alert('خطأ', 'يجب تسجيل الدخول أولاً');

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -24,16 +24,18 @@ import { Fonts } from "../../constants";
 import CustomButton from "../../Components/CustomButton";
 import CustomInput from "../../Components/CustomInput";
 import axios from "axios";
+import { UserContext } from "../../screens/Context/UserContext";
 
 // Add your API URL here
-const API_URL = "https://f27ad2cde96b.ngrok-free.app"; // Replace with your actual API URL
+const API_URL = "https://45df9571624f.ngrok-free.app"; // Replace with your actual API URL
 
 const ProfileScreen = ({ navigation }) => {
   const [balance, setBalance] = useState(20000);
   const [userName, setUserName] = useState("...");
   const [profileImage, setProfileImage] = useState();
   const [cityName, setCityName] = useState("غير محدد");
-  const [userToken, setUserToken] = useState(null);
+  
+  const { token } = useContext(UserContext);
 
   const [showDeposit, setShowDeposit] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
@@ -46,30 +48,9 @@ const ProfileScreen = ({ navigation }) => {
     { id: 2, number: "**** 44 855", icon: require("../../assets/card.png") },
   ];
 
-  // Function to get token from AsyncStorage
-  const getUserToken = async () => {
-    try {
-      const token = await AsyncStorage.getItem("token");
-      if (token) {
-        setUserToken(token);
-        console.log("User Token:", token);
-        return token;
-      } else {
-        console.log("No token found");
-        // Redirect to login if no token
-        navigation.reset({ index: 0, routes: [{ name: "ClientLoginScreen" }] });
-        return null;
-      }
-    } catch (error) {
-      console.log("Error getting token:", error);
-      return null;
-    }
-  };
-
   // Function to make API requests with authorization
   const makeAuthorizedRequest = async (endpoint, method = "GET", data = null) => {
     try {
-      const token = userToken || await getUserToken();
       if (!token) {
         throw new Error("No authentication token available");
       }
@@ -252,9 +233,7 @@ const handleLogoutPress = () => {
 
   // Load initial data
   useEffect(() => {
-    const initializeData = async () => {
-      await getUserToken();
-      
+    const initializeData = async () => {      
       // Load cached data first
       const getProfileImage = async () => {
         const storedImage = await AsyncStorage.getItem("profileImage");

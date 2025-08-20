@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import {
   View,
   ActivityIndicator,
@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import axios from "axios";
 import OrderCard from "../../Components/OrderCard";
+import { UserContext } from "../../screens/Context/UserContext";
 
 const EmptyState = ({ message }) => (
   <View style={{ alignItems: "center", marginTop: 40 }}>
@@ -15,10 +16,9 @@ const EmptyState = ({ message }) => (
   </View>
 );
 
-export const CurrentOrders = ({ navigation, route }) => {
-  const token = route.params?.token;
-  const BASE_URL =
-    route.params?.baseUrl || "https://f27ad2cde96b.ngrok-free.app";
+export const CurrentOrders = ({ navigation }) => {
+  const { token } = useContext(UserContext);
+  const BASE_URL = "https://45df9571624f.ngrok-free.app";
 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);

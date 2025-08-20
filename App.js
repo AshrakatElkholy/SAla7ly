@@ -10,6 +10,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Font from "expo-font";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 // CONTEXT
 import UserContextProvider, { UserContext } from './screens/Context/UserContext.js';
@@ -59,22 +60,13 @@ const Stack = createStackNavigator();
 
 // --------- AUTH CHECK COMPONENT ---------
 function AuthCheck({ navigation }) {
-  const { setToken, setUserInfo, setUserId, setUserRole } = useContext(UserContext);
+  const { token, userInfo, setToken, setUserInfo, setUserId, setUserRole } = useContext(UserContext);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const token = await AsyncStorage.getItem('access_token');
-        const userString = await AsyncStorage.getItem('userInfo');
-        const user = userString ? JSON.parse(userString) : null;
-
-        if (token && user) {
-          setToken(token);
-          setUserInfo(user);
-          if (user.id || user._id) setUserId(user.id || user._id);
-          if (user.role) setUserRole(user.role);
-
-          if (user.role === 'provider') {
+        if (token && userInfo) {
+          if (userInfo.role === 'provider') {
             navigation.replace('ProviderHomeScreen');
           } else {
             navigation.replace('HomeScreen');
@@ -133,9 +125,10 @@ export default function App() {
   }
 
   return (
-    <UserContextProvider>
-      <NavigationContainer>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <UserContextProvider>
+        <NavigationContainer>
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
           {/* CHECK AUTH */}
           <Stack.Screen name="AuthCheck" component={AuthCheck} />
 
@@ -165,7 +158,7 @@ export default function App() {
           <Stack.Screen name="IndustrialLocationScreen" component={IndustrialLocationScreen} />
 
           {/* PROVIDER SCREENS */}
-          <Stack.Screen name="ProviderHomeScreen" component={providerHomeScreen} />
+          <Stack.Screen name="Home" component={providerHomeScreen} />
           <Stack.Screen name="providerServicesScreen" component={providerServicesScreen} />
           <Stack.Screen name="providerAddServiceScreen" component={providerAddServiceScreen} />
           <Stack.Screen name="ProviderOrdersScreen" component={ProviderOrdersScreen} />
@@ -195,9 +188,10 @@ export default function App() {
           <Stack.Screen name="ProviderChatsList" component={ProviderChatsList} />
           <Stack.Screen name="ProviderChatScreen" component={ProviderChats} />
           <Stack.Screen name="AgreementDetails" component={NewOfferScreen} />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </UserContextProvider>
+          </Stack.Navigator>
+        </NavigationContainer>
+      </UserContextProvider>
+    </GestureHandlerRootView>
   );
 }
 

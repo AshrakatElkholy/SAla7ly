@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
     View,
     Text,
@@ -13,13 +13,13 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { UserContext } from '../screens/Context/UserContext';
 
 import BottomNavigation from '../Components/BottomNavigation';
 import ServiceCard from '../Components/ServiceCard';
 import CustomHeaderWithLines from '../Components/CustomHeaderTemp';
 
-const NGROK_URL = 'https://f27ad2cde96b.ngrok-free.app';
+const NGROK_URL = 'https://45df9571624f.ngrok-free.app';
 
 const serviceProviderScreen = () => {
     const navigation = useNavigation();
@@ -43,8 +43,9 @@ const serviceProviderScreen = () => {
     };
 
     // helper function to get token
-    const getAuthHeaders = async () => {
-        const token = await AsyncStorage.getItem('token'); // اسم المفتاح حسب ما خزنتيه
+    const { token } = useContext(UserContext);
+    
+    const getAuthHeaders = () => {
         return {
             'Content-Type': 'application/json',
             'Accept': 'application/json',

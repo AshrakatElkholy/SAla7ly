@@ -8,10 +8,12 @@ import {
   Text,
   Alert,
   ActivityIndicator,
+  ScrollView,
+  SafeAreaView,
 } from "react-native";
 import CustomButton from "../Components/CustomButton";
 import { Fonts } from "../constants";
-import { UserContext } from "./Context/UserContext";
+import { UserContext } from "../screens/Context/UserContext";
 
 function UserCategoryScreen({ navigation }) {
   const { userInfo, setUserInfo } = useContext(UserContext);
@@ -54,9 +56,10 @@ function UserCategoryScreen({ navigation }) {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>من انت؟</Text>
-      <View style={styles.imagesSection}>
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <Text style={styles.title}>من انت؟</Text>
+        <View style={styles.imagesSection}>
         <View style={styles.imageRow}>
           {/* صنايعي */}
           <TouchableOpacity
@@ -98,19 +101,21 @@ function UserCategoryScreen({ navigation }) {
         </View>
       </View>
 
-      <View style={styles.buttonSection}>
-        <CustomButton
-          title="تابع"
-          onPress={handleContinuePress}
-          type="filled"
-        />
-      </View>
-    </View>
+        <View style={styles.buttonSection}>
+          <CustomButton
+            title="تابع"
+            onPress={handleContinuePress}
+            type="filled"
+          />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#ffffff", paddingTop: 50 },
+  container: { flex: 1, backgroundColor: "#ffffff" },
+  scrollContainer: { flexGrow: 1, paddingTop: 50 },
   title: {
     fontSize: 28,
     fontFamily: Fonts.BOLD,

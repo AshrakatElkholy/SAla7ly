@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
     View,
     Text,
@@ -16,8 +16,9 @@ import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import BottomNavigation from '../Components/BottomNavigation';
 import CustomHeaderWithLines from '../Components/CustomHeaderTemp'; 
+import { UserContext } from '../screens/Context/UserContext';
 
-const NGROK_URL = "https://968edb838f6e.ngrok-free.app";
+const NGROK_URL = "https://45df9571624f.ngrok-free.app";
 
 const CategoryScreen = () => {
     const navigation = useNavigation();
@@ -25,7 +26,7 @@ const CategoryScreen = () => {
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [favoriteServices, setFavoriteServices] = useState([]);
-    const [token, setToken] = useState(null);
+    const { token } = useContext(UserContext);
 
     const iconImages = {
         'brush': require('../assets/categoryIcons/brush.png'),
@@ -36,27 +37,12 @@ const CategoryScreen = () => {
         'soldering': require('../assets/categoryIcons/soldering.png'),
     };
 
-    // Load token when screen mounts
-    useEffect(() => {
-        const loadToken = async () => {
-            try {
-                const storedToken = await AsyncStorage.getItem("token");
-                if (storedToken) {
-                    setToken(storedToken);
-                } else {
-                    Alert.alert("خطأ", "لم يتم العثور على التوكن. قم بتسجيل الدخول مرة أخرى.");
-                    navigation.navigate("Login");
-                }
-            } catch (error) {
-                console.error("Error fetching token:", error);
-            }
-        };
-        loadToken();
-    }, []);
-
     useEffect(() => {
         if (token) {
             fetchCategories();
+        } else {
+            Alert.alert("خطأ", "لم يتم العثور على التوكن. قم بتسجيل الدخول مرة أخرى.");
+            navigation.navigate("Login");
         }
     }, [token]);
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
     View,
     Text,
@@ -15,9 +15,9 @@ import { Ionicons } from '@expo/vector-icons';
 import ProviderAddServicesCard from '../../Components/providerAddServicesCard';
 import ProviderBottomNavigation from '../../Components/providerBottomNavigation';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { UserContext } from '../../screens/Context/UserContext';
 
-const NGROK_URL = 'https://f27ad2cde96b.ngrok-free.app';
+const NGROK_URL = 'https://45df9571624f.ngrok-free.app';
 
 const providerServicesScreen = ({ navigation }) => {
     const [myServices, setMyServices] = useState([]);
@@ -25,17 +25,8 @@ const providerServicesScreen = ({ navigation }) => {
     const [notificationIconActive, setNotificationIconActive] = useState(false);
     const [messageClicked, setMessageClicked] = useState(false);
 
-    // Function to get token from AsyncStorage - UPDATED
-    const getUserToken = async () => {
-        try {
-            const token = await AsyncStorage.getItem('userToken');
-            console.log('Token from AsyncStorage:', token);
-            return token;
-        } catch (error) {
-            console.error('Error getting token from AsyncStorage:', error);
-            return null;
-        }
-    };
+    // Get token from UserContext
+    const { token } = useContext(UserContext);
 
     useEffect(() => {
         fetchServices();
@@ -52,8 +43,8 @@ const providerServicesScreen = ({ navigation }) => {
         try {
             setLoading(true);
 
-            // Get token and role from AsyncStorage - UPDATED
-            const userToken = await getUserToken();
+            // Get token and role from UserContext - UPDATED
+            const userToken = token;
             const userRole = await AsyncStorage.getItem('userRole');
 
             if (!userToken) {

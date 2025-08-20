@@ -20,10 +20,10 @@ import DropDownPicker from "react-native-dropdown-picker";
 import { Fonts } from "../../../constants";
 import CustomButton from "../../../Components/CustomButton";
 import CustomHeader from "../../../Components/CustomHeader";
-import { UserContext } from "../../Context/UserContext";
+import { UserContext } from "../../../screens/Context/UserContext";
 
 // ✅ Base URL
-const API_BASE = "https://f27ad2cde96b.ngrok-free.app";
+const API_BASE = "https://45df9571624f.ngrok-free.app";
 
 const UploadCard = ({ imageUri, onAdd, onRemove }) => (
   <View style={styles.card}>
