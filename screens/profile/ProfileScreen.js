@@ -193,7 +193,7 @@ const handleLogoutPress = async () => {
     try {
       await AsyncStorage.removeItem("user"); // مسح بيانات المستخدم
       Alert.alert("تم تسجيل الخروج", "سيتم تحويلك لشاشة تسجيل الدخول");
-      navigation.replace("LoginScreen"); // يرجع لشاشة تسجيل الدخول
+      navigation.replace("ClientLoginScreen"); // يرجع لشاشة تسجيل الدخول
     } catch (error) {
       console.error("❌ Error logging out:", error);
     }

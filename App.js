@@ -8,9 +8,8 @@ import {
 import { useEffect, useState, useContext } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Font from "expo-font";
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 // CONTEXT
 import UserContextProvider, { UserContext } from './screens/Context/UserContext.js';
@@ -23,7 +22,6 @@ import UserCategoryScreen from "./screens/user_category_screen";
 import HomeScreen from "./screens/HomeScreen";
 import providerHomeScreen from "./screens/provider_screens/providerHomeScreen";
 
-// (Add other screens as in your original App.js)
 import IndustrialSpecialtyScreen from "./screens/industrial_screens/onboarding/IndustrialSpecialtyScreen";
 import IndustrialIdentityScreen from "./screens/industrial_screens/onboarding/IndustrialIdentityScreen";
 import IndustrialLocationScreen from "./screens/industrial_screens/onboarding/IndustrialLocationScreen";
@@ -47,7 +45,7 @@ import ProviderSettingsScreen from "./screens/provider_screens/ProviderSettingsS
 import CategoryScreen from "./screens/categoryScreen";
 import serviceProviderScreen from "./screens/serviceProviderScreen";
 import appointmentBookingScreen from "./screens/appointmentBookingScreen.js";
-import serviceFeedbackScreen from "./screens/serviceFeedbackScreen.js";
+import serviceFeedbackScreen from "./screens/serviceFeedbackScreen";
 import MessagesScreen from "./screens/Chats/message-empty";
 import MessagesListScreen from "./screens/Chats/chats";
 import ChatScreen from "./screens/Chats/ChatScreen";
@@ -60,34 +58,43 @@ const Stack = createStackNavigator();
 
 // --------- AUTH CHECK COMPONENT ---------
 function AuthCheck({ navigation }) {
-  const { token, userInfo, setToken, setUserInfo, setUserId, setUserRole } = useContext(UserContext);
+  const { token, userInfo } = useContext(UserContext);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
         if (token && userInfo) {
-          if (userInfo.role === 'provider') {
-            navigation.replace('ProviderHomeScreen');
+          // المستخدم موجود
+          if (userInfo.role === "provider") {
+            navigation.replace("ProviderHomeScreen");
           } else {
-            navigation.replace('HomeScreen');
+            navigation.replace("HomeScreen");
           }
         } else {
-          navigation.replace('LoginScreen');
+          // مفيش توكن → Welcome
+          navigation.replace("Welcome");
         }
       } catch (err) {
-        console.log('AuthCheck error:', err);
-        navigation.replace('LoginScreen');
+        console.log("AuthCheck error:", err);
+        navigation.replace("Welcome");
       }
     };
 
-    checkAuth();
+    // سبللاش يبان 1.5 ثانية قبل التحويل
+    const timeout = setTimeout(checkAuth, 1500);
+
+    return () => clearTimeout(timeout);
   }, []);
 
   return (
     <View style={styles.splashContainer}>
       <StatusBar style="light" backgroundColor="#004AAD" />
       <ActivityIndicator size="large" color="#fff" />
-      <Image source={require("./assets/logo.png")} style={styles.splashLogo} resizeMode="contain" />
+      <Image
+        source={require("./assets/logo.png")}
+        style={styles.splashLogo}
+        resizeMode="contain"
+      />
     </View>
   );
 }
@@ -119,7 +126,11 @@ export default function App() {
     return (
       <View style={styles.splashContainer}>
         <ActivityIndicator size="large" color="#fff" />
-        <Image source={require("./assets/logo.png")} style={styles.splashLogo} resizeMode="contain" />
+        <Image
+          source={require("./assets/logo.png")}
+          style={styles.splashLogo}
+          resizeMode="contain"
+        />
       </View>
     );
   }
@@ -129,65 +140,65 @@ export default function App() {
       <UserContextProvider>
         <NavigationContainer>
           <Stack.Navigator screenOptions={{ headerShown: false }}>
-          {/* CHECK AUTH */}
-          <Stack.Screen name="AuthCheck" component={AuthCheck} />
+            {/* CHECK AUTH */}
+            <Stack.Screen name="AuthCheck" component={AuthCheck} />
 
-          {/* AUTHENTICATION SCREENS */}
-          <Stack.Screen name="Welcome" component={WelcomeScreen} />
-          <Stack.Screen name="SignupScreen" component={SignupScreen} />
-          <Stack.Screen name="UserCategoryScreen" component={UserCategoryScreen} />
-          <Stack.Screen name="LoginScreen" component={LoginScreen} />
+            {/* AUTHENTICATION SCREENS */}
+            <Stack.Screen name="Welcome" component={WelcomeScreen} />
+            <Stack.Screen name="SignupScreen" component={SignupScreen} />
+            <Stack.Screen name="UserCategoryScreen" component={UserCategoryScreen} />
+            <Stack.Screen name="ClientLoginScreen" component={LoginScreen} />
 
-          {/* USER/CLIENT SCREENS */}
-          <Stack.Screen name="HomeScreen" component={HomeScreen} />
-          <Stack.Screen name="ServiceDetailsScreen" component={ServiceDetailsScreen} />
-          <Stack.Screen name="ServicesCategoryScreen" component={CategoryScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="serviceProviderScreen" component={serviceProviderScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="appointmentBookingScreen" component={appointmentBookingScreen} />
-          <Stack.Screen name="serviceFeedbackScreen" component={serviceFeedbackScreen} />
-          <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
-          <Stack.Screen name="OrdersScreen" component={OrdersScreen} />
-          
-          {/* FAVORITES SCREENS */}
-          <Stack.Screen name="favoriteServiceScreen" component={favoriteServiceScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="favoriteProviderScreen" component={favoriteProviderScreen} options={{ headerShown: false }} />
+            {/* USER/CLIENT SCREENS */}
+            <Stack.Screen name="HomeScreen" component={HomeScreen} />
+            <Stack.Screen name="ServiceDetailsScreen" component={ServiceDetailsScreen} />
+            <Stack.Screen name="ServicesCategoryScreen" component={CategoryScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="serviceProviderScreen" component={serviceProviderScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="appointmentBookingScreen" component={appointmentBookingScreen} />
+            <Stack.Screen name="serviceFeedbackScreen" component={serviceFeedbackScreen} />
+            <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
+            <Stack.Screen name="OrdersScreen" component={OrdersScreen} />
 
-          {/* PROVIDER ONBOARDING SCREENS */}
-          <Stack.Screen name="IndustrialSpecialtyScreen" component={IndustrialSpecialtyScreen} options={{ title: "التخصصات" }} />
-          <Stack.Screen name="IndustrialIdentityScreen" component={IndustrialIdentityScreen} />
-          <Stack.Screen name="IndustrialLocationScreen" component={IndustrialLocationScreen} />
+            {/* FAVORITES SCREENS */}
+            <Stack.Screen name="favoriteServiceScreen" component={favoriteServiceScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="favoriteProviderScreen" component={favoriteProviderScreen} options={{ headerShown: false }} />
 
-          {/* PROVIDER SCREENS */}
-          <Stack.Screen name="Home" component={providerHomeScreen} />
-          <Stack.Screen name="providerServicesScreen" component={providerServicesScreen} />
-          <Stack.Screen name="providerAddServiceScreen" component={providerAddServiceScreen} />
-          <Stack.Screen name="ProviderOrdersScreen" component={ProviderOrdersScreen} />
-          <Stack.Screen name="ProviderServiceDetailsScreen" component={ProviderServiceDetailsScreen} />
-          <Stack.Screen name="ProviderSettingsScreen" component={ProviderSettingsScreen} />
-          <Stack.Screen name="ProviderProfileScreen" component={ProviderProfileScreen} />
+            {/* PROVIDER ONBOARDING SCREENS */}
+            <Stack.Screen name="IndustrialSpecialtyScreen" component={IndustrialSpecialtyScreen} options={{ title: "التخصصات" }} />
+            <Stack.Screen name="IndustrialIdentityScreen" component={IndustrialIdentityScreen} />
+            <Stack.Screen name="IndustrialLocationScreen" component={IndustrialLocationScreen} />
 
-          {/* STATUS SCREENS */}
-          <Stack.Screen name="PendingScreen" component={Pending} />
-          <Stack.Screen name="DoneScreen" component={Done} />
-          <Stack.Screen name="RefusedScreen" component={Refused} />
+            {/* PROVIDER SCREENS */}
+            <Stack.Screen name="Home" component={providerHomeScreen} />
+            <Stack.Screen name="providerServicesScreen" component={providerServicesScreen} />
+            <Stack.Screen name="providerAddServiceScreen" component={providerAddServiceScreen} />
+            <Stack.Screen name="ProviderOrdersScreen" component={ProviderOrdersScreen} />
+            <Stack.Screen name="ProviderServiceDetailsScreen" component={ProviderServiceDetailsScreen} />
+            <Stack.Screen name="ProviderSettingsScreen" component={ProviderSettingsScreen} />
+            <Stack.Screen name="ProviderProfileScreen" component={ProviderProfileScreen} />
 
-          {/* LOCATION SCREENS */}
-          <Stack.Screen name="UserLocation" component={UserLocationScreen} />
+            {/* STATUS SCREENS */}
+            <Stack.Screen name="PendingScreen" component={Pending} />
+            <Stack.Screen name="DoneScreen" component={Done} />
+            <Stack.Screen name="RefusedScreen" component={Refused} />
 
-          {/* PAYMENT SCREENS */}
-          <Stack.Screen name="NewCardScreen" component={NewCard} />
-          <Stack.Screen name="TwoPopups" component={TwoPopups} />
+            {/* LOCATION SCREENS */}
+            <Stack.Screen name="UserLocation" component={UserLocationScreen} />
 
-          {/* CHAT SCREENS - USER */}
-          <Stack.Screen name="MessagesScreen" component={MessagesScreen} />
-          <Stack.Screen name="MessagesListScreen" component={MessagesListScreen} />
-          <Stack.Screen name="ChatScreen" component={ChatScreen} />
-          <Stack.Screen name="AgreementDetailsScreen" component={AgreementDetailsScreen} />
+            {/* PAYMENT SCREENS */}
+            <Stack.Screen name="NewCardScreen" component={NewCard} />
+            <Stack.Screen name="TwoPopups" component={TwoPopups} />
 
-          {/* CHAT SCREENS - PROVIDER */}
-          <Stack.Screen name="ProviderChatsList" component={ProviderChatsList} />
-          <Stack.Screen name="ProviderChatScreen" component={ProviderChats} />
-          <Stack.Screen name="AgreementDetails" component={NewOfferScreen} />
+            {/* CHAT SCREENS - USER */}
+            <Stack.Screen name="MessagesScreen" component={MessagesScreen} />
+            <Stack.Screen name="MessagesListScreen" component={MessagesListScreen} />
+            <Stack.Screen name="ChatScreen" component={ChatScreen} />
+            <Stack.Screen name="AgreementDetailsScreen" component={AgreementDetailsScreen} />
+
+            {/* CHAT SCREENS - PROVIDER */}
+            <Stack.Screen name="ProviderChatsList" component={ProviderChatsList} />
+            <Stack.Screen name="ProviderChatScreen" component={ProviderChats} />
+            <Stack.Screen name="AgreementDetails" component={NewOfferScreen} />
           </Stack.Navigator>
         </NavigationContainer>
       </UserContextProvider>
