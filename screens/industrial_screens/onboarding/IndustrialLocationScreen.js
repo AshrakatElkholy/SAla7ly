@@ -18,7 +18,7 @@ import * as Location from "expo-location";
 import MapView, { Marker } from "react-native-maps";
 import Icon from "react-native-vector-icons/Feather";
 import { useNavigation } from "@react-navigation/native";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { Fonts } from "../../../constants";
 import CustomButton from "../../../Components/CustomButton";
@@ -29,7 +29,7 @@ export default function IndustrialLocationScreen({ route, navigation }) {
   const { width } = useWindowDimensions();
 
   // Get role from navigation params (default to 'provider' for now)
-  const role = route?.params?.role || 'provider'; // TODO: update when user roles are implemented
+  const role = route?.params?.role || "provider"; // TODO: update when user roles are implemented
 
   /* ------------ state ------------ */
   const [region, setRegion] = useState(null);
@@ -42,9 +42,9 @@ export default function IndustrialLocationScreen({ route, navigation }) {
 
   // Load saved progress on mount
   useEffect(() => {
-    AsyncStorage.setItem('onboardingStep', 'IndustrialLocationScreen');
+    AsyncStorage.setItem("onboardingStep", "IndustrialLocationScreen");
     (async () => {
-      const saved = await AsyncStorage.getItem('onboardingLocation');
+      const saved = await AsyncStorage.getItem("onboardingLocation");
       if (saved) {
         const data = JSON.parse(saved);
         setRegion(data.region || null);
@@ -55,7 +55,10 @@ export default function IndustrialLocationScreen({ route, navigation }) {
 
   // Save progress on change
   useEffect(() => {
-    AsyncStorage.setItem('onboardingLocation', JSON.stringify({ region, marker }));
+    AsyncStorage.setItem(
+      "onboardingLocation",
+      JSON.stringify({ region, marker })
+    );
   }, [region, marker]);
 
   /* ------------ الحصول على إحداثيّات المستخدم ------------ */
@@ -114,7 +117,7 @@ export default function IndustrialLocationScreen({ route, navigation }) {
     }
   };
 
-  /* ------------ أبعاد الهيدر (responsive) ------------ */
+  /* ------------ (responsive) ------------ */
   const dyn = useMemo(() => {
     const topPad =
       Platform.OS === "android" ? StatusBar.currentHeight || 24 : 44;
@@ -140,11 +143,16 @@ export default function IndustrialLocationScreen({ route, navigation }) {
   const isReady = !!marker;
   const handleSave = () => {
     if (!isReady) return;
-    AsyncStorage.multiRemove(['onboardingStep', 'onboardingSpecialty', 'onboardingIdentity', 'onboardingLocation']);
-    if (role === 'provider') {
+    AsyncStorage.multiRemove([
+      "onboardingStep",
+      "onboardingSpecialty",
+      "onboardingIdentity",
+      "onboardingLocation",
+    ]);
+    if (role === "provider") {
       navigation.navigate("PendingScreen");
     } else {
-      Alert.alert('تم اختيار الموقع', 'سيتم تحويلك للصفحة الرئيسية قريباً.');
+      Alert.alert("تم اختيار الموقع", "سيتم تحويلك للصفحة الرئيسية قريباً.");
     }
   };
 
@@ -164,7 +172,10 @@ export default function IndustrialLocationScreen({ route, navigation }) {
           <ActivityIndicator size="large" color="#004AAD" />
         </View>
       ) : (
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+        >
           {/* ===== حقل البحث ===== */}
           <View style={styles.searchWrap}>
             <CustomInput

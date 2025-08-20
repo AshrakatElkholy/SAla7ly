@@ -1,53 +1,62 @@
-import React, { useEffect, useState } from "react";
-import { View, Text } from "react-native";
-import ProviderOrderCard from "../../../../Components/ProviderOrderCard";
+const PastOrdersProvider = ({ navigation, token }) => {
+  const BASE_URL = "https://7a6280fbc949.ngrok-free.app";
 
-const mockOrders = [
-  {
-    id: 1,
-    status: "ملغي",
-    date: "2024-04-10",
-    category: "دهان",
-    priceRange: "1000 ج.م",
-    description: "دهان غرفة",
-  },
-  {
-    id: 2,
-    status: "تم التنفيذ",
-    date: "2024-05-01",
-    category: "سباك",
-    priceRange: "700 ج.م",
-    description: "تغيير حنفية",
-  },
-];
-
-const PastOrdersProvider = ({ navigation }) => {
   const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchOrders = async () => {
+    try {
+      const res = await axios.get(`${BASE_URL}/provider/getMyOrders`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const allOrders = res.data || [];
+      const pastOrders = allOrders
+        .filter((order) =>
+          ["completed", "rejected", "canceled"].includes(
+            order.status?.toLowerCase()
+          )
+        )
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      setOrders(pastOrders);
+    } catch (err) {
+      console.error("Error fetching past orders:", err.message);
+      setOrders([]);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    const past = mockOrders
-      .filter((order) => ["ملغي", "تم التنفيذ"].includes(order.status))
-      .sort((a, b) => new Date(b.date) - new Date(a.date));
-    setOrders(past);
-  }, []);
+    fetchOrders();
+  }, [token]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchOrders();
+  };
+
+  if (loading) return <ActivityIndicator size="large" color="#4F77F7" />;
+  if (orders.length === 0) return <EmptyState message="لا يوجد طلبات منتهية" />;
 
   return (
-    <View>
-      {orders.length > 0 ? (
-        orders.map((order) => (
-          <ProviderOrderCard
-            key={order.id}
-            service={order}
-            navigation={navigation}
-          />
-        ))
-      ) : (
-        <Text style={{ textAlign: "center", marginTop: 20 }}>
-          لا يوجد طلبات منتهية
-        </Text>
-      )}
-    </View>
+    <ScrollView
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
+      {orders.map((order) => (
+        <ProviderOrderCard
+          key={order._id}
+          service={order}
+          navigation={navigation}
+          token={token}
+          baseUrl={BASE_URL}
+        />
+      ))}
+    </ScrollView>
   );
 };
-
-export default PastOrdersProvider;

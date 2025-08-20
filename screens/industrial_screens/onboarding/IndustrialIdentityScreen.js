@@ -17,9 +17,9 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import Icon from "react-native-vector-icons/Feather";
 import { useNavigation } from "@react-navigation/native";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-/* ⬇️ Fonts + TabsHeader component */
+/* Fonts + TabsHeader component */
 import { Fonts } from "../../../constants";
 import CustomButton from "../../../Components/CustomButton";
 import CustomHeader from "../../../Components/CustomHeader";
@@ -59,9 +59,9 @@ const IndustrialIdentityScreen = () => {
 
   // Load saved progress on mount
   useEffect(() => {
-    AsyncStorage.setItem('onboardingStep', 'IndustrialIdentityScreen');
+    AsyncStorage.setItem("onboardingStep", "IndustrialIdentityScreen");
     (async () => {
-      const saved = await AsyncStorage.getItem('onboardingIdentity');
+      const saved = await AsyncStorage.getItem("onboardingIdentity");
       if (saved) {
         const data = JSON.parse(saved);
         setPersonal(data.personal || null);
@@ -73,7 +73,10 @@ const IndustrialIdentityScreen = () => {
 
   // Save progress on change
   useEffect(() => {
-    AsyncStorage.setItem('onboardingIdentity', JSON.stringify({ personal, idFront, idBack }));
+    AsyncStorage.setItem(
+      "onboardingIdentity",
+      JSON.stringify({ personal, idFront, idBack })
+    );
   }, [personal, idFront, idBack]);
 
   /* ---------- gallery ---------- */
@@ -116,7 +119,7 @@ const IndustrialIdentityScreen = () => {
   const isReady = personal && idFront && idBack;
   const handleNext = () => {
     if (!isReady) return;
-    AsyncStorage.setItem('onboardingStep', 'IndustrialLocationScreen');
+    AsyncStorage.setItem("onboardingStep", "IndustrialLocationScreen");
     navigation.navigate("IndustrialLocationScreen");
   };
 

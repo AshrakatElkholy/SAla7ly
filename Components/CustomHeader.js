@@ -29,10 +29,9 @@ const CustomHeader = ({
     Platform.OS === "android" ? StatusBar.currentHeight || 24 : 44;
 
   const gridSize = 40;
-  const targetLineIndex = 3; // The horizontal line index to align tabs with
+  const targetLineIndex = 3;
   const tabsTopPosition = targetLineIndex * gridSize;
 
-  // Calculate the header height based on tab position or fallback ratio
   const height =
     showTabs || showCurve
       ? Math.max(tabsTopPosition + 60, width * 0.42)
@@ -101,7 +100,7 @@ const CustomHeader = ({
         <View
           style={{
             position: "absolute",
-            top: tabsTopPosition + 12, // Adjust to shift tabs slightly below the grid line
+            top: tabsTopPosition + 12,
             left: 0,
             right: 0,
             zIndex: 2,
@@ -120,7 +119,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F0F4F8",
     paddingHorizontal: 20,
     overflow: "hidden",
-    position: "relative", // Required for absolutely positioned children like tabs
+    position: "relative",
   },
   row: {
     marginTop: 19,

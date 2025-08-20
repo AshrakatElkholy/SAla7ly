@@ -13,52 +13,33 @@ import CustomButton from "./CustomButton";
 import { Fonts } from "../constants";
 
 const statusColors = {
-  "قيد التنفيذ": { color: "#336EBD", bg: "#e6edf7" },
-  معلق: { color: "#F2B705", bg: "#FFF6DC" },
-  "تم التنفيذ": { color: "#6BC497", bg: "#fbfefc" },
-  ملغي: { color: "#FF675D", bg: "#fff1f0" },
+  pending: { label: "قيد الانتظار", color: "#F2B705", bg: "#FFF6DC" },
+  accepted: { label: "تم القبول", color: "#336EBD", bg: "#e6edf7" },
+  rejected: { label: "مرفوض", color: "#FF675D", bg: "#fff1f0" },
+  completed: { label: "تم التنفيذ", color: "#6BC497", bg: "#fbfefc" },
+  canceled: { label: "ملغي", color: "#FF675D", bg: "#fff1f0" },
+  confirmed: { label: "مؤكد", color: "#4F77F7", bg: "#EDF1FF" },
 };
 
-const OrderCard = ({ order, showChat = false, onCancel, navigation }) => {
-  const { name, status } = order;
-  const statusStyle = statusColors[status] || {
-    color: "#999",
-    bg: "#EEE",
-  };
+const OrderCard = ({ order, showChat = false, navigation }) => {
+  const { id, status, serviceId, providerId } = order;
+
+  const statusStyle = statusColors[status] || { color: "#999", bg: "#EEE" };
 
   return (
     <View style={styles.card}>
-      {/* {status === "قيد التنفيذ" && onCancel && (
-          <TouchableOpacity
-            style={styles.cancelButton}
-            onPress={() => {
-              Alert.alert(
-                "تأكيد الإلغاء",
-                "هل أنت متأكد أنك تريد إلغاء هذه الخدمة؟",
-                [
-                  {
-                    text: "إلغاء",
-                    style: "cancel",
-                  },
-                  {
-                    text: "موافق",
-                    onPress: () => onCancel(order.id),
-                    style: "destructive",
-                  },
-                ],
-                { cancelable: true }
-              );
-            }}
-          >
-            <Ionicons name="close-circle" size={24} color="red" />
-          </TouchableOpacity>
-        )} */}
+      {/* صورة الخدمة */}
+      <Image
+        source={
+          serviceId?.mainImage?.secure_url
+            ? { uri: serviceId.mainImage.secure_url }
+            : require("../assets/plumber.jpg")
+        }
+        style={styles.image}
+      />
 
-      {/* Left Image */}
-      <Image source={require("../assets/plumber.jpg")} style={styles.image} />
-
-      {/* Order Info */}
       <View style={styles.content}>
+        {/* Badge الحالة */}
         <View
           style={[
             styles.statusBadge,
@@ -80,26 +61,24 @@ const OrderCard = ({ order, showChat = false, onCancel, navigation }) => {
           </Text>
         </View>
 
-        {/* Status */}
-        {/* <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
-          <Text style={{ color: statusStyle.color, fontSize: 12 }}>
-            {status}
-          </Text>
-        </View> */}
-        {/* Title + Technician Info (col aligned) */}
         <View style={styles.titleWithTechInfo}>
           <Image
-            source={require("../assets/picProvider.png")}
+            source={
+              providerId?.profilePic?.secure_url
+                ? { uri: providerId.profilePic.secure_url }
+                : require("../assets/picProvider.png")
+            }
             style={styles.avatarLarge}
           />
 
           <View style={styles.titleColumn}>
-            <Text style={styles.title}>صيانة مطبخ</Text>
-            <Text style={styles.technicianName}>احمد محمد</Text>
+            <Text style={styles.title}>{serviceId?.title || "خدمة"}</Text>
+            <Text style={styles.technicianName}>
+              {providerId?.name || "مزود الخدمة"}
+            </Text>
           </View>
         </View>
 
-        {/* Buttons */}
         <View style={styles.buttonsRow}>
           {showChat && (
             <TouchableOpacity style={styles.chatButton}>
@@ -109,9 +88,9 @@ const OrderCard = ({ order, showChat = false, onCancel, navigation }) => {
 
           <CustomButton
             title="تفاصيل"
-            onPress={() => {
-              navigation.navigate("ServiceDetailsScreen");
-            }}
+            onPress={() =>
+              navigation.navigate("ServiceDetailsScreen", { orderId: id })
+            }
             type="outline"
             color="#4F77F7"
             style={styles.detailsBtn}
