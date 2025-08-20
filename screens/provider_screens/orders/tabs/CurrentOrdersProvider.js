@@ -1,42 +1,65 @@
 import React, { useEffect, useState } from "react";
-import { View, Text } from "react-native";
+import { View, Text, ActivityIndicator } from "react-native";
 import ProviderOrderCard from "../../../../Components/ProviderOrderCard";
+import axios from "axios";
+import { ScrollView } from "react-native-gesture-handler";
 
-const mockOrders = [
-  {
-    id: 1,
-    status: "قيد تنفيذ",
-    category: "نجار",
-    priceRange: "500 ج.م",
-    description: "تصليح باب",
-  },
-  {
-    id: 2,
-    status: "المعلقه",
-    category: "سباك",
-    priceRange: "800 ج.م",
-    description: "صيانة مطبخ",
-  },
-];
+const CurrentOrdersProvider = ({ navigation, baseUrl, token }) => {
+  const BASE_URL = baseUrl || "https://7a6280fbc949.ngrok-free.app";
 
-const CurrentOrdersProvider = ({ navigation }) => {
   const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const current = mockOrders.filter((order) =>
-      ["قيد تنفيذ", "المعلقه"].includes(order.status)
+    const fetchOrders = async () => {
+      try {
+        const res = await axios.get(`${BASE_URL}/provider/getMyOrders`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        console.log("Full API response:", res.data);
+
+        const ordersList = res.data || [];
+        const currentOrders = ordersList.filter((order) =>
+          ["pending", "accepted", "confirmed"].includes(
+            order.status?.toLowerCase()
+          )
+        );
+
+        setOrders(currentOrders);
+      } catch (err) {
+        console.error("Error fetching current orders:", err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, [BASE_URL, token]);
+
+  if (loading)
+    return (
+      <ActivityIndicator
+        size="large"
+        color="#4F77F7"
+        style={{ flex: 1, marginTop: 20 }}
+      />
     );
-    setOrders(current);
-  }, []);
 
   return (
-    <View>
+    <ScrollView
+      refreshControl={
+        <RefreshControl refreshing={loading} onRefresh={fetchOrders} />
+      }
+    >
       {orders.length > 0 ? (
         orders.map((order) => (
           <ProviderOrderCard
-            key={order.id}
+            key={order._id}
             service={order}
             navigation={navigation}
+            token={token}
+            baseUrl={BASE_URL}
           />
         ))
       ) : (
@@ -44,7 +67,7 @@ const CurrentOrdersProvider = ({ navigation }) => {
           لا توجد طلبات حالية
         </Text>
       )}
-    </View>
+    </ScrollView>
   );
 };
 

@@ -1,24 +1,23 @@
 import React, { useState } from "react";
-import { SafeAreaView, ScrollView, StyleSheet } from "react-native";
+import { SafeAreaView, StyleSheet, View } from "react-native";
 import CustomHeaderWithLines from "../../../Components/CustomHeaderTemp";
-import NewOrders from "./tabs/NewOrdersProvider";
-import CurrentOrders from "./tabs/CurrentOrdersProvider";
-import PastOrders from "./tabs/PastOrdersProvider";
+
+// import NewOrdersProvider from "./tabs/NewOrdersProvider";
+import CurrentOrdersProvider from "./tabs/CurrentOrdersProvider";
+import PastOrdersProvider from "./tabs/PastOrdersProvider";
 import ProviderBottomNavigation from "../../../Components/providerBottomNavigation";
-import ProviderOrderCard from "../../../Components/ProviderOrderCard";
 
 const ProviderOrdersScreen = ({ navigation }) => {
   const [activeTab, setActiveTab] = useState("new");
 
   const renderContent = () => {
     switch (activeTab) {
-      case "new":
-        return <NewOrders navigation={navigation} />;
+      // case "new":
+      //   return <NewOrdersProvider navigation={navigation} />;
       case "current":
-        return <CurrentOrders navigation={navigation} />;
+        return <CurrentOrdersProvider navigation={navigation} />;
       case "past":
-        return <PastOrders navigation={navigation} />;
-
+        return <PastOrdersProvider navigation={navigation} />;
       default:
         return null;
     }
@@ -28,19 +27,12 @@ const ProviderOrdersScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <CustomHeaderWithLines
         title="طلباتي"
-        defaultTab="new"
-        tabLabels={{
-          new: "الجديدة",
-          current: "الجارية",
-          past: "السابقة",
-        }}
+        tabLabels={{ new: "الجديدة", current: "الجارية", past: "السابقة" }}
         onTabChange={(tab) => setActiveTab(tab)}
-        userType="provider"
       />
 
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 80 }}>
-        {renderContent()}
-      </ScrollView>
+      <View style={{ flex: 1, padding: 16 }}>{renderContent()}</View>
+
       <ProviderBottomNavigation
         navigation={navigation}
         activeTab="providerOrders"
@@ -50,10 +42,7 @@ const ProviderOrdersScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
+  container: { flex: 1, backgroundColor: "#fff" },
 });
 
 export default ProviderOrdersScreen;

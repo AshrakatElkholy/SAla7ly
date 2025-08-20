@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,108 +7,96 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
+  Dimensions,
+  Alert,
 } from "react-native";
-import { useEffect, useState } from "react";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import FontAwesome from "react-native-vector-icons/FontAwesome";
-import CustomHeaderWithLines from "../../Components/CustomHeaderTemp";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import CustomServiceCard from "../../Components/CustomServiceCard";
 import CustomButton from "../../Components/CustomButton";
 import { Fonts } from "../../constants";
-import { Dimensions } from "react-native";
+import axios from "axios";
 
 const screenWidth = Dimensions.get("window").width;
+
 const ProviderServiceDetailsScreen = ({ navigation, route }) => {
+  const currentOrder = route.params?.order;
+  const token = route.params?.token;
   const service = {
-    image: require("../../assets/plumber.jpg"),
-    category: "صيانة مطبخ",
-    title: "محطة الرمل",
+    image: currentOrder?.serviceId?.mainImage?.secure_url
+      ? { uri: currentOrder.serviceId.mainImage.secure_url }
+      : require("../../assets/plumber.jpg"),
+    category: currentOrder?.serviceId?.title || "غير محدد",
+    title: currentOrder?.serviceId?.title || "غير محدد",
     rating: 4.5,
     reviews: 51,
-    description:
-      "Lorem ipsum dolor sit amet consectetur. Eu praesent lorem quisque praesent dolor ultrices nam urna auctor. Habitant turpis tristique bibendum nec. Semper sed dictum dui risus",
-    priceRange: "500-600 ج.م",
-    date: "S 27",
-    time: "1:00 PM",
+    description: currentOrder?.description || "لا يوجد وصف",
+    priceRange: `${currentOrder?.serviceId?.minPrice || 0}-${currentOrder?.serviceId?.maxPrice || 0} ج.م`,
     customer: {
-      name: "احمد علي",
-      address: "محطة الرمل",
-      phone: "012279501554",
+      name: currentOrder?.userId?.name || "غير محدد",
+      address: currentOrder?.userId?.address || "غير محدد",
+      phone: currentOrder?.userId?.phone || "غير محدد",
       image: require("../../assets/picProvider.png"),
     },
   };
-  const [workingHours, setWorkingHours] = useState([]);
 
-  const updateOrderStatus = async (orderId, userId, newStatus) => {
+  const API_CONFIG = {
+    BASE_URL: "https://7a6280fbc949.ngrok-free.app",
+    TOKEN: token,
+  };
+  const updateOrderStatus = async (status) => {
+    console.log("Sending orderId:", currentOrder._id, "with status:", status);
     try {
-      const providerOrdersData = await AsyncStorage.getItem("providerOrders");
-      const providerOrders = providerOrdersData
-        ? JSON.parse(providerOrdersData)
-        : [];
-
-      const updatedProviderOrders = providerOrders.map((order) =>
-        order.id === orderId ? { ...order, status: newStatus } : order
+      const checkOrder = await axios.get(
+        `${API_CONFIG.BASE_URL}/provider/orders/${currentOrder._id}`,
+        {
+          headers: { Authorization: `Bearer ${API_CONFIG.TOKEN}` },
+          timeout: 5000,
+        }
       );
 
-      await AsyncStorage.setItem(
-        "providerOrders",
-        JSON.stringify(updatedProviderOrders)
-      );
+      if (!checkOrder.data) {
+        Alert.alert("خطأ", "الأوردر غير موجود أو تم حذفه");
+        return;
+      }
 
-      const userOrdersData = await AsyncStorage.getItem(
-        `orders_user_${userId}`
+      const response = await axios.post(
+        `${API_CONFIG.BASE_URL}/provider/acceptOrRejectOrder`,
+        { orderId: currentOrder._id, status },
+        {
+          headers: { Authorization: `Bearer ${API_CONFIG.TOKEN}` },
+          timeout: 5000,
+        }
       );
-      const userOrders = userOrdersData ? JSON.parse(userOrdersData) : [];
-
-      const updatedUserOrders = userOrders.map((order) =>
-        order.id === orderId ? { ...order, status: newStatus } : order
-      );
-
-      await AsyncStorage.setItem(
-        `orders_user_${userId}`,
-        JSON.stringify(updatedUserOrders)
+      console.log("Response data:", response.data);
+      Alert.alert("تم بنجاح", `تم تحديث الطلب إلى ${status}`);
+      navigation.replace(
+        status === "accepted" ? "CurrentOrdersProvider" : "NewOrdersProvider"
       );
     } catch (error) {
-      console.log("خطأ أثناء تحديث حالة الطلب:", error);
+      console.log("Axios Error:", error);
+      if (error.response) {
+        console.log("Response data:", error.response.data);
+        if (error.response.status === 404) {
+          Alert.alert("خطأ", "الأوردر غير موجود أو تم حذفه");
+        } else {
+          Alert.alert(
+            "حدث خطأ",
+            error.response.data.message || "فشل تحديث حالة الطلب"
+          );
+        }
+      } else if (error.request) {
+        console.log("No response received:", error.request);
+        Alert.alert("حدث خطأ", "لم يتم تلقي رد من السيرفر");
+      } else {
+        console.log("Error message:", error.message);
+        Alert.alert("حدث خطأ", error.message);
+      }
     }
   };
-
-  const handleReject = async () => {
-    const currentOrder = route.params?.order;
-    if (!currentOrder || !currentOrder.userId) return;
-
-    await updateOrderStatus(currentOrder.id, currentOrder.userId, "منتهي");
-    navigation.replace("NewOrdersProvider");
-  };
-
-  const handleAccept = async () => {
-    const currentOrder = route.params?.order;
-    if (!currentOrder || !currentOrder.userId) return;
-
-    await updateOrderStatus(currentOrder.id, currentOrder.userId, "قيد تنفيذ");
-    navigation.navigate("CurrentOrdersProvider", { refresh: Date.now() });
-  };
-
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const data = await AsyncStorage.getItem("workingHours");
-        if (data) {
-          setWorkingHours(JSON.parse(data));
-        }
-      } catch (error) {
-        console.log("فشل تحميل مواعيد العمل:", error);
-      }
-    };
-
-    loadData();
-  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* عنوان */}
         <View style={styles.customHeaderContainer}>
           <TouchableOpacity
             onPress={() => navigation.goBack()}
@@ -117,12 +105,10 @@ const ProviderServiceDetailsScreen = ({ navigation, route }) => {
           <Text style={styles.customHeaderTitle}>تفاصيل الخدمة</Text>
         </View>
 
-        {/* تفاصيل المشكلة */}
         <Text style={styles.sectionTitle}>تفاصيل مشكلة</Text>
         <Image source={service.image} style={styles.mainImage} />
         <Text style={styles.description}>{service.description}</Text>
 
-        {/* تفاصيل العميل */}
         <Text style={styles.sectionTitle}>تفاصيل العميل</Text>
         <View style={styles.clientCard}>
           <Image source={service.customer.image} style={styles.clientImage} />
@@ -141,35 +127,6 @@ const ProviderServiceDetailsScreen = ({ navigation, route }) => {
           </View>
         </View>
 
-        {/* يوم الحجز */}
-        <Text style={styles.sectionTitle}>يوم الحجز</Text>
-        <View style={styles.dateContainer}>
-          {/* الساعة + تسمية */}
-          <View style={styles.timeWrapper}>
-            <View style={styles.timeBox}>
-              <Text style={styles.timeText}>
-                {workingHours[0]?.from || "غير محدد"}
-              </Text>
-            </View>
-            <Text style={styles.label}>ساعة</Text>
-          </View>
-
-          {/* Spacer */}
-          <View style={styles.flexSpacer} />
-
-          {/* اليوم + تسمية */}
-          <View style={styles.dayWrapper}>
-            <View style={styles.dayBox}>
-              <Text style={styles.dayShort}>
-                {workingHours[0]?.day?.slice(0, 1) || "?"}
-              </Text>
-              <Text style={styles.dayNumber}>{new Date().getDate()}</Text>
-            </View>
-            <Text style={styles.label}>يوم</Text>
-          </View>
-        </View>
-
-        {/* تفاصيل الخدمة */}
         <Text style={styles.sectionTitle}>الخدمة</Text>
         <CustomServiceCard
           category={service.category}
@@ -177,14 +134,13 @@ const ProviderServiceDetailsScreen = ({ navigation, route }) => {
           reviews={service.reviews}
           image={service.image}
           priceRange={service.priceRange}
-          craftsmanName="مصطفى عبد الرازق"
+          craftsmanName={currentOrder?.providerId?.name || "غير محدد"}
         />
 
-        {/* أزرار التحكم */}
         <View style={styles.buttonContainer}>
           <CustomButton
             title="رفض العرض"
-            onPress={handleReject}
+            onPress={() => updateOrderStatus("rejected")}
             type="outline"
             color="#d00"
             textStyle={{ fontSize: 16 }}
@@ -192,7 +148,7 @@ const ProviderServiceDetailsScreen = ({ navigation, route }) => {
           />
           <CustomButton
             title="قبول"
-            onPress={handleAccept}
+            onPress={() => updateOrderStatus("accepted")}
             type="filled"
             color="#004AAD"
             textStyle={{ fontSize: 16 }}

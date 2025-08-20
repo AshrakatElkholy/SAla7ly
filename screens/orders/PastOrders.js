@@ -1,56 +1,83 @@
 import React, { useEffect, useState } from "react";
-import { View, ActivityIndicator, Text } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  View,
+  ActivityIndicator,
+  Text,
+  ScrollView,
+  RefreshControl,
+} from "react-native";
+import axios from "axios";
 import OrderCard from "../../Components/OrderCard";
 
-const PastOrders = ({ navigation }) => {
+const EmptyState = ({ message }) => (
+  <View style={{ alignItems: "center", marginTop: 40 }}>
+    <Text style={{ fontSize: 16, color: "#666" }}>{message}</Text>
+  </View>
+);
+
+export const PastOrders = ({ navigation, route }) => {
+  const token = route.params?.token;
+  const BASE_URL =
+    route.params?.baseUrl || "https://7a6280fbc949.ngrok-free.app";
+
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchOrders = async () => {
+    try {
+      const res = await axios.get(`${BASE_URL}/user/getMyOrders`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const allOrders = res.data || [];
+      const past = allOrders.filter((order) =>
+        ["completed", "canceled", "rejected"].includes(
+          order.status?.toLowerCase()
+        )
+      );
+      setOrders(past);
+    } catch (err) {
+      if (err.response?.data?.message === "you have no orders yet") {
+        setOrders([]);
+      } else {
+        console.log("Error fetching past orders", err);
+      }
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const data = await AsyncStorage.getItem("orders");
-        const parsed = data ? JSON.parse(data) : [];
-
-        const past = parsed.filter(
-          (order) => order.status === "ملغي" || order.status === "تم التنفيذ"
-        );
-
-        setOrders(past);
-      } catch (err) {
-        console.log("Error fetching past orders", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchOrders();
-  }, []);
+  }, [BASE_URL, token]);
 
-  if (loading) {
-    return <ActivityIndicator size="large" color="#000" />;
-  }
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchOrders();
+  };
 
-  if (orders.length === 0) {
-    return (
-      <View style={{ alignItems: "center", marginTop: 40 }}>
-        <Text style={{ fontSize: 16, color: "#666" }}>لا يوجد طلبات سابقة</Text>
-      </View>
-    );
-  }
+  if (loading) return <ActivityIndicator size="large" color="#000" />;
+  if (orders.length === 0) return <EmptyState message="لا يوجد طلبات سابقة" />;
 
   return (
-    <View>
+    <ScrollView
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
       {orders.map((order) => (
         <OrderCard
-          key={order.id}
+          key={order._id}
           order={order}
-          showChat={false}
           navigation={navigation}
+          showChat={false}
+          token={token}
+          baseUrl={BASE_URL}
         />
       ))}
-    </View>
+    </ScrollView>
   );
 };
 
