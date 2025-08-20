@@ -18,7 +18,7 @@ import ProviderBottomNavigation from '../../Components/providerBottomNavigation'
 import * as ImagePicker from 'expo-image-picker';
 import { UserContext } from '../../screens/Context/UserContext';
 
-const NGROK_URL = 'https://45df9571624f.ngrok-free.app';
+const NGROK_URL = 'https://3c97880a675a.ngrok-free.app';
 
 const providerAddServiceScreen = ({ navigation, route }) => {
     const isEdit = route.params?.isEdit || false;

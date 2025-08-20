@@ -41,7 +41,7 @@ const ProviderServiceDetailsScreen = ({ navigation, route }) => {
     },
   };
 
-  const BASE_URL = "https://45df9571624f.ngrok-free.app";
+  const BASE_URL = "https://3c97880a675a.ngrok-free.app";
 
   const updateOrderStatus = async (status) => {
     console.log("Sending orderId:", currentOrder._id, "with status:", status);

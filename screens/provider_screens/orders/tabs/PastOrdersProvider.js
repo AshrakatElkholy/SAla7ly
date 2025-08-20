@@ -5,7 +5,7 @@ import axios from 'axios';
 import { UserContext } from '../../../../screens/Context/UserContext';
 
 const PastOrdersProvider = ({ navigation }) => {
-  const BASE_URL = "https://45df9571624f.ngrok-free.app";
+  const BASE_URL = "https://3c97880a675a.ngrok-free.app";
   const { token } = useContext(UserContext);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);

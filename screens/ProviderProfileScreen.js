@@ -24,7 +24,7 @@ export default function ProviderProfileScreen({ navigation, route }) {
 
   const userId = route.params?.userId;
   const BASE_URL =
-    route.params?.baseUrl || "https://45df9571624f.ngrok-free.app";
+    route.params?.baseUrl || "https://3c97880a675a.ngrok-free.app";
 
   const fetchProvider = async () => {
     if (!token) return;

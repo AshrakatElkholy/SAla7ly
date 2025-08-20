@@ -189,47 +189,15 @@ const ProfileScreen = ({ navigation }) => {
     }
   };
 
-const handleLogoutPress = () => {
-  Alert.alert(
-    "تأكيد تسجيل الخروج",
-    "هل أنت متأكد أنك تريد تسجيل الخروج؟",
-    [
-      { text: "إلغاء", style: "cancel" },
-      {
-        text: "تسجيل خروج",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            // مسح كل البيانات المرتبطة بالمستخدم
-            await AsyncStorage.multiRemove([
-              "userName",
-              "profileImage",
-              "userId",
-              "token",
-              "cityName",
-            ]);
-
-            // إعادة ضبط الـ state المحلي
-            setUserToken(null);
-            setUserName("");
-            setProfileImage(null);
-            setCityName("غير محدد");
-
-            // إعادة التوجيه لشاشة تسجيل الدخول
-            navigation.reset({
-              index: 0,
-              routes: [{ name: "LoginScreen" }],
-            });
-          } catch (err) {
-            console.log("خطأ أثناء تسجيل الخروج:", err);
-            Alert.alert("خطأ", "حدث خطأ أثناء تسجيل الخروج، حاول مرة أخرى");
-          }
-        },
-      },
-    ]
-  );
-};
-
+const handleLogoutPress = async () => {
+    try {
+      await AsyncStorage.removeItem("user"); // مسح بيانات المستخدم
+      Alert.alert("تم تسجيل الخروج", "سيتم تحويلك لشاشة تسجيل الدخول");
+      navigation.replace("LoginScreen"); // يرجع لشاشة تسجيل الدخول
+    } catch (error) {
+      console.error("❌ Error logging out:", error);
+    }
+  };
 
   // Load initial data
   useEffect(() => {

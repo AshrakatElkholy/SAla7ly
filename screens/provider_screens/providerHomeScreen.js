@@ -22,7 +22,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { UserContext } from '../../screens/Context/UserContext';
 
-const NGROK_URL = 'https://45df9571624f.ngrok-free.app';
+const NGROK_URL = 'https://3c97880a675a.ngrok-free.app';
 
 const providerHomeScreen = () => {
     // State for API data

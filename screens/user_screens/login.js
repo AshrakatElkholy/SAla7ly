@@ -63,6 +63,9 @@ function LoginScreen({ navigation }) {
 
       if (!access_token) throw new Error('No access token received');
 
+      // طباعة التوكن مباشرة في الكونسل
+      console.log("Access Token:", access_token);
+
       // تخزين التوكنات
       await AsyncStorage.setItem('access_token', access_token);
       if (refresh_token) await AsyncStorage.setItem('refresh_token', refresh_token);
@@ -88,6 +91,10 @@ function LoginScreen({ navigation }) {
       }
 
       setLoading(false);
+
+      // استرجاع التوكن بعد التخزين للتأكد
+      const savedToken = await AsyncStorage.getItem('access_token');
+      console.log("Saved Token in AsyncStorage:", savedToken);
 
     } catch (error) {
       setLoading(false);
@@ -180,4 +187,4 @@ const styles = StyleSheet.create({
   loginButton: { paddingTop: 10, marginBottom: 50, fontSize: 18 },
 });
 
-export default LoginScreen; 
+export default LoginScreen;

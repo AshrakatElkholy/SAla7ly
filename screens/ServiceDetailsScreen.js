@@ -14,7 +14,7 @@ import { Entypo } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 
-const BASE_URL = "https://98c21eeda706.ngrok-free.app";
+const BASE_URL = "https://3c97880a675a.ngrok-free.app";
 
 export default function ServiceDetailsScreen({ route, navigation }) {
   const serviceId = route?.params?.serviceId;

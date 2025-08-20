@@ -20,7 +20,7 @@ import ServiceCard from "../Components/ServiceCard";
 import CustomHeaderWithLines from "../Components/CustomHeaderTemp";
 import { UserContext } from "../screens/Context/UserContext";
 
-const NGROK_URL = "https://45df9571624f.ngrok-free.app"; 
+const NGROK_URL = "https://3c97880a675a.ngrok-free.app"; 
 
 const HomeScreen = () => {
     const navigation = useNavigation();
