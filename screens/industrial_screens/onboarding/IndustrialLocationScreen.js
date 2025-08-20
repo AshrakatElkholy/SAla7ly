@@ -22,6 +22,28 @@ import CustomInput from "../../../Components/CustomInput";
 import CustomHeader from "../../../Components/CustomHeader";
 import { UserContext } from "../../Context/UserContext";
 
+// ✅ Base URL Configuration
+const BASE_URL = "https://f27ad2cde96b.ngrok-free.app";
+
+// ✅ API Endpoints
+const API_ENDPOINTS = {
+  SIGNUP: `${BASE_URL}/auth/signUp`,
+  ADD_WORKSHOP: `${BASE_URL}/provider/addWorkShop`,
+};
+
+// ✅ Common Headers
+const getCommonHeaders = (token = null) => {
+  const headers = {
+    "ngrok-skip-browser-warning": "true",
+  };
+  
+  if (token) {
+    headers["Authorization"] = `bearer ${token}`;
+  }
+  
+  return headers;
+};
+
 export default function IndustrialLocationScreen({ navigation }) {
   const { userInfo } = useContext(UserContext);
 
@@ -173,14 +195,12 @@ export default function IndustrialLocationScreen({ navigation }) {
         });
       }
 
-      const signupRes = await fetch(
-        "https://557431a98314.ngrok-free.app/auth/signUp",
-        {
-          method: "POST",
-          headers: { "ngrok-skip-browser-warning": "true" },
-          body: signupForm,
-        }
-      );
+      // ✅ Using API_ENDPOINTS and getCommonHeaders
+      const signupRes = await fetch(API_ENDPOINTS.SIGNUP, {
+        method: "POST",
+        headers: getCommonHeaders(),
+        body: signupForm,
+      });
 
       const signupText = await signupRes.text();
       console.log("📩 Server Raw Response:", signupText);
@@ -213,7 +233,7 @@ export default function IndustrialLocationScreen({ navigation }) {
       Alert.alert("تم التسجيل بنجاح", "مرحباً بك في صلحلي!", [
         {
           text: "موافق",
-          onPress: () =>  navigation.navigate("PendingScreen")
+          onPress: () => navigation.navigate("PendingScreen")
         },
       ]);
     } catch (error) {
@@ -249,18 +269,15 @@ export default function IndustrialLocationScreen({ navigation }) {
         });
       }
 
-      const res = await fetch(
-        "https://557431a98314.ngrok-free.app/provider/addWorkShop",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `bearer ${token}`, // ✅ lowercase
-            "ngrok-skip-browser-warning": "true",
-            "Content-Type": "multipart/form-data",
-          },
-          body: workshopForm,
-        }
-      );
+      // ✅ Using API_ENDPOINTS and getCommonHeaders with token
+      const res = await fetch(API_ENDPOINTS.ADD_WORKSHOP, {
+        method: "POST",
+        headers: {
+          ...getCommonHeaders(token),
+          "Content-Type": "multipart/form-data",
+        },
+        body: workshopForm,
+      });
 
       const text = await res.text();
       console.log("🏭 Workshop API Raw:", text);

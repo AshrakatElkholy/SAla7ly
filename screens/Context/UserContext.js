@@ -3,7 +3,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ToastAndroid, Platform, Alert } from "react-native";
 
-const API_BASE = "https://557431a98314.ngrok-free.app"; // Replace with your ngrok URL
+const API_BASE = "https://f27ad2cde96b.ngrok-free.app"; // Replace with your ngrok URL
 
 // Create context with default values
 export const UserContext = createContext({

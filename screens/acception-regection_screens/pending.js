@@ -37,17 +37,17 @@ function Pending({ navigation }) {
       </View>
       {/* زر تسجيل الخروج (ممكن تسيبه لو حابب) */}
       <CustomButton
-        title=" تسجيل خروج "
+        title=" رجوع "
         onPress={handleSignout}
         type="filled"
       />
 
       {/* زر استكمال التسجيل وتحويله للصفحة الرئيسية */}
-      <CustomButton
+      {/* <CustomButton
         title="إنهاء التسجيل (تجريبي)"
         onPress={handleFinishRegistration}
         type="outline"
-      />
+      /> */}
     </View>
   );
 }

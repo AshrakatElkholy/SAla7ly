@@ -18,7 +18,7 @@ import ProviderBottomNavigation from '../../Components/providerBottomNavigation'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 
-const NGROK_URL = 'https://ea2872fee6cc.ngrok-free.app';
+const NGROK_URL = 'https://f27ad2cde96b.ngrok-free.app';
 
 const providerAddServiceScreen = ({ navigation, route }) => {
     const isEdit = route.params?.isEdit || false;
@@ -32,6 +32,18 @@ const providerAddServiceScreen = ({ navigation, route }) => {
     const [description, setDescription] = useState(serviceToEdit ? serviceToEdit.description : '');
     const [selectedImage, setSelectedImage] = useState(null);
     const [loading, setLoading] = useState(false);
+
+    // Get token from AsyncStorage
+    const getUserToken = async () => {
+        try {
+            const token = await AsyncStorage.getItem('userToken');
+            console.log("User Token from AsyncStorage:", token);
+            return token;
+        } catch (error) {
+            console.error('Error getting token from AsyncStorage:', error);
+            return null;
+        }
+    };
 
     // Request permissions
     const requestPermissions = async () => {
@@ -127,16 +139,19 @@ const providerAddServiceScreen = ({ navigation, route }) => {
         return formData;
     };
 
-    // Test API connectivity - Add this function to debug
+    // Test API connectivity - Updated to use AsyncStorage token
     const testAPIConnectivity = async () => {
         try {
             console.log('=== TESTING API CONNECTIVITY ===');
             
-            const userToken = 
-                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OTllYTJmZDhlMjFhNzMxNWIyM2FiMCIsImVtYWlsIjoiYmF0ZXNoYWthbWFsQGdtYWlsLmNvbSIsInJvbGUiOiJwcm92aWRlciIsImlhdCI6MTc1NTYzNjA3NiwiZXhwIjoxNzU1NzIyNDc2fQ.cCOD3ziNycXNXx3RVr7k4wGVsaqfSmBB_06xV2olZQ4';
-            
+            const userToken = await getUserToken();
             const userRole = await AsyncStorage.getItem('userRole');
             
+            if (!userToken) {
+                console.error('No token found in AsyncStorage');
+                return;
+            }
+
             // Test 1: Basic ngrok URL
             console.log('Test 1: Testing ngrok base URL...');
             try {
@@ -219,11 +234,9 @@ const providerAddServiceScreen = ({ navigation, route }) => {
         }
     };
 
-    // FIXED: Add new service via API with multiple fallback attempts
+    // FIXED: Add new service via API with multiple fallback attempts - Updated to use AsyncStorage token
     const addServiceToAPI = async () => {
-        const userToken = 
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OTllYTJmZDhlMjFhNzMxNWIyM2FiMCIsImVtYWlsIjoiYmF0ZXNoYWthbWFsQGdtYWlsLmNvbSIsInJvbGUiOiJwcm92aWRlciIsImlhdCI6MTc1NTYzNjA3NiwiZXhwIjoxNzU1NzIyNDc2fQ.cCOD3ziNycXNXx3RVr7k4wGVsaqfSmBB_06xV2olZQ4';
-
+        const userToken = await getUserToken();
         const userRole = await AsyncStorage.getItem('userRole');
 
         if (!userToken) {
@@ -350,12 +363,10 @@ const providerAddServiceScreen = ({ navigation, route }) => {
         throw new Error('جميع الطرق فشلت. تحقق من وجود endpoint في الخادم');
     };
 
-    // Edit service via API - FIXED VERSION
+    // Edit service via API - Updated to use AsyncStorage token
     const editServiceInAPI = async () => {
         try {
-            const userToken =
-                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OTllYTJmZDhlMjFhNzMxNWIyM2FiMCIsImVtYWlsIjoiYmF0ZXNoYWthbWFsQGdtYWlsLmNvbSIsInJvbGUiOiJwcm92aWRlciIsImlhdCI6MTc1NTYzNjA3NiwiZXhwIjoxNzU1NzIyNDc2fQ.cCOD3ziNycXNXx3RVr7k4wGVsaqfSmBB_06xV2olZQ4';
-
+            const userToken = await getUserToken();
             const userRole = await AsyncStorage.getItem('userRole');
 
             if (!userToken) {

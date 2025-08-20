@@ -33,30 +33,34 @@ const ProviderSettingsScreen = ({ navigation }) => {
   ];
 
   const handleLogoutPress = () => {
-    Alert.alert("تأكيد تسجيل الخروج", "هل أنت متأكد أنك تريد تسجيل الخروج؟", [
+  Alert.alert(
+    "تأكيد تسجيل الخروج",
+    "هل أنت متأكد أنك تريد تسجيل الخروج؟",
+    [
       { text: "إلغاء", style: "cancel" },
       {
         text: "تسجيل خروج",
         style: "destructive",
         onPress: async () => {
           try {
-            await AsyncStorage.multiRemove([
-              "userName",
-              "profileImage",
-              "userId",
-              "token",
-            ]);
+            // مسح كل البيانات المتعلقة بالمستخدم
+            await AsyncStorage.clear();
+
+            // إعادة ضبط ال navigation stack والتوجيه لشاشة login
             navigation.reset({
               index: 0,
-              routes: [{ name: "ClientLoginScreen" }],
+              routes: [{ name: "LoginScreen" }],
             });
           } catch (err) {
             console.log("خطأ أثناء تسجيل الخروج:", err);
+            Alert.alert("خطأ", "حدث خطأ أثناء تسجيل الخروج");
           }
         },
       },
-    ]);
-  };
+    ]
+  );
+};
+
 
   const renderPopup = (type, onClose) => (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>

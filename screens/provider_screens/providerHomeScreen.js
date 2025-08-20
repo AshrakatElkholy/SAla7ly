@@ -22,7 +22,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const NGROK_URL = 'https://ea2872fee6cc.ngrok-free.app';
+const NGROK_URL = 'https://f27ad2cde96b.ngrok-free.app';
 
 const providerHomeScreen = () => {
     // State for API data
@@ -80,18 +80,17 @@ const providerHomeScreen = () => {
         ]
     };
 
-    // Function to get token from AsyncStorage
+    // Function to get token from AsyncStorage - UPDATED
     const getToken = async () => {
         try {
-            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OTllYTJmZDhlMjFhNzMxNWIyM2FiMCIsImVtYWlsIjoiYmF0ZXNoYWthbWFsQGdtYWlsLmNvbSIsInJvbGUiOiJwcm92aWRlciIsImlhdCI6MTc1NTYzNjA3NiwiZXhwIjoxNzU1NzIyNDc2fQ.cCOD3ziNycXNXx3RVr7k4wGVsaqfSmBB_06xV2olZQ4';
+            const token = await AsyncStorage.getItem('userToken');
             console.log('Token from AsyncStorage:', token);
             return token;
         } catch (error) {
-            console.error('Error getting token:', error);
+            console.error('Error getting token from AsyncStorage:', error);
             return null;
         }
     };
-
 
     const fetchOrdersData = async () => {
         try {
@@ -104,10 +103,10 @@ const providerHomeScreen = () => {
                 return;
             }
 
-            const response = await fetch(`https://ea2872fee6cc.ngrok-free.app/provider/getMyOrders`, {
+            const response = await fetch(`${NGROK_URL}/provider/getMyOrders`, {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `bearer ${token}`,
                     'Content-Type': 'application/json',
                     'ngrok-skip-browser-warning': 'true', // مهم علشان ngrok
                 },
@@ -142,7 +141,6 @@ const providerHomeScreen = () => {
                 userPhone: order.userId?.phone
             }));
 
-
             setOrdersData(transformedOrders);
         } catch (error) {
             console.error('Error fetching orders data:', error);
@@ -151,8 +149,7 @@ const providerHomeScreen = () => {
         }
     };
 
-
-    // Function to fetch provider data from API
+    // Function to fetch provider data from API - UPDATED
     const fetchProviderData = async () => {
         try {
             setLoading(true);
@@ -165,11 +162,12 @@ const providerHomeScreen = () => {
                 return;
             }
 
-            const response = await fetch('http://localhost:3000/provider/getMyOrders', {
+            const response = await fetch(`${NGROK_URL}/provider/getMyOrders`, {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `bearer ${token}`,
                     'Content-Type': 'application/json',
+                    'ngrok-skip-browser-warning': 'true',
                 },
             });
 
@@ -192,7 +190,6 @@ const providerHomeScreen = () => {
                     address: provider.userId?.address || "محطة الرمل,اسكندريه",
                     description: provider.description || "اهلا يباشا انا احمد من اسكندرديه",
                     profession: provider.serviceId?.title || "صيانه مطبخ",
-
 
                     //     {
                     //         id: 1,
@@ -623,4 +620,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default providerHomeScreen;
+export default providerHomeScreen

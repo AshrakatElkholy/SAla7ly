@@ -18,7 +18,7 @@ const EmptyState = ({ message }) => (
 export const CurrentOrders = ({ navigation, route }) => {
   const token = route.params?.token;
   const BASE_URL =
-    route.params?.baseUrl || "https://7a6280fbc949.ngrok-free.app";
+    route.params?.baseUrl || "https://f27ad2cde96b.ngrok-free.app";
 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);

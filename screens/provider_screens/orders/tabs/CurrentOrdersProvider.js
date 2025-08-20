@@ -1,41 +1,71 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, ActivityIndicator } from "react-native";
+import React, { useEffect, useState, useCallback } from "react";
+import {
+  View,
+  Text,
+  ActivityIndicator,
+  ScrollView,
+  RefreshControl,
+} from "react-native";
 import ProviderOrderCard from "../../../../Components/ProviderOrderCard";
 import axios from "axios";
-import { ScrollView } from "react-native-gesture-handler";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const CurrentOrdersProvider = ({ navigation, baseUrl, token }) => {
-  const BASE_URL = baseUrl || "https://7a6280fbc949.ngrok-free.app";
+const CurrentOrdersProvider = ({ navigation, baseUrl }) => {
+  const BASE_URL = baseUrl || "https://f27ad2cde96b.ngrok-free.app";
 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(null);
 
+  // ✅ استرجاع التوكن من AsyncStorage
   useEffect(() => {
-    const fetchOrders = async () => {
+    const loadToken = async () => {
       try {
-        const res = await axios.get(`${BASE_URL}/provider/getMyOrders`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        console.log("Full API response:", res.data);
-
-        const ordersList = res.data || [];
-        const currentOrders = ordersList.filter((order) =>
-          ["pending", "accepted", "confirmed"].includes(
-            order.status?.toLowerCase()
-          )
-        );
-
-        setOrders(currentOrders);
-      } catch (err) {
-        console.error("Error fetching current orders:", err.message);
-      } finally {
-        setLoading(false);
+        const savedToken = await AsyncStorage.getItem("userToken");
+        if (savedToken) {
+          setToken(savedToken);
+          console.log("Token loaded:", savedToken);
+        }
+      } catch (error) {
+        console.error("Error loading token:", error);
       }
     };
 
-    fetchOrders();
+    loadToken();
+  }, []);
+
+  // ✅ دالة لجلب الطلبات
+  const fetchOrders = useCallback(async () => {
+    if (!token) return; // لو التوكن لسه محملش
+    setLoading(true);
+    try {
+      const res = await axios.get(`${BASE_URL}/provider/getMyOrders`, {
+        headers: { Authorization: `bearer ${token}` }, // <<<<<< استخدم bearer
+      });
+
+      console.log("Full API response:", res.data);
+
+      const ordersList = res.data || [];
+      const currentOrders = ordersList.filter((order) =>
+        ["pending", "accepted", "confirmed"].includes(
+          order.status?.toLowerCase()
+        )
+      );
+
+      setOrders(currentOrders);
+    } catch (err) {
+      console.error("Error fetching current orders:", err.message);
+    } finally {
+      setLoading(false);
+    }
   }, [BASE_URL, token]);
+
+  // ✅ استدعاء أول مرة بعد تحميل التوكن
+  useEffect(() => {
+    if (token) {
+      fetchOrders();
+    }
+  }, [token, fetchOrders]);
 
   if (loading)
     return (

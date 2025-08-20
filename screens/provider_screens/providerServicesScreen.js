@@ -17,13 +17,25 @@ import ProviderBottomNavigation from '../../Components/providerBottomNavigation'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const NGROK_URL = 'https://ea2872fee6cc.ngrok-free.app';
+const NGROK_URL = 'https://f27ad2cde96b.ngrok-free.app';
 
 const providerServicesScreen = ({ navigation }) => {
     const [myServices, setMyServices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [notificationIconActive, setNotificationIconActive] = useState(false);
     const [messageClicked, setMessageClicked] = useState(false);
+
+    // Function to get token from AsyncStorage - UPDATED
+    const getUserToken = async () => {
+        try {
+            const token = await AsyncStorage.getItem('userToken');
+            console.log('Token from AsyncStorage:', token);
+            return token;
+        } catch (error) {
+            console.error('Error getting token from AsyncStorage:', error);
+            return null;
+        }
+    };
 
     useEffect(() => {
         fetchServices();
@@ -40,8 +52,8 @@ const providerServicesScreen = ({ navigation }) => {
         try {
             setLoading(true);
 
-            // Get token and role
-            const userToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OTllYTJmZDhlMjFhNzMxNWIyM2FiMCIsImVtYWlsIjoiYmF0ZXNoYWthbWFsQGdtYWlsLmNvbSIsInJvbGUiOiJwcm92aWRlciIsImlhdCI6MTc1NTYzNjA3NiwiZXhwIjoxNzU1NzIyNDc2fQ.cCOD3ziNycXNXx3RVr7k4wGVsaqfSmBB_06xV2olZQ4';
+            // Get token and role from AsyncStorage - UPDATED
+            const userToken = await getUserToken();
             const userRole = await AsyncStorage.getItem('userRole');
 
             if (!userToken) {
@@ -53,7 +65,8 @@ const providerServicesScreen = ({ navigation }) => {
 
             const headers = {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${userToken}`,
+                'Authorization': `bearer ${userToken}`,
+                'ngrok-skip-browser-warning': 'true', // Added for ngrok
             };
             if (userRole) headers['role'] = userRole;
 

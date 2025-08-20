@@ -23,21 +23,154 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Fonts } from "../../constants";
 import CustomButton from "../../Components/CustomButton";
 import CustomInput from "../../Components/CustomInput";
+import axios from "axios";
+
+// Add your API URL here
+const API_URL = "https://f27ad2cde96b.ngrok-free.app"; // Replace with your actual API URL
 
 const ProfileScreen = ({ navigation }) => {
   const [balance, setBalance] = useState(20000);
   const [userName, setUserName] = useState("...");
   const [profileImage, setProfileImage] = useState();
   const [cityName, setCityName] = useState("غير محدد");
+  const [userToken, setUserToken] = useState(null);
 
   const [showDeposit, setShowDeposit] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
   const [selectedCard, setSelectedCard] = useState(0);
+  const [depositAmount, setDepositAmount] = useState("");
+  const [withdrawAmount, setWithdrawAmount] = useState("");
 
   const cards = [
     { id: 1, number: "**** 44 855", icon: require("../../assets/card.png") },
     { id: 2, number: "**** 44 855", icon: require("../../assets/card.png") },
   ];
+
+  // Function to get token from AsyncStorage
+  const getUserToken = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (token) {
+        setUserToken(token);
+        console.log("User Token:", token);
+        return token;
+      } else {
+        console.log("No token found");
+        // Redirect to login if no token
+        navigation.reset({ index: 0, routes: [{ name: "ClientLoginScreen" }] });
+        return null;
+      }
+    } catch (error) {
+      console.log("Error getting token:", error);
+      return null;
+    }
+  };
+
+  // Function to make API requests with authorization
+  const makeAuthorizedRequest = async (endpoint, method = "GET", data = null) => {
+    try {
+      const token = userToken || await getUserToken();
+      if (!token) {
+        throw new Error("No authentication token available");
+      }
+
+      const config = {
+        method,
+        url: `${API_URL}${endpoint}`,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      };
+
+      if (data && (method === "POST" || method === "PUT" || method === "PATCH")) {
+        config.data = data;
+      }
+
+      const response = await axios(config);
+      return response.data;
+    } catch (error) {
+      console.error("API Request Error:", error);
+      
+      // Handle unauthorized access
+      if (error.response && error.response.status === 401) {
+        Alert.alert("انتهت صلاحية الجلسة", "يرجى تسجيل الدخول مرة أخرى", [
+          {
+            text: "موافق",
+            onPress: () => {
+              AsyncStorage.multiRemove(["userName", "profileImage", "userId", "token"]);
+              navigation.reset({ index: 0, routes: [{ name: "ClientLoginScreen" }] });
+            }
+          }
+        ]);
+      }
+      
+      throw error;
+    }
+  };
+
+  // Function to fetch user profile data
+  const fetchUserProfile = async () => {
+    try {
+      const data = await makeAuthorizedRequest("/user/profile");
+      // Update state with fetched data
+      if (data.name) setUserName(data.name);
+      if (data.city) setCityName(data.city);
+      if (data.balance) setBalance(data.balance);
+      if (data.profileImage) setProfileImage(data.profileImage);
+    } catch (error) {
+      console.log("Error fetching profile:", error);
+    }
+  };
+
+  // Function to handle deposit
+  const handleDeposit = async () => {
+    if (!depositAmount || parseFloat(depositAmount) <= 0) {
+      Alert.alert("خطأ", "يرجى إدخال مبلغ صحيح");
+      return;
+    }
+
+    try {
+      const data = await makeAuthorizedRequest("/wallet/deposit", "POST", {
+        amount: parseFloat(depositAmount),
+        cardId: cards[selectedCard].id,
+      });
+      
+      Alert.alert("نجح", "تم إضافة الرصيد بنجاح");
+      setBalance(data.newBalance || balance + parseFloat(depositAmount));
+      setDepositAmount("");
+      setShowDeposit(false);
+    } catch (error) {
+      Alert.alert("خطأ", "فشل في إضافة الرصيد");
+    }
+  };
+
+  // Function to handle withdrawal
+  const handleWithdraw = async () => {
+    if (!withdrawAmount || parseFloat(withdrawAmount) <= 0) {
+      Alert.alert("خطأ", "يرجى إدخال مبلغ صحيح");
+      return;
+    }
+
+    if (parseFloat(withdrawAmount) > balance) {
+      Alert.alert("خطأ", "الرصيد غير كافي");
+      return;
+    }
+
+    try {
+      const data = await makeAuthorizedRequest("/wallet/withdraw", "POST", {
+        amount: parseFloat(withdrawAmount),
+        cardId: cards[selectedCard].id,
+      });
+      
+      Alert.alert("نجح", "تم سحب الرصيد بنجاح");
+      setBalance(data.newBalance || balance - parseFloat(withdrawAmount));
+      setWithdrawAmount("");
+      setShowWithdraw(false);
+    } catch (error) {
+      Alert.alert("خطأ", "فشل في سحب الرصيد");
+    }
+  };
 
   const pickImage = async () => {
     const permissionResult =
@@ -58,62 +191,101 @@ const ProfileScreen = ({ navigation }) => {
       const imageUri = result.assets[0].uri;
       setProfileImage(imageUri);
       await AsyncStorage.setItem("profileImage", imageUri);
+      
+      // Upload image to server
+      try {
+        const formData = new FormData();
+        formData.append('profileImage', {
+          uri: imageUri,
+          type: 'image/jpeg',
+          name: 'profile.jpg',
+        });
+
+        await makeAuthorizedRequest("/user/profile/image", "POST", formData);
+      } catch (error) {
+        console.log("Error uploading image:", error);
+      }
     }
   };
 
-  const handleLogoutPress = () => {
-    Alert.alert("تأكيد تسجيل الخروج", "هل أنت متأكد أنك تريد تسجيل الخروج؟", [
+const handleLogoutPress = () => {
+  Alert.alert(
+    "تأكيد تسجيل الخروج",
+    "هل أنت متأكد أنك تريد تسجيل الخروج؟",
+    [
       { text: "إلغاء", style: "cancel" },
       {
         text: "تسجيل خروج",
         style: "destructive",
         onPress: async () => {
           try {
+            // مسح كل البيانات المرتبطة بالمستخدم
             await AsyncStorage.multiRemove([
               "userName",
               "profileImage",
               "userId",
               "token",
+              "cityName",
             ]);
-            navigation.reset({ index: 0, routes: [{ name: "ClientLoginScreen" }] });
+
+            // إعادة ضبط الـ state المحلي
+            setUserToken(null);
+            setUserName("");
+            setProfileImage(null);
+            setCityName("غير محدد");
+
+            // إعادة التوجيه لشاشة تسجيل الدخول
+            navigation.reset({
+              index: 0,
+              routes: [{ name: "LoginScreen" }],
+            });
           } catch (err) {
             console.log("خطأ أثناء تسجيل الخروج:", err);
+            Alert.alert("خطأ", "حدث خطأ أثناء تسجيل الخروج، حاول مرة أخرى");
           }
         },
       },
-    ]);
-  };
+    ]
+  );
+};
 
-  useEffect(() => {
-    const getProfileImage = async () => {
-      const storedImage = await AsyncStorage.getItem("profileImage");
-      if (storedImage) setProfileImage(storedImage);
-    };
-    getProfileImage();
-  }, []);
 
+  // Load initial data
   useEffect(() => {
-    const getCityName = async () => {
-      try {
-        const storedCity = await AsyncStorage.getItem("cityName");
-        if (storedCity) setCityName(storedCity);
-      } catch (e) {
-        console.log("Failed to load city name", e);
-      }
-    };
-    getCityName();
-  }, []);
+    const initializeData = async () => {
+      await getUserToken();
+      
+      // Load cached data first
+      const getProfileImage = async () => {
+        const storedImage = await AsyncStorage.getItem("profileImage");
+        if (storedImage) setProfileImage(storedImage);
+      };
 
-  useEffect(() => {
-    const getUserName = async () => {
-      try {
-        const storedName = await AsyncStorage.getItem("userName");
-        if (storedName) setUserName(storedName);
-      } catch (e) {
-        console.log("Failed to load user name", e);
-      }
+      const getCityName = async () => {
+        try {
+          const storedCity = await AsyncStorage.getItem("cityName");
+          if (storedCity) setCityName(storedCity);
+        } catch (e) {
+          console.log("Failed to load city name", e);
+        }
+      };
+
+      const getUserName = async () => {
+        try {
+          const storedName = await AsyncStorage.getItem("userName");
+          if (storedName) setUserName(storedName);
+        } catch (e) {
+          console.log("Failed to load user name", e);
+        }
+      };
+
+      await Promise.all([getProfileImage(), getCityName(), getUserName()]);
+      
+      // Then fetch fresh data from server
+      await fetchUserProfile();
     };
-    getUserName();
+
+    initializeData();
   }, []);
 
   const renderCardRow = (card, idx) => (
@@ -170,11 +342,13 @@ const ProfileScreen = ({ navigation }) => {
           placeholder="المبلغ"
           keyboardType="numeric"
           inputStyle={styles.amountInput}
+          value={type === "deposit" ? depositAmount : withdrawAmount}
+          onChangeText={type === "deposit" ? setDepositAmount : setWithdrawAmount}
         />
 
         <CustomButton
           title={type === "deposit" ? "تاكيد ادخال" : "تاكيد سحب"}
-          onPress={onClose}
+          onPress={type === "deposit" ? handleDeposit : handleWithdraw}
         />
       </View>
     </TouchableWithoutFeedback>
@@ -296,7 +470,6 @@ const SettingItem = ({ label, icon, badge }) => (
     )}
   </TouchableOpacity>
 );
-
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },

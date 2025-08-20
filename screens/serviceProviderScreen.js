@@ -13,11 +13,13 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import BottomNavigation from '../Components/BottomNavigation';
 import ServiceCard from '../Components/ServiceCard';
 import CustomHeaderWithLines from '../Components/CustomHeaderTemp';
 
-const NGROK_URL = 'https://422aa57c657c.ngrok-free.app';
+const NGROK_URL = 'https://f27ad2cde96b.ngrok-free.app';
 
 const serviceProviderScreen = () => {
     const navigation = useNavigation();
@@ -40,6 +42,16 @@ const serviceProviderScreen = () => {
         'soldering': require('../assets/categoryIcons/soldering.png'),
     };
 
+    // helper function to get token
+    const getAuthHeaders = async () => {
+        const token = await AsyncStorage.getItem('token'); // اسم المفتاح حسب ما خزنتيه
+        return {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `bearer ${token}`, // حروف صغيرة
+        };
+    };
+
     useEffect(() => {
         fetchAllCategories();
         fetchServices(categoryName);
@@ -47,18 +59,14 @@ const serviceProviderScreen = () => {
 
     const fetchAllCategories = async () => {
         try {
+            const headers = await getAuthHeaders();
             const response = await fetch(`${NGROK_URL}/category`, {
                 method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
+                headers,
                 timeout: 10000,
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
             const data = await response.json();
             const categoriesArray = Array.isArray(data) ? data : (data?.categories ? data.categories : []);
@@ -75,22 +83,8 @@ const serviceProviderScreen = () => {
             setAllCategories(mappedCategories);
         } catch (error) {
             setAllCategories([
-                {
-                    id: 'fallback1',
-                    name: 'نقاشه',
-                    title: 'نقاشه',
-                    icon: 'brush',
-                    iconImage: 'brush',
-                    apiIcon: null
-                },
-                {
-                    id: 'fallback2',
-                    name: 'كهربائي',
-                    title: 'كهربائي',
-                    icon: 'flashlight',
-                    iconImage: 'flashlight',
-                    apiIcon: null
-                }
+                { id: 'fallback1', name: 'نقاشه', title: 'نقاشه', icon: 'brush', iconImage: 'brush', apiIcon: null },
+                { id: 'fallback2', name: 'كهربائي', title: 'كهربائي', icon: 'flashlight', iconImage: 'flashlight', apiIcon: null }
             ]);
         } finally {
             setLoading(false);
@@ -99,27 +93,14 @@ const serviceProviderScreen = () => {
 
     const fetchServices = async (categoryNameParam) => {
         setServicesLoading(true);
-
         try {
+            const headers = await getAuthHeaders();
             const url = `${NGROK_URL}/user/getServiceByName?name=${encodeURIComponent(categoryNameParam)}`;
-
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
-                timeout: 15000,
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
+            const response = await fetch(url, { method: 'GET', headers, timeout: 15000 });
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
 
             let servicesArray = [];
-
             if (data.success && data.services && Array.isArray(data.services)) {
                 servicesArray = data.services;
             } else if (data.services && Array.isArray(data.services)) {
@@ -128,47 +109,40 @@ const serviceProviderScreen = () => {
                 servicesArray = data;
             } else if (data.data && Array.isArray(data.data)) {
                 servicesArray = data.data;
-            } else {
-                servicesArray = [];
             }
 
-            const mappedServices = servicesArray.map((service, index) => {
-                return {
-                    id: service.id || service._id || `service-${index}`,
-                    title: service.title || service.name || service.serviceName || service.description || 'خدمة غير محددة',
-                    provider: service.description || 'مقدم خدمة',
-                    price: service.price ? `${service.price}ج.م` :
-                        (service.minPrice && service.maxPrice ? `${service.minPrice} - ${service.maxPrice}ج.م` :
-                            service.cost ? `${service.cost}ج.م` : 'السعر غير محدد'),
-                    rating: service.rating || service.averageRating || service.rate || '4.5',
-                    reviews: service.reviews || service.reviewCount || service.reviewsCount || '(0)',
-                    image: service.mainImage?.secure_url
-                        ? { uri: service.mainImage.secure_url }
-                        : service.image?.secure_url
-                            ? { uri: service.image.secure_url }
-                            : (service.images && service.images.length > 0
-                                ? { uri: service.images[0]?.secure_url || service.images[0] }
-                                : require('../assets/service1.jpg')),
-
-                    avatar: service.mainImage?.secure_url
-                        ? { uri: service.mainImage.secure_url }
-                        : require('../assets/service1.jpg'),
-
-                    category: categoryNameParam,
-                    categoryIcon: service.categories?.image || service.category?.image || categoryIcon,
-                    description: service.description || service.details || 'لا يوجد وصف',
-                    minPrice: service.minPrice || 0,
-                    maxPrice: service.maxPrice || 0,
-                    providerId: service.providerId || service.userId || service.user?._id || '',
-                    categoryId: service.categoryId || service.category?._id || '',
-                    isConfirmed: service.isConfirmed || false,
-                    createdAt: service.createdAt || '',
-                    updatedAt: service.updatedAt || ''
-                };
-            });
+            const mappedServices = servicesArray.map((service, index) => ({
+                id: service.id || service._id || `service-${index}`,
+                title: service.title || service.name || service.serviceName || service.description || 'خدمة غير محددة',
+                provider: service.description || 'مقدم خدمة',
+                price: service.price ? `${service.price}ج.م` :
+                    (service.minPrice && service.maxPrice ? `${service.minPrice} - ${service.maxPrice}ج.م` :
+                        service.cost ? `${service.cost}ج.م` : 'السعر غير محدد'),
+                rating: service.rating || service.averageRating || service.rate || '4.5',
+                reviews: service.reviews || service.reviewCount || service.reviewsCount || '(0)',
+                image: service.mainImage?.secure_url
+                    ? { uri: service.mainImage.secure_url }
+                    : service.image?.secure_url
+                        ? { uri: service.image.secure_url }
+                        : (service.images && service.images.length > 0
+                            ? { uri: service.images[0]?.secure_url || service.images[0] }
+                            : require('../assets/service1.jpg')),
+                avatar: service.mainImage?.secure_url
+                    ? { uri: service.mainImage.secure_url }
+                    : require('../assets/service1.jpg'),
+                category: categoryNameParam,
+                categoryIcon: service.categories?.image || service.category?.image || categoryIcon,
+                description: service.description || service.details || 'لا يوجد وصف',
+                minPrice: service.minPrice || 0,
+                maxPrice: service.maxPrice || 0,
+                providerId: service.providerId || service.userId || service.user?._id || '',
+                categoryId: service.categoryId || service.category?._id || '',
+                isConfirmed: service.isConfirmed || false,
+                createdAt: service.createdAt || '',
+                updatedAt: service.updatedAt || ''
+            }));
 
             setServices(mappedServices);
-
         } catch (error) {
             setServices([]);
         } finally {
@@ -195,17 +169,11 @@ const serviceProviderScreen = () => {
     const toggleFavorite = (service) => {
         setFavoriteServices(prev => {
             const exists = prev.find(item => item.id === service.id);
-            if (exists) {
-                return prev.filter(item => item.id !== service.id);
-            } else {
-                return [...prev, service];
-            }
+            return exists ? prev.filter(item => item.id !== service.id) : [...prev, service];
         });
     };
 
-    const isFavorite = (service) => {
-        return favoriteServices.some(item => item.id === service.id);
-    };
+    const isFavorite = (service) => favoriteServices.some(item => item.id === service.id);
 
     const handleCategorySelect = (category) => {
         navigation.setParams({
@@ -258,7 +226,6 @@ const serviceProviderScreen = () => {
                     </TouchableOpacity>
                 ))}
             </ScrollView>
-
         </View>
     );
 
@@ -295,10 +262,7 @@ const serviceProviderScreen = () => {
             </View>
 
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-                {searchQuery.length === 0 && !loading && (
-                    <HorizontalCategoriesList />
-                )}
-
+                {searchQuery.length === 0 && !loading && <HorizontalCategoriesList />}
                 <View style={styles.servicesSection}>
                     {servicesLoading ? (
                         <View style={styles.loadingContainer}>
@@ -320,12 +284,7 @@ const serviceProviderScreen = () => {
                                 ))
                             ) : (
                                 <View style={styles.noResultsContainer}>
-                                    <FontAwesome5
-                                        name="search"
-                                        size={48}
-                                        color="#ccc"
-                                        style={styles.noResultsIcon}
-                                    />
+                                    <FontAwesome5 name="search" size={48} color="#ccc" style={styles.noResultsIcon} />
                                     <Text style={styles.noResultsText}>
                                         {searchQuery ? 'لا توجد خدمات مطابقة لبحثك' : 'لا توجد خدمات في هذا التصنيف'}
                                     </Text>
@@ -349,127 +308,30 @@ const serviceProviderScreen = () => {
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#ffffff',
-        paddingVertical: 15,
-    },
-    searchContainer: {
-        paddingHorizontal: 20,
-        paddingVertical: 15,
-    },
-    searchBar: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#fff',
-        borderWidth: 1,
-        borderColor: 'lightgray',
-        borderRadius: 10,
-        paddingHorizontal: 10,
-        height: 45,
-    },
-    searchImageIcon: {
-        backgroundColor: '#fff',
-        borderRadius: 10,
-        padding: 4,
-        marginRight: 8,
-    },
-    searchImage: {
-        width: 24,
-        height: 24,
-        resizeMode: 'contain',
-    },
-    searchInputWrapper: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        flex: 1,
-        justifyContent: 'flex-end',
-    },
-    searchInput: {
-        flex: 1,
-        fontSize: 16,
-        color: '#333',
-        paddingHorizontal: 8,
-    },
-    searchIcon: {
-        marginLeft: 8,
-    },
-    content: {
-        flex: 1,
-    },
-    horizontalCategoriesContainer: {
-        paddingVertical: 15,
-        alignItems: 'flex-start'
-    },
-    horizontalCategoriesContent: {
-        paddingLeft: 20,
-        paddingRight: 10,
-    },
-    horizontalCategoryItem: {
-        alignItems: 'center',
-        marginRight: 15,
-        width: 80,
-    },
-    horizontalCategoryIcon: {
-        width: 60,
-        height: 60,
-        borderRadius: 12,
-        backgroundColor: '#f0f8ff',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    selectedCategory: {
-        transform: [{ scale: 1.05 }],
-    },
-    horizontalIconImage: {
-        width: 40,
-        height: 35,
-        resizeMode: 'contain',
-    },
-    horizontalCategoryText: {
-        fontSize: 14,
-        color: '#333',
-        textAlign: 'center',
-        fontWeight: '500',
-    },
-    selectedCategoryText: {
-        fontWeight: 'bold',
-    },
-    servicesSection: {
-        paddingHorizontal: 20,
-        paddingBottom: 20,
-        marginTop: 10
-    },
-    loadingContainer: {
-        alignItems: 'center',
-        paddingVertical: 60,
-    },
-    loadingText: {
-        marginTop: 10,
-        fontSize: 16,
-        color: '#666',
-    },
-    noResultsContainer: {
-        alignItems: 'center',
-        paddingVertical: 60,
-    },
-    noResultsIcon: {
-        marginBottom: 16,
-    },
-    noResultsText: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#333',
-        textAlign: 'center',
-        marginBottom: 8,
-    },
-    noResultsSubtext: {
-        fontSize: 14,
-        color: '#666',
-        textAlign: 'center',
-        marginBottom: 10,
-    },
+    container: { flex: 1, backgroundColor: '#ffffff', paddingVertical: 15 },
+    searchContainer: { paddingHorizontal: 20, paddingVertical: 15 },
+    searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderWidth: 1, borderColor: 'lightgray', borderRadius: 10, paddingHorizontal: 10, height: 45 },
+    searchImageIcon: { backgroundColor: '#fff', borderRadius: 10, padding: 4, marginRight: 8 },
+    searchImage: { width: 24, height: 24, resizeMode: 'contain' },
+    searchInputWrapper: { flexDirection: 'row', alignItems: 'center', flex: 1, justifyContent: 'flex-end' },
+    searchInput: { flex: 1, fontSize: 16, color: '#333', paddingHorizontal: 8 },
+    searchIcon: { marginLeft: 8 },
+    content: { flex: 1 },
+    horizontalCategoriesContainer: { paddingVertical: 15, alignItems: 'flex-start' },
+    horizontalCategoriesContent: { paddingLeft: 20, paddingRight: 10 },
+    horizontalCategoryItem: { alignItems: 'center', marginRight: 15, width: 80 },
+    horizontalCategoryIcon: { width: 60, height: 60, borderRadius: 12, backgroundColor: '#f0f8ff', justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
+    selectedCategory: { transform: [{ scale: 1.05 }] },
+    horizontalIconImage: { width: 40, height: 35, resizeMode: 'contain' },
+    horizontalCategoryText: { fontSize: 14, color: '#333', textAlign: 'center', fontWeight: '500' },
+    selectedCategoryText: { fontWeight: 'bold' },
+    servicesSection: { paddingHorizontal: 20, paddingBottom: 20, marginTop: 10 },
+    loadingContainer: { alignItems: 'center', paddingVertical: 60 },
+    loadingText: { marginTop: 10, fontSize: 16, color: '#666' },
+    noResultsContainer: { alignItems: 'center', paddingVertical: 60 },
+    noResultsIcon: { marginBottom: 16 },
+    noResultsText: { fontSize: 18, fontWeight: '600', color: '#333', textAlign: 'center', marginBottom: 8 },
+    noResultsSubtext: { fontSize: 14, color: '#666', textAlign: 'center', marginBottom: 10 },
 });
 
 export default serviceProviderScreen;

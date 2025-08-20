@@ -23,7 +23,7 @@ import CustomHeader from "../../../Components/CustomHeader";
 import { UserContext } from "../../Context/UserContext";
 
 // ✅ Base URL
-const API_BASE = "https://557431a98314.ngrok-free.app";
+const API_BASE = "https://f27ad2cde96b.ngrok-free.app";
 
 const UploadCard = ({ imageUri, onAdd, onRemove }) => (
   <View style={styles.card}>

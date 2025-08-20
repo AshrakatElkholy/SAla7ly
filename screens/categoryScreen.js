@@ -4,26 +4,28 @@ import {
     Text,
     StyleSheet,
     SafeAreaView,
-    StatusBar,
     TouchableOpacity,
     TextInput,
     ScrollView,
     Image,
     ActivityIndicator,
+    Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import BottomNavigation from '../Components/BottomNavigation';
 import CustomHeaderWithLines from '../Components/CustomHeaderTemp'; 
 
-const NGROK_URL = "https://422aa57c657c.ngrok-free.app";
+const NGROK_URL = "https://968edb838f6e.ngrok-free.app";
 
-const categoryScreen = () => {
+const CategoryScreen = () => {
     const navigation = useNavigation();
     const [searchQuery, setSearchQuery] = useState('');
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [favoriteServices, setFavoriteServices] = useState([]);
+    const [token, setToken] = useState(null);
 
     const iconImages = {
         'brush': require('../assets/categoryIcons/brush.png'),
@@ -34,17 +36,39 @@ const categoryScreen = () => {
         'soldering': require('../assets/categoryIcons/soldering.png'),
     };
 
+    // Load token when screen mounts
     useEffect(() => {
-        fetchCategories();
+        const loadToken = async () => {
+            try {
+                const storedToken = await AsyncStorage.getItem("token");
+                if (storedToken) {
+                    setToken(storedToken);
+                } else {
+                    Alert.alert("خطأ", "لم يتم العثور على التوكن. قم بتسجيل الدخول مرة أخرى.");
+                    navigation.navigate("Login");
+                }
+            } catch (error) {
+                console.error("Error fetching token:", error);
+            }
+        };
+        loadToken();
     }, []);
+
+    useEffect(() => {
+        if (token) {
+            fetchCategories();
+        }
+    }, [token]);
 
     const fetchCategories = async () => {
         setLoading(true);
         try {
             const response = await fetch(`${NGROK_URL}/category`, {
                 method: 'GET',
-                headers: { 'Content-Type': 'application/json' },
-                timeout: 10000,
+                headers: { 
+                    'Content-Type': 'application/json',
+                    Authorization: `bearer ${token}`,
+                },
             });
 
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -71,6 +95,7 @@ const categoryScreen = () => {
 
             setCategories(mappedCategories);
         } catch (error) {
+            console.error("Error fetching categories:", error);
             setCategories([
                 {
                     id: 'test1',
@@ -261,4 +286,4 @@ const styles = StyleSheet.create({
     noResultsText: { fontSize: 16, color: '#666', textAlign: 'center' },
 });
 
-export default categoryScreen;
+export default CategoryScreen;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
     View,
     Text,
@@ -10,71 +10,59 @@ import {
     SafeAreaView,
     StatusBar,
     ActivityIndicator,
+    Alert
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { useNavigation } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import BottomNavigation from "../Components/BottomNavigation";
 import ServiceCard from "../Components/ServiceCard";
 import CustomHeaderWithLines from "../Components/CustomHeaderTemp";
+import { UserContext } from "../Context/UserContext";
 
-const NGROK_URL = "https://422aa57c657c.ngrok-free.app"; 
+const NGROK_URL = "https://f27ad2cde96b.ngrok-free.app"; 
 
 const HomeScreen = () => {
     const navigation = useNavigation();
+    const { token, userInfo } = useContext(UserContext); // ⬅️ استخدام التوكن من Context
     const [favoriteServices, setFavoriteServices] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
-    const [userName, setUserName] = useState("");
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
+
     const filteredCategories = categories.filter(category =>
         (category.name || category.title).toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-
     const services = [
-        {
-            id: 1,
-            title: "صيانة مكيفات",
-            provider: "احمد محمد",
-            price: "250ج.م",
-            rating: "4.5",
-            reviews: "(51)",
-            image: require("../assets/service1.png"),
-            avatar: require("../assets/service1.png"),
-        },
-        {
-            id: 2,
-            title: "صيانة مكيفات",
-            provider: "احمد محمد",
-            price: "250ج.م",
-            rating: "4.5",
-            reviews: "(51)",
-            image: require("../assets/service1.png"),
-            avatar: require("../assets/service1.png"),
-        },
+        { id: 1, title: "صيانة مكيفات", provider: "احمد محمد", price: "250ج.م", rating: "4.5", reviews: "(51)", image: require("../assets/service1.png"), avatar: require("../assets/service1.png") },
+        { id: 2, title: "صيانة مكيفات", provider: "احمد محمد", price: "250ج.م", rating: "4.5", reviews: "(51)", image: require("../assets/service1.png"), avatar: require("../assets/service1.png") },
     ];
 
+    // 🔹 Redirect if no token
     useEffect(() => {
-        const fetchUserName = async () => {
-            try {
-                const storedName = await AsyncStorage.getItem("userName");
-                if (storedName) setUserName(storedName);
-            } catch (error) {
-                console.error(error);
-            }
-        };
-        fetchUserName();
-        fetchCategories();
-    }, []);
+        if (!token) {
+            Alert.alert("تنبيه", "لم يتم تسجيل الدخول، يرجى تسجيل الدخول أولاً.");
+            navigation.replace("LoginScreen");
+        } else {
+            fetchCategories();
+        }
+    }, [token]);
 
     const fetchCategories = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${NGROK_URL}/category`);
+            const response = await fetch(`${NGROK_URL}/category`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`, // ⬅️ استخدم التوكن من Context
+                },
+            });
+
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
+
             const categoriesArray = Array.isArray(data) ? data : (data?.categories ? data.categories : []);
 
             const mappedCategories = categoriesArray.map((cat, index) => ({
@@ -89,6 +77,8 @@ const HomeScreen = () => {
 
             setCategories(mappedCategories.slice(0, 4));
         } catch (error) {
+            console.error("Error fetching categories:", error);
+            Alert.alert("خطأ", "حصل خطأ أثناء تحميل التصنيفات");
             setCategories([
                 { id: "test1", title: "نقاشه", name: "نقاشه", icon: "brush", iconImage: "brush", apiIcon: null },
                 { id: "test2", title: "كهربائي", name: "كهربائي", icon: "flashlight", iconImage: "flashlight", apiIcon: null },
@@ -141,7 +131,7 @@ const HomeScreen = () => {
         <SafeAreaView style={styles.container}>
             <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
             <CustomHeaderWithLines
-                title={userName ? `أهلاً، ${userName}` : "الرئيسية"}
+                title={userInfo ? `أهلاً، ${userInfo.name || userInfo.email}` : "الرئيسية"}
                 showTabs={false}
                 showIcons={true}
             />
@@ -214,7 +204,6 @@ const HomeScreen = () => {
                                     </TouchableOpacity>
                                 ))
                             )}
-
                         </View>
                     )}
                 </View>
